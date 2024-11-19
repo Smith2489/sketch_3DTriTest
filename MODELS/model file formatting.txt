@@ -1,0 +1,45 @@
+#Comments
+#Think of an obj file
+#Comments and blank spaces are ignored
+#Comments should also force an early skip
+
+V vertexCount #Number of vertices in the model
+p polygonCount #Number of triangles in the model
+
+
+
+I x y z #Local vertex location data
+t v1 v2 v3 #Face data; can only have vertex indices
+n x y z #Face normal for lighting
+
+#Formatting can also look like this (only increment what polygon the loader is on when it encounters a 't')
+t t1 
+  t2 
+  t3
+
+hs #Indicates that a stroke exist for the polygon (no stroke by default) (There affects all polygons)
+nf #Indicates that no fill exists for the polygon (has fill by default) (This affects all polygons
+bb #Indicates that a model is a billboard
+rd #Indicates that a model has reverse depth (shows up like any other model, but its z-position is negative
+ac #Indicates that a model is attached to the camera
+
+#Only increment which stroke or fill the loader is on when it hits an 's' for 'stroke' or an 'f' for 'fill'
+c colourcount #How many solid colours a polygon has
+s strokecolour #Outline colour for polygon
+f fillColour #Inside colour for polygon
+
+#Demoing how multiple colours works
+s strokecolour
+f fillColour
+
+A alpha beta gamma #Stores the rotation of the model
+P x y z #Stores the position of the model in world space
+S sx sy sz #Stores the scale of the model
+T shearX1 shearX2 shearY1 shearY2 shearZ1 shearZ2 #Stores how a model is sheared
+
+i polygonNum #Initializes the list of polygons that are exempt from backface culling
+v polygonIndex #Adds a polygon to the list of polygons that are exempt from backface culling
+
+b backNum #Initalizes the list of backface colours
+o rearStroke #Sets the stroke for the back
+m fillStroke #Sets the fill for the back
