@@ -1,0 +1,43 @@
+#Comments
+#Think of an obj file
+#Comments and blank spaces are ignored
+#Comments should also force an early skip
+
+#    #
+#MESH#
+#    #
+
+V vertexCount #Number of vertices in the model
+p polygonCount #Number of triangles in the model
+
+I x y z #Local vertex location data
+t v1 v2 v3 #Face data; can only have vertex indices
+#Normals are computed from the above data
+
+#Formatting can also look like this (only increment what polygon the loader is on when it encounters a 't')
+t t1 
+  t2 
+  t3
+bb #Indicates that a model is a billboard
+
+#Only increment which stroke or fill the loader is on when it hits an 's' for 'stroke' or an 'f' for 'fill'
+c colourcount #How many solid colours a polygon has
+s strokecolour #Outline colour for polygon
+f fillColour #Inside colour for polygon
+
+#	#
+#COLOURS#
+#	#
+
+#Demoing how multiple colours works
+s strokecolour
+f fillColour
+
+i polygonNum #Initializes the list of polygons that are exempt from backface culling
+v polygonIndex #Adds a polygon to the list of polygons that are exempt from backface culling
+
+b backNum #Initalizes the list of backface colours
+o rearStroke #Sets the stroke for the back
+m fillStroke #Sets the fill for the back
+
+#Some of the above will be ignored if you are only loading in the colours or only loading in the mesh

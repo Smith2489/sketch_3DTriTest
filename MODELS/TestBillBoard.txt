@@ -1,0 +1,16 @@
+bb #Testing what happens when billboard is set first
+p 2
+V 4
+
+I -1 -3 0
+I -1 3 0
+I 1 -3 0
+I 1 3 0
+
+t 0 1 2
+t 3 2 1
+
+
+c 2
+f 1677721600
+f -16711936
