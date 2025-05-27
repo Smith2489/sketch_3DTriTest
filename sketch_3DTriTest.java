@@ -13,7 +13,7 @@ import processing.data.*;
 import processing.event.*;
 import processing.opengl.*;
 
-public class sketch_3DTriTest extends PApplet{
+public class sketch_3DTriTest extends PApplet{;
   //SCREEN DIMENSIONS
   private final int[][] RESOLUTIONS = {{75, 150, 300, 600, 37}, {100, 200, 400, 800, 50}};
 
@@ -82,7 +82,7 @@ public class sketch_3DTriTest extends PApplet{
     PApplet.main("sketch_3DTriTest", args);
   }
   public void settings(){
-    size(600, 800);
+    size(600, 800, P2D);
     noSmooth();
   }
   public void setup(){
@@ -455,7 +455,7 @@ public class sketch_3DTriTest extends PApplet{
       boxSpeedX*=-1;
     }
     output.image(testImages[imageBack & 1], 0, 0, RESOLUTIONS[0][resolutionIndex], RESOLUTIONS[1][resolutionIndex]);
-    output.fill(0x0055FF);
+    output.fill(0xFF0055FF);
     output.rect(boxX, boxY, BOX_SIZE, BOX_SIZE);
 
     output.loadPixels();
