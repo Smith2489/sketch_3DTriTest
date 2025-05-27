@@ -13,6 +13,10 @@ public class Rasterizer{
   private static float maxProbability = 1;
   private static float threshold = 1.1f;
   private static float[] invZ = {0, 0, 0};
+  //Weights contributed to a pixel by the vertices
+  private static float alpha = 0;
+  private static float beta = 0;
+  private static float gamma = 1;
   /*
     bit 0 = stencil test results
     bit 1 = anti aliasing 
@@ -384,10 +388,7 @@ public class Rasterizer{
     screenBounds[1][1] = Math.round(Math.min(heig, Math.max(poses[0][1], Math.max(poses[1][1], poses[2][1]))));
     int maxX = screenBounds[0][1];
     int minX = screenBounds[0][0];
-    //Weights contributed to a pixel by the vertices
-    float alpha = 0;
-    float beta = 0;
-    float gamma = 0;
+
       
     //Used for centring a pixel
     float x = 0;
@@ -422,8 +423,8 @@ public class Rasterizer{
             //z*=(((flags & 4) >>> 1)-1);
             int pixelPos = wid*i+j;
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if(stencil[pixelPos] == 0 && ((flags & 4) == 0 && (z < zBuff[pixelPos] || zBuff[pixelPos] <= 0) || (flags & 4) == 4 && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
-              int tempFill = computeLighting(fill, alpha, beta, gamma, tempZ, invZ, vertexBrightness);
+            if(stencil[pixelPos] == 0 && ((flags & 4) == 0 && z < zBuff[pixelPos] || (flags & 4) == 4 && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
+              int tempFill = computeLighting(fill, tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if((tempFill >>> 24) < 0xFF)
                 frame[pixelPos] = Colour.interpolateColours(tempFill, frame[pixelPos]);
@@ -433,7 +434,7 @@ public class Rasterizer{
             }
             //For when there were triangles drawn at the current pixel that were closer than the current triangle
             else if((frame[pixelPos] >>> 24) < 0xFF){
-                int tempFill = computeLighting(fill, alpha, beta, gamma, tempZ, invZ, vertexBrightness);
+                int tempFill = computeLighting(fill, tempZ, invZ, vertexBrightness);
                 frame[pixelPos] = interpolatePixels(frame[pixelPos], tempFill, pixelPos);
             }
           }
@@ -492,10 +493,6 @@ public class Rasterizer{
     screenBounds[1][1] = Math.round(Math.min(heig, Math.max(poses[0][1], Math.max(poses[1][1], poses[2][1]))));
     int maxX = screenBounds[0][1];
     int minX = screenBounds[0][0];
-    //Weights contributed to a pixel by the vertices
-    float alpha = 0;
-    float beta = 0;
-    float gamma = 0;
       
     //Used for centring a pixel
     float x = 0;
@@ -530,8 +527,8 @@ public class Rasterizer{
             //z*=(((flags & 4) >>> 1)-1);
             int pixelPos = wid*i+j;
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if(stencil[pixelPos] == 0 && ((flags & 4) == 0 && (z < zBuff[pixelPos] || zBuff[pixelPos] <= 0) || (flags & 4) == 4 && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
-              int tempFill = computeLighting(fill, alpha, beta, gamma, tempZ, invZ, vertexBrightness);
+            if(stencil[pixelPos] == 0 && ((flags & 4) == 0 && z < zBuff[pixelPos] || (flags & 4) == 4 && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
+              int tempFill = computeLighting(fill, tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if((tempFill >>> 24) < 0xFF)
                 frame[pixelPos] = Colour.interpolateColours(tempFill, frame[pixelPos]);
@@ -541,7 +538,7 @@ public class Rasterizer{
             }
             //For when there were triangles drawn at the current pixel that were closer than the current triangle
             else if((frame[pixelPos] >>> 24) < 0xFF){
-              int tempFill = computeLighting(fill, alpha, beta, gamma, tempZ, invZ, vertexBrightness);
+              int tempFill = computeLighting(fill, tempZ, invZ, vertexBrightness);
               frame[pixelPos] = interpolatePixels(frame[pixelPos], tempFill, pixelPos);
             }
           }
@@ -587,10 +584,6 @@ public class Rasterizer{
     screenBounds[1][1] = Math.round(Math.min(heig, Math.max(poses[0][1], Math.max(poses[1][1], poses[2][1]))));
     int maxX = screenBounds[0][1];
     int minX = screenBounds[0][0];
-    //Weights contributed to a pixel by the vertices
-    float alpha = 0;
-    float beta = 0;
-    float gamma = 0;
       
     //Used for centring a pixel
     float x = 0;
@@ -629,8 +622,8 @@ public class Rasterizer{
 
             stencilTest(pixelPos, compVal, testType);
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if((flags & 1) == 1 && ((flags & 4) == 0 && (z < zBuff[pixelPos] || zBuff[pixelPos] <= 0) || (flags & 4) == 4 && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
-              int tempFill = computeLighting(fill, alpha, beta, gamma, tempZ, invZ, vertexBrightness);
+            if((flags & 1) == 1 && ((flags & 4) == 0 && z < zBuff[pixelPos] || (flags & 4) == 4 && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
+              int tempFill = computeLighting(fill, tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if((tempFill >>> 24) < 0xFF)
                 frame[pixelPos] = interpolatePixels(tempFill, frame[pixelPos], pixelPos);
@@ -649,7 +642,7 @@ public class Rasterizer{
             }
             //For when there were triangles drawn at the current pixel that were closer than the current triangle
             else if((frame[pixelPos] >>> 24) < 0xFF){
-              int tempFill = computeLighting(fill, alpha, beta, gamma, tempZ, invZ, vertexBrightness);
+              int tempFill = computeLighting(fill, tempZ, invZ, vertexBrightness);
               frame[pixelPos] = interpolatePixels(frame[pixelPos], tempFill, pixelPos);
             }
           }
@@ -705,10 +698,6 @@ public class Rasterizer{
     screenBounds[1][1] = Math.round(Math.min(heig, Math.max(poses[0][1], Math.max(poses[1][1], poses[2][1]))));
     int maxX = screenBounds[0][1];
     int minX = screenBounds[0][0];
-    //Weights contributed to a pixel by the vertices
-    float alpha = 0;
-    float beta = 0;
-    float gamma = 0;
       
     //Used for centring a pixel
     float x = 0;
@@ -745,8 +734,8 @@ public class Rasterizer{
 
             stencilTest(pixelPos, compVal, testType);
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if((flags & 1) == 1 && ((flags & 4) == 0 && (z < zBuff[pixelPos] || zBuff[pixelPos] <= 0) || (flags & 4) == 4 && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
-              int tempFill = computeLighting(fill, alpha, beta, gamma, tempZ, invZ, vertexBrightness);
+            if((flags & 1) == 1 && ((flags & 4) == 0 && z < zBuff[pixelPos] || (flags & 4) == 4 && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
+              int tempFill = computeLighting(fill, tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if((tempFill >>> 24) < 0xFF)
                 frame[pixelPos] = interpolatePixels(tempFill, frame[pixelPos], pixelPos);
@@ -765,7 +754,7 @@ public class Rasterizer{
             }
             //For when there were triangles drawn at the current pixel that were closer than the current triangle
             else if((frame[pixelPos] >>> 24) < 0xFF){
-              int tempFill = computeLighting(fill, alpha, beta, gamma, tempZ, invZ, vertexBrightness);
+              int tempFill = computeLighting(fill, tempZ, invZ, vertexBrightness);
               frame[pixelPos] = interpolatePixels(frame[pixelPos], tempFill, pixelPos);
             }
           }
@@ -1392,7 +1381,7 @@ public class Rasterizer{
     }
   }
   //Gouraud shading
-  private static int computeLighting(int fill, float alpha, float beta, float gamma, float z, float[] invZ, float[][] vertexBrighness){
+  private static int computeLighting(int fill, float z, float[] invZ, float[][] vertexBrighness){
     float adjustedAlpha = invZ[0]*alpha;
     float adjustedBeta = invZ[1]*beta;
     float adjustedGamma = invZ[2]*gamma;

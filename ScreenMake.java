@@ -69,6 +69,7 @@ public class ScreenMake{
     // private static float[] lightAngle = new float[3];
     private static Matrix lightMatrix = new Matrix();
     private static Matrix lightAngleMatrix = new Matrix();
+    private static int size = 0;
 
     //Changes the model list's pointer to a different array's location and sets the size of the displayList
     public static void setModelList(LinkedList<Model> newList){
@@ -318,8 +319,8 @@ public class ScreenMake{
       Matrix mvpFull = new Matrix();
       //Matrix mv = new Matrix(); //For checking if a model is within zNear and zFar (using the frustum does not work for some reason)
       boolean isInClipSpace = false; //Checks if a model is in the frustum
-
-      for(int i = 0; i < lights.size(); i++){
+      size = lights.size();
+      for(int i = 0; i < size; i++){
         Light light = lights.removeFirst();
         lights.add(light);
         //Calcluating where the light and the camera should be relative to everything else
@@ -348,7 +349,9 @@ public class ScreenMake{
         if((flags & -128) == -128 || light.alwaysPerform())
           light.executeActions();
       }
-      for(int i = 0; i < modelList.size(); i++){
+
+      size = modelList.size();
+      for(int i = 0; i < size; i++){
         tempModel = modelList.removeFirst();
         modelList.add(tempModel);
 
@@ -677,7 +680,8 @@ public class ScreenMake{
       }
 
       billBoardCountTranslucent = 0;
-      for(int i = 0; i < billboardList.size(); i++){
+      size = billboardList.size();
+      for(int i = 0; i < size; i++){
         tempBillboard = billboardList.removeFirst();
         billboardList.add(tempBillboard);
 
@@ -1016,7 +1020,8 @@ public class ScreenMake{
     translusentCount = 0;
     byte faceDirection = 1;
     boolean isInClipSpace = false; //Checks if a model is in the frustum
-    for(int i = 0; i < modelList.size(); i++){
+    size = modelList.size();
+    for(int i = 0; i < size; i++){
       tempModel = modelList.removeFirst();
       modelList.add(tempModel);
 
@@ -1283,7 +1288,8 @@ public class ScreenMake{
     billboardDisplayOpaque.clear();
     billboardDisplayTranslucent.clear();
     billBoardCountTranslucent = 0;
-    for(int i = 0; i < billboardList.size(); i++){
+    size = billboardList.size();
+    for(int i = 0; i < size; i++){
       tempBillboard = billboardList.removeFirst();
       billboardList.add(tempBillboard);
       float[] fromCamToBillboard = {tempBillboard.returnPosition()[0]-eye.returnPosition()[0],
@@ -1371,7 +1377,8 @@ public class ScreenMake{
     lineDisplayTranslucent.clear();
     primativeVertices = null;
     boolean isInClipSpace = false;
-    for(int i = 0; i < lineList.size(); i++){
+    size = lineList.size();
+    for(int i = 0; i < size; i++){
       tempLineObj = lineList.removeFirst();
       lineList.add(tempLineObj);
       vertices = new float[tempLineObj.returnLineModelPtr().returnVertices().length][];
@@ -1483,7 +1490,8 @@ public class ScreenMake{
     dotDisplayOpaque.clear();
     dotDisplayTranslucent.clear();
     dotCountTranslucent = 0;
-    for(int i = 0; i < dotList.size(); i++){
+    size = dotList.size();
+    for(int i = 0; i < size; i++){
       tempDot = dotList.removeFirst();
       dotList.add(tempDot);
       tempDot.setModelMatrix();
