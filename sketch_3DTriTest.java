@@ -15,69 +15,69 @@ import processing.opengl.*;
 
 public class sketch_3DTriTest extends PApplet{
   //SCREEN DIMENSIONS
-  final int[][] RESOLUTIONS = {{75, 150, 300, 600, 37}, {100, 200, 400, 800, 50}};
+  private final int[][] RESOLUTIONS = {{75, 150, 300, 600, 37}, {100, 200, 400, 800, 50}};
 
-  public int QUARTER_WIDTH = RESOLUTIONS[0][3] >>> 2;
-  public int QUARTER_HEIGHT = RESOLUTIONS[1][3] >>> 2;
+  private int QUARTER_WIDTH = RESOLUTIONS[0][3] >>> 2;
+  private int QUARTER_HEIGHT = RESOLUTIONS[1][3] >>> 2;
 
-  public int BOX_SIZE = RESOLUTIONS[0][3]*50/600;
-  public final float  DEGS_TO_RADS = (float)Math.PI/180f;
-  public final String PATH_BASE = "";
+  private int BOX_SIZE = RESOLUTIONS[0][3]*50/600;
+  private float  DEGS_TO_RADS = (float)Math.PI/180f;
+  private final String PATH_BASE = "";
 
-  public Model[] testModels = new Model[15];
-  public LinkedList<Model> testModelLinked;
-  public Geometry[] testGeometry = new Geometry[9];//0 = cube, 1 = Tetrahedron, 2 = Pyramid, 3 = rhomohedron, 4 = rotating tri pair, 5 = giant tris in back, 6 = test billboard, 7 = cute flag
-  public ModelColours[] testPallets = new ModelColours[11]; //0 = b&w cube, 1-8 above
-  public Model[] smallerSet = new Model[9];
-  public LinkedList<Model> linkedSmallerSet;
+  private Model[] testModels = new Model[15];
+  private LinkedList<Model> testModelLinked;
+  private Geometry[] testGeometry = new Geometry[9];//0 = cube, 1 = Tetrahedron, 2 = Pyramid, 3 = rhomohedron, 4 = rotating tri pair, 5 = giant tris in back, 6 = test billboard, 7 = cute flag
+  private ModelColours[] testPallets = new ModelColours[11]; //0 = b&w cube, 1-8 above
+  private Model[] smallerSet = new Model[9];
+  private LinkedList<Model> linkedSmallerSet;
 
-  public Triangle[] tris = new Triangle[10];
-  public Dot[] testDot = new Dot[2];
-  public LinkedList<Dot> testDotLinked;
-  public LineObj[] testLines = new LineObj[4];
-  public LinkedList<LineObj> testLineLinked;
+  private Triangle[] tris = new Triangle[10];
+  private Dot[] testDot = new Dot[2];
+  private LinkedList<Dot> testDotLinked;
+  private LineObj[] testLines = new LineObj[4];
+  private LinkedList<LineObj> testLineLinked;
 
-  public Light[] light = new Light[2];
-  public Light secondLight;
+  private Light[] light = new Light[2];
+  private Light secondLight;
 
-  public float[][] endPoints1 = {{0, 1.25f, -2.5f}, {0, -1.25f, 2.5f}, {2, -1.25f, 2.5f}};
-  public float[][] endPoints2 = {{-5, 0, 2}, {5, 0, 2}};
+  private float[][] endPoints1 = {{0, 1.25f, -2.5f}, {0, -1.25f, 2.5f}, {2, -1.25f, 2.5f}};
+  private float[][] endPoints2 = {{-5, 0, 2}, {5, 0, 2}};
   //Cameras
-  public Camera eye = new Camera();
-  public Camera eye2 = new Camera();
+  private Camera eye = new Camera();
+  private Camera eye2 = new Camera();
 
-  public int resolutionIndex = 3;
-  public boolean bPressed = false;
+  private int resolutionIndex = 3;
+  private boolean bPressed = false;
 
-  public int[] testBack = {0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF,
-                    0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF,
-                    0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
-                    0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
-                    0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000,
-                    0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF,
-                    0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF,
-                    0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
-                    0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
-                    0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000};
+  private int[] testBack = {0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF,
+                            0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF,
+                            0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
+                            0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+                            0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000,
+                            0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF, 0xFF00FFFF,
+                            0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF, 0xFF0000FF,
+                            0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000,
+                            0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+                            0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000};
 
-  public int[][] backgrounds = {testBack, new int[RESOLUTIONS[0][3]*RESOLUTIONS[1][3]]};
-  public int[] screen2 = new int[(RESOLUTIONS[0][3] >>> 2)*(RESOLUTIONS[1][3] >>> 2)];
-  public PImage[] testImages = new PImage[2];
-  public float sceneMag = 0;
-  public float[] sceneCentre = {0, 0, 0};
-  public byte[] testStencil = new byte[RESOLUTIONS[0][3]*RESOLUTIONS[1][3]];
-  public PGraphics output;
-  public BillboardImg[] sprites = new BillboardImg[2];
-  public Billboard[] test = new Billboard[2];
-  public LinkedList<Billboard> testBillboardLinked;
-  final int[] MAROON = {Colour.MAROON, Colour.RED, Colour.BLACK};
-  final int[] BLACK = {0x5500};
-  public final int[] OPAQUE_BLACK = {Colour.BLACK};
-  public int[][] endPoints = {{0, 1}};
-  public int[][] endPointsSet2 = {{0, 1}, {1, 2}, {2, 0}};
-  public int[][] endPointsSet3 = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
-  public LinkedList<Light> lightsPrimary = new LinkedList<Light>();
-  public LinkedList<Light> lightsSecondary = new LinkedList<Light>();
+  private int[][] backgrounds = {testBack, new int[RESOLUTIONS[0][3]*RESOLUTIONS[1][3]]};
+  private int[] screen2 = new int[(RESOLUTIONS[0][3] >>> 2)*(RESOLUTIONS[1][3] >>> 2)];
+  private PImage[] testImages = new PImage[2];
+  private float sceneMag = 0;
+  private float[] sceneCentre = {0, 0, 0};
+  private byte[] testStencil = new byte[RESOLUTIONS[0][3]*RESOLUTIONS[1][3]];
+  private PGraphics output;
+  private BillboardImg[] sprites = new BillboardImg[2];
+  private Billboard[] test = new Billboard[2];
+  private LinkedList<Billboard> testBillboardLinked;
+  private final int[] MAROON = {Colour.MAROON, Colour.RED, Colour.BLACK};
+  private final int[] BLACK = {0x5500};
+  private final int[] OPAQUE_BLACK = {Colour.BLACK};
+  private int[][] endPoints = {{0, 1}};
+  private int[][] endPointsSet2 = {{0, 1}, {1, 2}, {2, 0}};
+  private int[][] endPointsSet3 = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
+  private LinkedList<Light> lightsPrimary = new LinkedList<Light>();
+  private LinkedList<Light> lightsSecondary = new LinkedList<Light>();
   public static void main(String[] args){
     PApplet.main("sketch_3DTriTest", args);
   }
@@ -353,49 +353,49 @@ public class sketch_3DTriTest extends PApplet{
     ScreenMake.setLineList(testLineLinked);
   }
 
-    public static LinkedList<Model> arrayToLinkedList(Model[] arr){
-      LinkedList<Model> list = new LinkedList<Model>();
-      for(int i = 0; i < arr.length; i++)
-        list.add(arr[i]);
-      return list;
-    }
-    public static LinkedList<Billboard> arrayToLinkedList(Billboard[] arr){
-      LinkedList<Billboard> list = new LinkedList<Billboard>();
-      for(int i = 0; i < arr.length; i++)
-        list.add(arr[i]);
-      return list;
-    }
-    public static LinkedList<LineObj> arrayToLinkedList(LineObj[] arr){
-      LinkedList<LineObj> list = new LinkedList<LineObj>();
-      for(int i = 0; i < arr.length; i++)
-        list.add(arr[i]);
-      return list;
-    }
-    public static LinkedList<Dot> arrayToLinkedList(Dot[] arr){
-      LinkedList<Dot> list = new LinkedList<Dot>();
-      for(int i = 0; i < arr.length; i++)
-        list.add(arr[i]);
-      return list;
-    }
+  private static LinkedList<Model> arrayToLinkedList(Model[] arr){
+    LinkedList<Model> list = new LinkedList<Model>();
+    for(int i = 0; i < arr.length; i++)
+      list.add(arr[i]);
+    return list;
+  }
+  private static LinkedList<Billboard> arrayToLinkedList(Billboard[] arr){
+    LinkedList<Billboard> list = new LinkedList<Billboard>();
+    for(int i = 0; i < arr.length; i++)
+      list.add(arr[i]);
+    return list;
+  }
+  private static LinkedList<LineObj> arrayToLinkedList(LineObj[] arr){
+    LinkedList<LineObj> list = new LinkedList<LineObj>();
+    for(int i = 0; i < arr.length; i++)
+      list.add(arr[i]);
+    return list;
+  }
+  private static LinkedList<Dot> arrayToLinkedList(Dot[] arr){
+    LinkedList<Dot> list = new LinkedList<Dot>();
+    for(int i = 0; i < arr.length; i++)
+      list.add(arr[i]);
+    return list;
+  }
 
-  public void rotateModel(float[] anglesList, int axis, float angle, float speedRatio){
+  private void rotateModel(float[] anglesList, int axis, float angle, float speedRatio){
     anglesList[axis]+=angle*speedRatio;
     if(anglesList[axis] >= 360 || anglesList[axis] <= -360)
       anglesList[axis] = 0;
   }
 
-  public void addToPosition(float[] position, float speed, float[] directionVector){
+  private void addToPosition(float[] position, float speed, float[] directionVector){
     position[0]+=speed*directionVector[0];
     position[1]+=speed*directionVector[1];
     position[2]+=speed*directionVector[2];
   }
 
-  public byte imageBack = 1; //first bit controls image, top bit controls keyboard locking
-  public byte outlineControl = 1; //First bit controls fill, second controls outline, top controls keylock, third and fourth control the rotation in the small camera, sixth acts as a small camera key lock
-  public float boxX = BOX_SIZE;
-  public int boxY = BOX_SIZE;
-  public float boxSpeedX = 1;
-  public float speed = 30f/frameRate;
+  private byte imageBack = 1; //first bit controls image, top bit controls keyboard locking
+  private byte outlineControl = 1; //First bit controls fill, second controls outline, top controls keylock, third and fourth control the rotation in the small camera, sixth acts as a small camera key lock
+  private float boxX = BOX_SIZE;
+  private int boxY = BOX_SIZE;
+  private float boxSpeedX = 1;
+  private float speed = 30f/frameRate;
   public void draw(){
     //float[] point = {testModels[3].returnPosition()[0], testModels[3].returnPosition()[1], testModels[3].returnPosition()[2]};
     //eye.lookAt(point);
@@ -553,7 +553,7 @@ public class sketch_3DTriTest extends PApplet{
     System.out.println(Math.round(frameRate));
   }
 
-  class SetTransparency extends ModelAction{
+  private class SetTransparency extends ModelAction{
     private Camera object;
     private static final float MIN_DIST = 360;
     private static final float MAX_DIST = 1800;
@@ -569,7 +569,7 @@ public class sketch_3DTriTest extends PApplet{
     }
   }
 
-  class RotateMess extends ModelAction{
+  private class RotateMess extends ModelAction{
     public void perform(){
       rot[0]-=1.5f*speed;
       rot[2]-=1.5f*speed;
@@ -580,7 +580,7 @@ public class sketch_3DTriTest extends PApplet{
     }
   }
 
-  class RotateTetrahedron extends ModelAction{
+  private class RotateTetrahedron extends ModelAction{
     public void perform(){
       rot[0]-=1.5f*speed;
       rot[1]+=3*speed;
@@ -591,7 +591,7 @@ public class sketch_3DTriTest extends PApplet{
     }
   }
 
-  class SpinTwoTriangles extends ModelAction{
+  private class SpinTwoTriangles extends ModelAction{
     public void perform(){
       rot[1]-=0.5f*speed;
       if(rot[1] < 0)
@@ -599,13 +599,13 @@ public class sketch_3DTriTest extends PApplet{
     }
   }
 
-  class ColonThree extends ModelAction{
+  private class ColonThree extends ModelAction{
     public void perform(){
       System.out.println(":3");
     }
   }
 
-  class RotateLongModel extends ModelAction{
+  private class RotateLongModel extends ModelAction{
     public void perform(){
       float[] modelForward = getForward();
       if(keyPressed){
@@ -641,9 +641,9 @@ public class sketch_3DTriTest extends PApplet{
     }
   }
 
-  class RotateLongInvertedHull extends ModelAction{
-    Model model = null;
-    RotateLongInvertedHull(Model newModel){
+  private class RotateLongInvertedHull extends ModelAction{
+    private Model model = null;
+    public RotateLongInvertedHull(Model newModel){
       model = newModel;
     }
     public void perform(){
@@ -658,9 +658,9 @@ public class sketch_3DTriTest extends PApplet{
 
 
 
-  class RotateAtFiveDegrees extends ModelAction{
+  private class RotateAtFiveDegrees extends ModelAction{
     private int direction = 1;
-    RotateAtFiveDegrees(boolean positive){
+    public RotateAtFiveDegrees(boolean positive){
       if(positive)
         direction = 1;
       else
@@ -673,14 +673,14 @@ public class sketch_3DTriTest extends PApplet{
     }
   }
 
-  class RotateBillboard extends ModelAction{
+  private class RotateBillboard extends ModelAction{
     public void perform(){
       rot[2]+=(0.25f*speed);
       if(rot[2] >= 360)
         rot[2]-=360;
     }
   }
-  class RotateDefaultModel extends ModelAction{
+  private class RotateDefaultModel extends ModelAction{
     public void perform(){
       rot[0]+=(0.25f*speed);
       rot[1]+=(0.25f*speed);
@@ -693,7 +693,7 @@ public class sketch_3DTriTest extends PApplet{
         rot[2]-=360;
     }
   }
-  class RotateRhombohedron extends ModelAction{
+  private class RotateRhombohedron extends ModelAction{
     public void perform(){
       rot[0]+=2*speed;
       rot[1]-=2*speed;
@@ -704,8 +704,8 @@ public class sketch_3DTriTest extends PApplet{
     }
   }
 
-  class RotateLight extends LightAction{
-    float angularVelocity = 1f;
+  private class RotateLight extends LightAction{
+    private float angularVelocity = 1f;
     public void perform(){
       rot[1]+=angularVelocity;
       if(rot[1] > 360){
@@ -717,8 +717,8 @@ public class sketch_3DTriTest extends PApplet{
     }
   }
 
-  class MoveLight extends LightAction{
-    float velocity = 0.05f;
+  private class MoveLight extends LightAction{
+    private float velocity = 0.05f;
     public void perform(){
         pos[2]+=velocity*speed;
         if(pos[2] > 100){
@@ -732,9 +732,9 @@ public class sketch_3DTriTest extends PApplet{
     }
   }
 
-  class SpinSlab extends ModelAction{
-    boolean keyLocked = false;
-    int spinSpeed = 2;
+  private class SpinSlab extends ModelAction{
+    private boolean keyLocked = false;
+    private int spinSpeed = 2;
     public void perform(){
       if(keyPressed){
         if(!keyLocked){
@@ -785,7 +785,7 @@ public class sketch_3DTriTest extends PApplet{
   }
 
 
-  class MoveCamera extends CameraAction{
+  private class MoveCamera extends CameraAction{
     public void perform(){
       float[] eyeForward = getForward();
       float[] eyeRight = getRight();
@@ -843,10 +843,10 @@ public class sketch_3DTriTest extends PApplet{
     }
   }
 
-  class ManageSecondCamera extends CameraAction{
-    boolean cPressed = false;
-    Camera other;
-    ManageSecondCamera(Camera newCamera){
+  private class ManageSecondCamera extends CameraAction{
+    private boolean cPressed = false;
+    private Camera other;
+    public ManageSecondCamera(Camera newCamera){
       cPressed = false;
       other = newCamera;
     }
@@ -899,7 +899,7 @@ public class sketch_3DTriTest extends PApplet{
     }
   }
 
-  class CopyLight extends LightAction{
+  private class CopyLight extends LightAction{
     private Light tempLight;
     public CopyLight(Light newLight){
       tempLight = newLight; 
