@@ -22,7 +22,7 @@ public class sketch_3DTriTest extends PApplet{
 
   private int BOX_SIZE = RESOLUTIONS[0][3]*50/600;
   private float  DEGS_TO_RADS = (float)Math.PI/180f;
-  private final String PATH_BASE = "";
+  private final String PATH_BASE = "Data/";
 
   private Model[] testModels = new Model[15];
   private LinkedList<Model> testModelLinked;
