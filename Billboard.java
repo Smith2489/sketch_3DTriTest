@@ -7,6 +7,7 @@ public class Billboard {
   private float[][] shear = {{0, 0}, {0, 0}, {0, 0}};
   private Matrix billModel = new Matrix();
   private int fill = 0xFFFFFFFF;
+  private int stroke = 0xFF000000;
   //bit 0 = attached to camera, 
   //bit 1 = draw in front, 
   //bit 2 = outline, 
@@ -348,6 +349,38 @@ public class Billboard {
     else
       fill = (alpha << 24)|(colour << 16)|(colour << 8)|colour;
   }
+  public void stroke(int colour){
+    if((colour >>> 24) == 0){
+      if(colour <= 0xFF)
+        colour = 0xFF000000 | (colour << 16) | (colour << 8) | colour;
+      else if(colour <= 0xFFFF)
+        colour = ((colour & 0xFF00) << 16) | ((colour & 0xFF) << 16) | ((colour & 0xFF) << 8) | (colour & 0xFF);
+      else
+        colour = 0xFF000000 | colour;
+    }
+    stroke = colour;
+  }
+  public void stroke(int colour, int a){
+    if((colour & 0xFFFFFF) <= 0xFF)
+      colour = ((colour & 0xFF) << 16)|((colour & 0xFF) << 8)|(colour & 0xFF);
+    a = (a & 0xFF) << 24;
+    stroke = a|(colour & 0xFFFFFF);
+  }
+  public void stroke(int r, int b, int g){
+    r = (r & 0xFF) << 16;
+    g = (g & 0xFF) << 8;
+    b&=0xFF;
+    stroke = 0xFF000000|r|g|b;
+  }
+  
+  public void stroke(int r, int b, int g, int a){
+    a = (a & 0xFF) << 24;
+    r = (r & 0xFF) << 16;
+    g = (g & 0xFF) << 8;
+    b&=0xFF;
+    stroke = a|r|g|b;
+  }
+  
   public void setBillBoardModelMatrix(Matrix newModel){
     if(Objects.nonNull(newModel) && newModel.returnWidth() == 4 && newModel.returnHeight() == 4)
       billModel.copy(newModel);
@@ -402,7 +435,7 @@ public class Billboard {
     return image.shouldDrawPixel(pixelIndex);
   }
   public int returnStroke(){
-    return image.returnStroke();
+    return stroke;
   }
   public int returnFill(){
     return fill;
@@ -424,6 +457,7 @@ public class Billboard {
       boolean isEqual = true;
       isEqual&=image.equals(b.image);
       isEqual&=billModel.equals(b.billModel);
+      isEqual&=(stroke == b.stroke);
       for(byte i = 0; i < 3; i++){
         isEqual&=(Math.abs(pos[i] - b.pos[i]) <= 0.0001);
         isEqual&=(Math.abs(rot[i] - b.rot[i]) <= 0.0001);
@@ -447,6 +481,7 @@ public class Billboard {
     boolean isEqual = true;
     isEqual&=image.equals(b.image);
     isEqual&=billModel.equals(b.billModel);
+    isEqual&=(stroke == b.stroke);
     for(byte i = 0; i < 3; i++){
       isEqual&=(Math.abs(pos[i] - b.pos[i]) <= 0.0001);
       isEqual&=(Math.abs(rot[i] - b.rot[i]) <= 0.0001);
@@ -468,6 +503,7 @@ public class Billboard {
       Billboard b = (Billboard)o;
       image = b.image;
       billModel.copy(b.billModel);
+      stroke = b.stroke;
       for(byte i = 0; i < 3; i++){
         pos[i] = b.pos[i];
         rot[i] = b.rot[i];
@@ -486,6 +522,7 @@ public class Billboard {
   public void copy(Billboard b){
     image = b.image;
     billModel.copy(b.billModel);
+    stroke = b.stroke;
     for(byte i = 0; i < 3; i++){
       pos[i] = b.pos[i];
       rot[i] = b.rot[i];

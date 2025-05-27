@@ -6,13 +6,11 @@ public class BillboardImg {
     private int width = 100;
     private int height = 100;
     private int[] removalColour = {0xFF00FF, 0xFF00FF}; //Pixels of this colour will be skipped
-    private int strokeColour = 0xFF000000; //The colour of the outline of the image
     public BillboardImg(){
         width = 100;
         height = 100;
         removalColour[0] = 0xFF00FF;
         removalColour[1] = 0xFF00FF;
-        strokeColour = 0xFF000000;
         img = new int[10000];
         for(int i = 0; i < 10000; i++)
             img[i] = 0xFF000000;
@@ -34,7 +32,6 @@ public class BillboardImg {
         }
         removalColour[0] = 0xFF00FF;
         removalColour[1] = 0xFF00FF;
-        strokeColour = 0xFF000000;
       }
       public BillboardImg(int[] newImage, int newWidth, int newHeight){
         if(newWidth*newHeight != newImage.length){
@@ -48,7 +45,6 @@ public class BillboardImg {
           img[i] = newImage[i];
         removalColour[0] = 0xFF00FF;
         removalColour[1] = 0xFF00FF;
-        strokeColour = 0xFF000000;
       }
       public void setImage(String imagePath){
         File file = new File(imagePath);
@@ -92,40 +88,9 @@ public class BillboardImg {
       public void setInvisColour(byte r, byte g, byte b, byte index){
         removalColour[index] = ((r & 255) << 16) | ((g & 255) << 8) | (b & 255);
       }
-      public void stroke(int stroke){
-        if((stroke >>> 24) == 0){
-          if(stroke <= 0xFF)
-              stroke = 0xFF000000 | (stroke << 16) | (stroke << 8) | stroke;
-          else if(stroke <= 0xFFFF)
-              stroke = ((stroke & 0xFF00) << 16) | ((stroke & 0xFF) << 16) | ((stroke & 0xFF) << 8) | (stroke & 0xFF);
-          else
-              stroke = 0xFF000000 | stroke;
-        }
-        strokeColour = stroke;
-      }
-      public void stroke(int stroke, int a){
-        if((stroke & 0xFFFFFF) <= 0xFF)
-          stroke = ((stroke & 0xFF) << 16)|((stroke & 0xFF) << 8)|(stroke & 0xFF);
-        a = (a & 0xFF) << 24;
-        strokeColour = a|(stroke & 0xFFFFFF);
-      }
-      public void stroke(int r, int b, int g){
-        r = (r & 0xFF) << 16;
-        g = (g & 0xFF) << 8;
-        b&=0xFF;
-        strokeColour = 0xFF000000|r|g|b;
-      }
       
       public int[] returnPixels(){
         return img;
-      }
-
-      public void stroke(int r, int b, int g, int a){
-        a = (a & 0xFF) << 24;
-        r = (r & 0xFF) << 16;
-        g = (g & 0xFF) << 8;
-        b&=0xFF;
-        strokeColour = a|r|g|b;
       }
       public int returnWidth(){
         return width;
@@ -148,10 +113,6 @@ public class BillboardImg {
         shouldDraw&=(tempB[2] >= edgeB[0] && tempB[2] <= edgeB[1]);
         return !shouldDraw;
       }
-      public int returnStroke(){
-        return strokeColour;
-      }
-
       public boolean equals(Object o){
         if(o instanceof BillboardImg){
           BillboardImg b = (BillboardImg)o;
@@ -159,7 +120,6 @@ public class BillboardImg {
           isEqual&=(width == b.width);
           isEqual&=(height == b.height);
           isEqual&=(removalColour == b.removalColour);
-          isEqual&=(strokeColour == b.strokeColour);
           isEqual&=(img.length == b.img.length);
           if(isEqual)
             for(int i = 0; i < img.length; i++){
@@ -176,7 +136,6 @@ public class BillboardImg {
         isEqual&=(width == b.width);
         isEqual&=(height == b.height);
         isEqual&=(removalColour == b.removalColour);
-        isEqual&=(strokeColour == b.strokeColour);
         isEqual&=(img.length == b.img.length);
         if(isEqual)
           for(int i = 0; i < img.length; i++){
@@ -191,7 +150,6 @@ public class BillboardImg {
           width = b.width;
           height = b.height;
           removalColour = b.removalColour;
-          strokeColour = b.strokeColour;
           img = new int[b.img.length];
           for(int i = 0; i < img.length; i++)
             img[i] = b.img[i];
@@ -201,7 +159,6 @@ public class BillboardImg {
         width = b.width;
         height = b.height;
         removalColour = b.removalColour;
-        strokeColour = b.strokeColour;
         img = new int[b.img.length];
         for(int i = 0; i < img.length; i++)
           img[i] = b.img[i];
