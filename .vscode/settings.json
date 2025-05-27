@@ -1,0 +1,21 @@
+{
+    "java.project.sourcePaths": [
+        "."
+    ],
+    "java.project.referencedLibraries": [
+        "c:\\Users\\richa\\OneDrive\\Documents\\processing-4.3.1-windows-x64\\processing-4.3.1\\java\\lib\\jrt-fs.jar",
+        "c:\\Users\\richa\\OneDrive\\Documents\\processing-4.3.1-windows-x64\\processing-4.3.1\\core\\library\\gluegen-rt-natives-windows-amd64.jar",
+        "c:\\Users\\richa\\OneDrive\\Documents\\processing-4.3.1-windows-x64\\processing-4.3.1\\core\\library\\gluegen-rt-natives-windows-i586.jar",
+        "c:\\Users\\richa\\OneDrive\\Documents\\processing-4.3.1-windows-x64\\processing-4.3.1\\core\\library\\jogl-all.jar",
+        "c:\\Users\\richa\\OneDrive\\Documents\\processing-4.3.1-windows-x64\\processing-4.3.1\\core\\library\\jogl-all-natives-windows-amd64.jar",
+        "c:\\Users\\richa\\OneDrive\\Documents\\processing-4.3.1-windows-x64\\processing-4.3.1\\core\\library\\jogl-all-natives-windows-i586.jar",
+        "c:\\Users\\richa\\OneDrive\\Documents\\processing-4.3.1-windows-x64\\processing-4.3.1\\lib\\ant.jar",
+        "c:\\Users\\richa\\OneDrive\\Documents\\processing-4.3.1-windows-x64\\processing-4.3.1\\lib\\ant-launcher.jar",
+        "c:\\Users\\richa\\OneDrive\\Documents\\processing-4.3.1-windows-x64\\processing-4.3.1\\lib\\flatlaf.jar",
+        "c:\\Users\\richa\\OneDrive\\Documents\\processing-4.3.1-windows-x64\\processing-4.3.1\\lib\\jna.jar",
+        "c:\\Users\\richa\\OneDrive\\Documents\\processing-4.3.1-windows-x64\\processing-4.3.1\\lib\\jna-platform.jar",
+        "c:\\Users\\richa\\OneDrive\\Documents\\processing-4.3.1-windows-x64\\processing-4.3.1\\lib\\pde.jar",
+        "c:\\Users\\richa\\OneDrive\\Documents\\processing-4.3.1-windows-x64\\processing-4.3.1\\lib\\VAqua8.jar",
+        "c:\\Users\\richa\\OneDrive\\Documents\\processing-4.3.1-windows-x64\\processing-4.3.1\\core\\library\\core.jar"
+    ]
+}
