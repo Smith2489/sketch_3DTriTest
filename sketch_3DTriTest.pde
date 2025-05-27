@@ -7,7 +7,7 @@ int QUARTER_HEIGHT = RESOLUTIONS[1][3] >>> 2;
 
 int BOX_SIZE = RESOLUTIONS[0][3]*50/600;
 final float  DEGS_TO_RADS = (float)Math.PI/180f;
-final String PATH_BASE = "sketch_3DTriTest\\";
+final String PATH_BASE = "sketch_3DTriTest/";
 
 Model[] testModels = new Model[15];
 LinkedList<Model> testModelLinked;
