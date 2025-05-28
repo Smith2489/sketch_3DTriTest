@@ -741,7 +741,8 @@ public class ScreenMake{
           isInside&=((minPoints[0] < Rasterizer.returnWidth() && minPoints[1] < Rasterizer.returnHeight()) && (maxPoints[0] >= 0 && maxPoints[1] >= 0));
           if(isInside){
             int fill = tempBillboard.returnFill();
-            short alpha = (short)((tempBillboard.returnFill() >>> 24)*tempBillboard.returnModelTint());
+            short[] alpha = {(short)((tempBillboard.returnStroke() >>> 24)*tempBillboard.returnModelTint()), 
+                             (short)((tempBillboard.returnFill() >>> 24)*tempBillboard.returnModelTint())};
             if((fill & 0xFFFFFF) != 0){
               float[] lightBrightness = computeLighting(lights, lightPos, lightAngle, lightColour, from3DVecTo4DVec(tempBillboard.returnPosition()), (float[])null, tempBillboard.returnShininess(), tempBillboard.returnBrightness()*generalObjectBrightness, model, (Model)null, 0, false);
               int[] tempFill = {(int)(Math.min(255, ((fill >>> 16) & 0xFF)*lightBrightness[0])) << 16,
@@ -751,14 +752,15 @@ public class ScreenMake{
             }
             float sizeX = points[2][0]-points[0][0];
             float sizeY = points[2][1]-points[0][1];
-            if((alpha & 0xFF) == 255){
+            if((alpha[1] & 0xFF) == 255){
               billboardDisplayOpaque.add(new Billboard());
               billboardDisplayOpaque.getLast().copy(tempBillboard);
               billboardDisplayOpaque.getLast().setScale(sizeX, sizeY);
               billboardDisplayOpaque.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
               billboardDisplayOpaque.getLast().setOutline(tempBillboard.hasOutline() || (flags & 12) != 8);
               billboardDisplayOpaque.getLast().setInside(tempBillboard.hasImage() && (flags & 8) == 8);
-              billboardDisplayOpaque.getLast().fill(fill, alpha);
+              billboardDisplayOpaque.getLast().fill(fill, alpha[1]);
+              billboardDisplayOpaque.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
             }
             else{
               billboardDisplayTranslucent.add(new Billboard());
@@ -767,7 +769,8 @@ public class ScreenMake{
               billboardDisplayTranslucent.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
               billboardDisplayTranslucent.getLast().setOutline(tempBillboard.hasOutline() || (flags & 12) != 8);
               billboardDisplayTranslucent.getLast().setInside(tempBillboard.hasImage() && (flags & 8) == 8);
-              billboardDisplayTranslucent.getLast().fill(fill, alpha);
+              billboardDisplayTranslucent.getLast().fill(fill, alpha[1]);
+              billboardDisplayTranslucent.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
               translucentData.add(new TranslucentData((byte)2, points[0][2], tempBillboard.noDraw(), billBoardCountTranslucent));
               translucentCounter++;
               billBoardCountTranslucent++;
@@ -1343,14 +1346,16 @@ public class ScreenMake{
         isInside&=((minPoints[0] < Rasterizer.returnWidth() && minPoints[1] < Rasterizer.returnHeight()) && (maxPoints[0] >= 0 && maxPoints[1] >= 0));
         if(isInside){
           int fill = tempBillboard.returnFill();
-          short alpha = (short)((tempBillboard.returnFill() >>> 24)*tempBillboard.returnModelTint());
+          short[] alpha = {(short)((tempBillboard.returnStroke() >>> 24)*tempBillboard.returnModelTint()), 
+                           (short)((tempBillboard.returnFill() >>> 24)*tempBillboard.returnModelTint())};
           float sizeX = points[2][0]-points[0][0];
           float sizeY = points[2][1]-points[0][1];
-          if((alpha & 0xFF) == 255){
+          if((alpha[1] & 0xFF) == 255){
             billboardDisplayOpaque.add(new Billboard());
             billboardDisplayOpaque.getLast().copy(tempBillboard);
             billboardDisplayOpaque.getLast().setScale(sizeX, sizeY);
-            billboardDisplayOpaque.getLast().fill(fill, alpha);
+            billboardDisplayOpaque.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
+            billboardDisplayOpaque.getLast().fill(fill, alpha[1]);
             billboardDisplayOpaque.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
             billboardDisplayOpaque.getLast().setOutline(tempBillboard.hasOutline() || (flags & 12) != 8);
             billboardDisplayOpaque.getLast().setInside(tempBillboard.hasImage() && (flags & 8) == 8);
@@ -1359,7 +1364,8 @@ public class ScreenMake{
             billboardDisplayTranslucent.add(new Billboard());
             billboardDisplayTranslucent.getLast().copy(tempBillboard);
             billboardDisplayTranslucent.getLast().setScale(sizeX, sizeY);
-            billboardDisplayTranslucent.getLast().fill(fill, alpha);
+            billboardDisplayTranslucent.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
+            billboardDisplayTranslucent.getLast().fill(fill, alpha[1]);
             billboardDisplayTranslucent.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
             billboardDisplayTranslucent.getLast().setOutline(tempBillboard.hasOutline() || (flags & 12) != 8);
             billboardDisplayTranslucent.getLast().setInside(tempBillboard.hasImage() && (flags & 8) == 8);

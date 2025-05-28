@@ -16,7 +16,7 @@ import processing.opengl.*;
 public class sketch_3DTriTest extends PApplet{;
   //SCREEN DIMENSIONS
   private final int[][] RESOLUTIONS = {{75, 150, 300, 600, 37}, {100, 200, 400, 800, 50}};
-
+  private final float THREE_FOUR = 0.75f;
   private int QUARTER_WIDTH = RESOLUTIONS[0][3] >>> 2;
   private int QUARTER_HEIGHT = RESOLUTIONS[1][3] >>> 2;
 
@@ -78,13 +78,8 @@ public class sketch_3DTriTest extends PApplet{;
   private int[][] endPointsSet3 = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
   private LinkedList<Light> lightsPrimary = new LinkedList<Light>();
   private LinkedList<Light> lightsSecondary = new LinkedList<Light>();
-  public static void main(String[] args){
-    PApplet.main("sketch_3DTriTest", args);
-  }
-  public void settings(){
-    size(600, 800, P2D);
-    noSmooth();
-  }
+
+
   public void setup(){
     eye.addAction(new MoveCamera());
     eye.setDrawDistance(1800);
@@ -325,17 +320,10 @@ public class sketch_3DTriTest extends PApplet{;
     sceneCentre[0]/=smallerSet.length;
     sceneCentre[1]/=smallerSet.length;
     sceneCentre[2]/=smallerSet.length;
-    switch(width){
-      case 600:
-      case 300:
-      case 450:
-        testImages[1] = loadImage(PATH_BASE+"backgrounds/testImage.png");
-        break;
-      case 800:
-      case 400:
-        testImages[1] = loadImage(PATH_BASE+"backgrounds/testImage2.png");
-        break;
-    }
+    if(Math.abs((float)width/height - THREE_FOUR) <= 0.00001)
+      testImages[1] = loadImage(PATH_BASE+"backgrounds/testImage.png");
+    else
+      testImages[1] = loadImage(PATH_BASE+"backgrounds/testImage2.png");
 
     testImages[0] = new PImage(RESOLUTIONS[0][3], RESOLUTIONS[1][3]);
     testImages[0].loadPixels();
@@ -911,6 +899,19 @@ public class sketch_3DTriTest extends PApplet{;
       rot[0] = tempLight.returnRotation()[0];
       rot[1] = tempLight.returnRotation()[1];
       rot[2] = tempLight.returnRotation()[2];
+    }
+  }
+
+  public void settings(){
+    size(525, 700);
+    noSmooth();
+  }
+  static public void main(String[] passedArgs) {
+    String[] appletArgs = new String[] { "sketch_3DTriTest" };
+    if (passedArgs != null) {
+      PApplet.main(concat(appletArgs, passedArgs));
+    } else {
+      PApplet.main(appletArgs);
     }
   }
 }
