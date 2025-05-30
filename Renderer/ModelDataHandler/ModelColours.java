@@ -41,9 +41,9 @@ public class ModelColours {
         vertexColours = new float[vertexCount][3];
         for(int i = 0; i < vertexCount; i++){
             if(i < vertexColourSet.length){
-                vertexColours[i][0] = vertexColourSet[i][0];
-                vertexColours[i][1] = vertexColourSet[i][1];
-                vertexColours[i][2] = vertexColourSet[i][2];
+                vertexColours[i][0] = Math.max(0, Math.min(vertexColourSet[i][0], 1));
+                vertexColours[i][1] = Math.max(0, Math.min(vertexColourSet[i][1], 1));
+                vertexColours[i][2] = Math.max(0, Math.min(vertexColourSet[i][2], 1));
             }
             else{
                 vertexColours[i][0] = 1;
@@ -124,9 +124,9 @@ public class ModelColours {
         vertexColours = new float[vertexCount][3];
         for(int i = 0; i < vertexCount; i++){
             if(i < vertexColourSet.length){
-                vertexColours[i][0] = vertexColourSet[i][0];
-                vertexColours[i][1] = vertexColourSet[i][1];
-                vertexColours[i][2] = vertexColourSet[i][2];
+                vertexColours[i][0] = Math.max(0, Math.min(vertexColourSet[i][0], 1));
+                vertexColours[i][1] = Math.max(0, Math.min(vertexColourSet[i][1], 1));
+                vertexColours[i][2] = Math.max(0, Math.min(vertexColourSet[i][2], 1));
             }
             else{
                 vertexColours[i][0] = 1;

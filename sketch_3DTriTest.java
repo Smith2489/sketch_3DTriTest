@@ -81,6 +81,7 @@ public class sketch_3DTriTest extends PApplet{;
 
 
   public void setup(){
+    //LoadModelFile.disableMessages();
     eye.addAction(new MoveCamera());
     eye.setDrawDistance(1800);
     eye.colour(0x55AAFF);

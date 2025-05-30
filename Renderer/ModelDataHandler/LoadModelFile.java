@@ -6,12 +6,27 @@ import Renderer.Objects.Model;
 //A class which loads and holds model data, which will be copied into the models
 public class LoadModelFile {
   private static final String ERROR = "ERROR: ";
-  private static final String TOO_SMALL = ERROR+"ARRAY SIZE TOO SMALL";
+  private static final String TOO_SMALL = " ARRAY SIZE TOO SMALL";
   private static final String NOT_AN_INT = ERROR+"NOT AN INT";
   private static final String IS_FULL = ERROR+"LIST IS FULL";
   private static final String ALREADY_SET = " ARRAY SIZE ALREADY SET";
   private static final String NOT_FOUND = " NOT FOUND";
+  private static final String SUCCESS = " SUCCESSFULLY LOADED\n";
+  private static final String LOADING = "LOADING ";
   private static final String[] ARRAYS = {"VERTEX", "POLYGON", "COLOUR", "VISIBLE BACK", "BACK COLOUR"};
+  private static final String[] TYPE = {"MODEL", "MESH", "PALLET"};
+
+  private static boolean messageEnabled = true;
+
+  public static void enableMessages(){
+    messageEnabled = true;
+  }
+
+  public static void disableMessages(){
+    messageEnabled = false;
+  }
+
+
   public static Model loadModel(String dir){
     float[][] model = new float[0][3]; //Vertex list
     int[][] poly = new int[0][3]; //Polygon list
@@ -36,7 +51,8 @@ public class LoadModelFile {
     int[][] backColour = new int[0][2];
     file = new File(dir);
     try{
-      System.out.println("LOADING: "+dir);
+      if(messageEnabled)
+        System.out.println(LOADING+TYPE[0]+": "+dir);
       //Loads in the for reading
       fileReader = new Scanner(file);
       while(fileReader.hasNextLine()){
@@ -193,7 +209,7 @@ public class LoadModelFile {
                   } 
                   
                   if(model.length <= 0){
-                    System.out.println(TOO_SMALL);
+                    System.out.println(ERROR+ARRAYS[0]+TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -221,7 +237,7 @@ public class LoadModelFile {
                   } 
 
                   if(model.length <= 0){
-                    System.out.println(TOO_SMALL);
+                    System.out.println(ERROR+ARRAYS[1]+TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -244,7 +260,7 @@ public class LoadModelFile {
                     System.exit(1);
                   } 
                   if(colour.length <= 0){
-                    System.out.println(TOO_SMALL);
+                    System.out.println(ERROR+ARRAYS[2]+TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -268,7 +284,7 @@ public class LoadModelFile {
                     System.exit(1);
                   } 
                   if(colour.length <= 0){
-                    System.out.println(TOO_SMALL);
+                    System.out.println(ERROR+ARRAYS[2]+TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -296,7 +312,7 @@ public class LoadModelFile {
                     System.out.println(NOT_AN_INT);
                   }
                   else
-                    System.out.println(TOO_SMALL);
+                    System.out.println(ERROR+ARRAYS[3]+TOO_SMALL);
                   fileReader.close();
                   lineReader.close();
                   lineRead.close();
@@ -314,7 +330,7 @@ public class LoadModelFile {
                     System.exit(1);
                   } 
                   if(backColour.length <= 0){
-                    System.out.println(TOO_SMALL);
+                    System.out.println(ERROR+ARRAYS[4]+TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -337,7 +353,7 @@ public class LoadModelFile {
                     System.exit(1);
                   } 
                   if(backColour.length <= 0){
-                    System.out.println(TOO_SMALL);
+                    System.out.println(ERROR+ARRAYS[4]+TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -383,6 +399,8 @@ public class LoadModelFile {
     }
     for(int i = 0; i < backColour.length; i++)
       outputColours.setBackColour(i, backColour[i][0], backColour[i][1]);
+    if(messageEnabled)
+      System.out.println(TYPE[0]+" "+dir+SUCCESS);
     return new Model(outputModel, outputColours);
   }
   public static Geometry loadGeometry(String dir){
@@ -400,7 +418,8 @@ public class LoadModelFile {
     boolean isBillBoard = false; //Stores whether or not the model is a billboard (essentially a 3D sprite)
     file = new File(dir);
     try{
-      System.out.println("LOADING: "+dir);
+      if(messageEnabled)
+        System.out.println(LOADING+TYPE[1]+": "+dir);
       //Loads in the for reading
       fileReader = new Scanner(file);
       while(fileReader.hasNextLine()){
@@ -484,7 +503,7 @@ public class LoadModelFile {
                   } 
                   
                   if(model.length <= 0){
-                    System.out.println(TOO_SMALL);
+                    System.out.println(ERROR+ARRAYS[0]+TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -512,7 +531,7 @@ public class LoadModelFile {
                   } 
 
                   if(model.length <= 0){
-                    System.out.println(TOO_SMALL);
+                    System.out.println(ERROR+ARRAYS[1]+TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -546,6 +565,8 @@ public class LoadModelFile {
       System.out.println(ERROR+"FILE "+dir+NOT_FOUND);
       System.exit(1);
     }
+    if(messageEnabled)
+      System.out.println(TYPE[1]+" "+dir+SUCCESS);
     return new Geometry(model, poly, isBillBoard);
   }
   public static ModelColours loadPallet(String dir){
@@ -568,7 +589,8 @@ public class LoadModelFile {
     int[][] backColour = new int[0][2];
     file = new File(dir);
     try{
-      System.out.println("LOADING: "+dir);
+      if(messageEnabled)
+        System.out.println(LOADING+TYPE[2]+": "+dir);
       //Loads in the for reading
       fileReader = new Scanner(file);
       while(fileReader.hasNextLine()){
@@ -705,7 +727,7 @@ public class LoadModelFile {
                     System.exit(1);
                   } 
                   if(colour.length <= 0){
-                    System.out.println(TOO_SMALL);
+                    System.out.println(ERROR+ARRAYS[2]+TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -729,7 +751,7 @@ public class LoadModelFile {
                     System.exit(1);
                   } 
                   if(colour.length <= 0){
-                    System.out.println(TOO_SMALL);
+                    System.out.println(ERROR+ARRAYS[2]+TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -757,7 +779,7 @@ public class LoadModelFile {
                     System.out.println(NOT_AN_INT);
                   }
                   else
-                    System.out.println(TOO_SMALL);
+                    System.out.println(ERROR+ARRAYS[3]+TOO_SMALL);
                   fileReader.close();
                   lineReader.close();
                   lineRead.close();
@@ -775,7 +797,7 @@ public class LoadModelFile {
                     System.exit(1);
                   } 
                   if(backColour.length <= 0){
-                    System.out.println(TOO_SMALL);
+                    System.out.println(ERROR+ARRAYS[4]+TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -798,7 +820,7 @@ public class LoadModelFile {
                     System.exit(1);
                   } 
                   if(backColour.length <= 0){
-                    System.out.println(TOO_SMALL);
+                    System.out.println(ERROR+ARRAYS[4]+TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -836,6 +858,8 @@ public class LoadModelFile {
     }
     for(int i = 0; i < backColour.length; i++)
       outputColours.setBackColour(i, backColour[i][0], backColour[i][1]);
+    if(messageEnabled)
+      System.out.println(TYPE[2]+" "+dir+SUCCESS);
     return outputColours;
   }
 }
