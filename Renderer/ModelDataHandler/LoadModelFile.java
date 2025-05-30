@@ -5,6 +5,13 @@ import Renderer.Objects.Model;
 
 //A class which loads and holds model data, which will be copied into the models
 public class LoadModelFile {
+  private static final String ERROR = "ERROR: ";
+  private static final String TOO_SMALL = ERROR+"ARRAY SIZE TOO SMALL";
+  private static final String NOT_AN_INT = ERROR+"NOT AN INT";
+  private static final String IS_FULL = ERROR+"LIST IS FULL";
+  private static final String ALREADY_SET = " ARRAY SIZE ALREADY SET";
+  private static final String NOT_FOUND = " NOT FOUND";
+  private static final String[] ARRAYS = {"VERTEX", "POLYGON", "COLOUR", "VISIBLE BACK", "BACK COLOUR"};
   public static Model loadModel(String dir){
     float[][] model = new float[0][3]; //Vertex list
     int[][] poly = new int[0][3]; //Polygon list
@@ -29,6 +36,7 @@ public class LoadModelFile {
     int[][] backColour = new int[0][2];
     file = new File(dir);
     try{
+      System.out.println("LOADING: "+dir);
       //Loads in the for reading
       fileReader = new Scanner(file);
       while(fileReader.hasNextLine()){
@@ -50,14 +58,14 @@ public class LoadModelFile {
                     sizeSet[0] = true;
                     break;
                   }
-                  System.out.println("ERROR: NOT AN INT");
+                  System.out.println(NOT_AN_INT);
                   lineReader.close();
                   fileReader.close();
                   lineRead.close();
                   System.exit(1);
                 }
 
-                System.out.println("VERTEX ARRAY SIZE ALREADY SET");
+                System.out.println(ARRAYS[0]+ALREADY_SET);
                 if(lineReader.hasNext())
                   lineReader.next();
                 break;
@@ -69,14 +77,14 @@ public class LoadModelFile {
                     sizeSet[4] = true;
                     break;
                   }
-                  System.out.println("ERROR: NOT AN INT");
+                  System.out.println(NOT_AN_INT);
                   lineReader.close();
                   fileReader.close();
                   lineRead.close();
                   System.exit(1);
                 }
 
-                System.out.println("POLYGON ARRAY SIZE ALREADY SET");
+                System.out.println(ARRAYS[1]+ALREADY_SET);
                 if(lineReader.hasNext())
                   lineReader.next();
                 break;
@@ -87,13 +95,13 @@ public class LoadModelFile {
                     sizeSet[1] = true;
                     break;
                   }
-                  System.out.println("ERROR: NOT AN INT");
+                  System.out.println(NOT_AN_INT);
                   lineReader.close();
                   fileReader.close();
                   System.exit(1);
 
                 } 
-                System.out.println("COLOUR ARRAY SIZE ALREADY SET");
+                System.out.println(ARRAYS[2]+ALREADY_SET);
                 if(lineRead.hasNext())
                   lineRead.next();
                 break;
@@ -106,14 +114,14 @@ public class LoadModelFile {
                   sizeSet[2] = true;
                   break;
                 }
-                System.out.println("ERROR: NOT AN INT");
+                System.out.println(NOT_AN_INT);
                 lineReader.close();
                 fileReader.close();
                 lineRead.close();
                 System.exit(1);
               }
 
-              System.out.println("VISIBLE BACK ARRAY SIZE ALREADY SET");
+              System.out.println(ARRAYS[3]+ALREADY_SET);
               if(lineReader.hasNext())
                 lineReader.next();
               break;
@@ -128,14 +136,14 @@ public class LoadModelFile {
                   sizeSet[3] = true;
                   break;
                 }
-                System.out.println("ERROR: NOT AN INT");
+                System.out.println(NOT_AN_INT);
                 lineReader.close();
                 fileReader.close();
                 lineRead.close();
                 System.exit(1);
               }
 
-              System.out.println("BACK COLOUR ARRAY SIZE ALREADY SET");
+              System.out.println(ARRAYS[4]+ALREADY_SET);
               if(lineReader.hasNext())
                 lineReader.next();
             default:
@@ -185,7 +193,7 @@ public class LoadModelFile {
                   } 
                   
                   if(model.length <= 0){
-                    System.out.println("ERROR: TOO SMALL");
+                    System.out.println(TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -204,7 +212,7 @@ public class LoadModelFile {
                       break;
                     }
                     else{
-                      System.out.println("ERROR: NOT AN INT");
+                      System.out.println(NOT_AN_INT);
                       fileReader.close();
                       lineReader.close();
                       lineRead.close();
@@ -213,7 +221,7 @@ public class LoadModelFile {
                   } 
 
                   if(model.length <= 0){
-                    System.out.println("ERROR: TOO SMALL");
+                    System.out.println(TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -229,14 +237,14 @@ public class LoadModelFile {
                       colour[strokeIndex][0] = lineRead.nextInt();
                       break;
                     }
-                    System.out.println("ERROR: NOT AN INT");
+                    System.out.println(NOT_AN_INT);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
                     System.exit(1);
                   } 
                   if(colour.length <= 0){
-                    System.out.println("ERROR: TOO SMALL");
+                    System.out.println(TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -253,14 +261,14 @@ public class LoadModelFile {
                       colour[fillIndex][1] = lineRead.nextInt();
                       break; 
                     }
-                    System.out.println("ERROR: NOT AN INT");
+                    System.out.println(NOT_AN_INT);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
                     System.exit(1);
                   } 
                   if(colour.length <= 0){
-                    System.out.println("ERROR: TOO SMALL");
+                    System.out.println(TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -279,16 +287,16 @@ public class LoadModelFile {
                         backIndex++;
                       }
                       else{
-                        System.out.println("ERROR: LIST IS FULL");
+                        System.out.println(IS_FULL);
                         if(lineRead.hasNext())
                           lineRead.next();
                       }
                       break;
                     }
-                    System.out.println("ERROR: NOT AN INT");
+                    System.out.println(NOT_AN_INT);
                   }
                   else
-                    System.out.println("ERROR: ARRAY SIZE TOO SMALL");
+                    System.out.println(TOO_SMALL);
                   fileReader.close();
                   lineReader.close();
                   lineRead.close();
@@ -299,14 +307,14 @@ public class LoadModelFile {
                       backColour[backStrokeIndex][0] = lineRead.nextInt();
                       break;
                     }
-                    System.out.println("ERROR: NOT AN INT");
+                    System.out.println(NOT_AN_INT);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
                     System.exit(1);
                   } 
                   if(backColour.length <= 0){
-                    System.out.println("ERROR: TOO SMALL");
+                    System.out.println(TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -322,14 +330,14 @@ public class LoadModelFile {
                       backColour[backFillIndex][1] = lineRead.nextInt();
                       break;
                     }
-                    System.out.println("ERROR: NOT AN INT");
+                    System.out.println(NOT_AN_INT);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
                     System.exit(1);
                   } 
                   if(backColour.length <= 0){
-                    System.out.println("ERROR: TOO SMALL");
+                    System.out.println(TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -361,12 +369,12 @@ public class LoadModelFile {
       fileReader.close();
     }
     catch(FileNotFoundException e){
-      System.out.println("ERROR: FILE "+dir+" NOT FOUND");
+      System.out.println(ERROR+"FILE "+dir+NOT_FOUND);
       System.exit(1);
     }
     //Copying the data to an object of the model class
     Geometry outputModel =  new Geometry(model, poly, isBillBoard);
-    ModelColours outputColours = new ModelColours(colour, poly.length);
+    ModelColours outputColours = new ModelColours(colour, new float[0][3], poly.length, model.length);
     outputColours.initBackVisible(backVisible.length);
     outputColours.initBackColours(backColour.length);
     for(int i = 0; i < backVisible.length; i++){
@@ -392,6 +400,7 @@ public class LoadModelFile {
     boolean isBillBoard = false; //Stores whether or not the model is a billboard (essentially a 3D sprite)
     file = new File(dir);
     try{
+      System.out.println("LOADING: "+dir);
       //Loads in the for reading
       fileReader = new Scanner(file);
       while(fileReader.hasNextLine()){
@@ -413,14 +422,14 @@ public class LoadModelFile {
                     sizeSet[0] = true;
                     break;
                   }
-                  System.out.println("ERROR: NOT AN INT");
+                  System.out.println(NOT_AN_INT);
                   lineReader.close();
                   fileReader.close();
                   lineRead.close();
                   System.exit(1);
                 }
 
-                System.out.println("VERTEX ARRAY SIZE ALREADY SET");
+                System.out.println(ARRAYS[0]+ALREADY_SET);
                 if(lineReader.hasNext())
                   lineReader.next();
                 break;
@@ -432,14 +441,14 @@ public class LoadModelFile {
                     sizeSet[1] = true;
                     break;
                   }
-                  System.out.println("ERROR: NOT AN INT");
+                  System.out.println(NOT_AN_INT);
                   lineReader.close();
                   fileReader.close();
                   lineRead.close();
                   System.exit(1);
                 }
 
-                System.out.println("POLYGON ARRAY SIZE ALREADY SET");
+                System.out.println(ARRAYS[1]+ALREADY_SET);
                 if(lineReader.hasNext())
                   lineReader.next();
                 break;
@@ -475,7 +484,7 @@ public class LoadModelFile {
                   } 
                   
                   if(model.length <= 0){
-                    System.out.println("ERROR: TOO SMALL");
+                    System.out.println(TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -494,7 +503,7 @@ public class LoadModelFile {
                       break;
                     }
                     else{
-                      System.out.println("ERROR: NOT AN INT");
+                      System.out.println(NOT_AN_INT);
                       fileReader.close();
                       lineReader.close();
                       lineRead.close();
@@ -503,7 +512,7 @@ public class LoadModelFile {
                   } 
 
                   if(model.length <= 0){
-                    System.out.println("ERROR: TOO SMALL");
+                    System.out.println(TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -534,12 +543,13 @@ public class LoadModelFile {
       fileReader.close();
     }
     catch(FileNotFoundException e){
-      System.out.println("ERROR: FILE "+dir+" NOT FOUND");
+      System.out.println(ERROR+"FILE "+dir+NOT_FOUND);
       System.exit(1);
     }
     return new Geometry(model, poly, isBillBoard);
   }
   public static ModelColours loadPallet(String dir){
+    int vertexCount = 0;
     int[][] colour = new int[1][2]; //i, 0 = stroke; i, 1 = fill
     File file; //Stores the current file
     Scanner fileReader; //Reads each line of the file
@@ -558,6 +568,7 @@ public class LoadModelFile {
     int[][] backColour = new int[0][2];
     file = new File(dir);
     try{
+      System.out.println("LOADING: "+dir);
       //Loads in the for reading
       fileReader = new Scanner(file);
       while(fileReader.hasNextLine()){
@@ -571,12 +582,23 @@ public class LoadModelFile {
           if(line.length() <= 1 && (line.charAt(0)  < '0' || line.charAt(0)  > '9')){
             //Reads if the length of the current token is 1 and if it is outside of the range of ASCII 48 - 57
             switch(line.charAt(0)) {
+              case 'V':
+                if(lineReader.hasNextInt()){
+                  vertexCount = lineReader.nextInt();
+                  break;
+                }
+                System.out.println(NOT_AN_INT);
+                lineReader.close();
+                fileReader.close();
+                lineRead.close();
+                System.exit(1);
+                break;
               case 'p':
                 if(lineReader.hasNextInt()){
                   polygonCount = lineReader.nextInt();
                   break;
                 }
-                System.out.println("ERROR: NOT AN INT");
+                System.out.println(NOT_AN_INT);
                 lineReader.close();
                 fileReader.close();
                 lineRead.close();
@@ -589,13 +611,13 @@ public class LoadModelFile {
                     sizeSet[0] = true;
                     break;
                   }
-                  System.out.println("ERROR: NOT AN INT");
+                  System.out.println(NOT_AN_INT);
                   lineReader.close();
                   fileReader.close();
                   System.exit(1);
 
                 } 
-                System.out.println("COLOUR ARRAY SIZE ALREADY SET");
+                System.out.println(ARRAYS[2]+ALREADY_SET);
                 if(lineRead.hasNext())
                   lineRead.next();
                 break;
@@ -608,14 +630,14 @@ public class LoadModelFile {
                   sizeSet[1] = true;
                   break;
                 }
-                System.out.println("ERROR: NOT AN INT");
+                System.out.println(NOT_AN_INT);
                 lineReader.close();
                 fileReader.close();
                 lineRead.close();
                 System.exit(1);
               }
 
-              System.out.println("VISIBLE BACK ARRAY SIZE ALREADY SET");
+              System.out.println(ARRAYS[3]+ALREADY_SET);
               if(lineReader.hasNext())
                 lineReader.next();
               break;
@@ -630,14 +652,14 @@ public class LoadModelFile {
                   sizeSet[2] = true;
                   break;
                 }
-                System.out.println("ERROR: NOT AN INT");
+                System.out.println(NOT_AN_INT);
                 lineReader.close();
                 fileReader.close();
                 lineRead.close();
                 System.exit(1);
               }
 
-              System.out.println("BACK COLOUR ARRAY SIZE ALREADY SET");
+              System.out.println(ARRAYS[4]+ALREADY_SET);
               if(lineReader.hasNext())
                 lineReader.next();
             default:
@@ -676,14 +698,14 @@ public class LoadModelFile {
                       colour[strokeIndex][0] = lineRead.nextInt();
                       break;
                     }
-                    System.out.println("ERROR: NOT AN INT");
+                    System.out.println(NOT_AN_INT);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
                     System.exit(1);
                   } 
                   if(colour.length <= 0){
-                    System.out.println("ERROR: TOO SMALL");
+                    System.out.println(TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -700,14 +722,14 @@ public class LoadModelFile {
                       colour[fillIndex][1] = lineRead.nextInt();
                       break; 
                     }
-                    System.out.println("ERROR: NOT AN INT");
+                    System.out.println(NOT_AN_INT);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
                     System.exit(1);
                   } 
                   if(colour.length <= 0){
-                    System.out.println("ERROR: TOO SMALL");
+                    System.out.println(TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -726,16 +748,16 @@ public class LoadModelFile {
                         backIndex++;
                       }
                       else{
-                        System.out.println("ERROR: LIST IS FULL");
+                        System.out.println(IS_FULL);
                         if(lineRead.hasNext())
                           lineRead.next();
                       }
                       break;
                     }
-                    System.out.println("ERROR: NOT AN INT");
+                    System.out.println(NOT_AN_INT);
                   }
                   else
-                    System.out.println("ERROR: ARRAY SIZE TOO SMALL");
+                    System.out.println(TOO_SMALL);
                   fileReader.close();
                   lineReader.close();
                   lineRead.close();
@@ -746,14 +768,14 @@ public class LoadModelFile {
                       backColour[backStrokeIndex][0] = lineRead.nextInt();
                       break;
                     }
-                    System.out.println("ERROR: NOT AN INT");
+                    System.out.println(NOT_AN_INT);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
                     System.exit(1);
                   } 
                   if(backColour.length <= 0){
-                    System.out.println("ERROR: TOO SMALL");
+                    System.out.println(TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -769,14 +791,14 @@ public class LoadModelFile {
                       backColour[backFillIndex][1] = lineRead.nextInt();
                       break;
                     }
-                    System.out.println("ERROR: NOT AN INT");
+                    System.out.println(NOT_AN_INT);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
                     System.exit(1);
                   } 
                   if(backColour.length <= 0){
-                    System.out.println("ERROR: TOO SMALL");
+                    System.out.println(TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -802,10 +824,10 @@ public class LoadModelFile {
       fileReader.close();
     }
     catch(FileNotFoundException e){
-      System.out.println("ERROR: FILE "+dir+" NOT FOUND");
+      System.out.println(ERROR+"FILE "+dir+NOT_FOUND);
       System.exit(1);
     }
-    ModelColours outputColours = new ModelColours(colour, polygonCount);
+    ModelColours outputColours = new ModelColours(colour, new float[0][3], polygonCount, vertexCount);
     outputColours.initBackVisible(backVisible.length);
     outputColours.initBackColours(backColour.length);
     for(int i = 0; i < backVisible.length; i++){

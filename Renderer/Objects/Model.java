@@ -55,7 +55,7 @@ public class Model{
   //Constructor with 3D array of vertex positions, 2D array of colours, and 2 booleans for if the model has a stroke or a fill
   public Model(float[][] pointSet, int[][] polygonSet, int[][] colourSet, boolean hasStroke, boolean hasFill, boolean isBill){
     mesh = new Geometry(pointSet, polygonSet, isBill);
-    colours = new ModelColours(colourSet, polygonSet.length);
+    colours = new ModelColours(colourSet, new float[0][3], polygonSet.length, mesh.returnPoints().length);
     modelMatrix = new Matrix();
     //Initializing data
     modelPosition[0] = 0;
@@ -79,7 +79,7 @@ public class Model{
   //Constructor with 3D array of vertex positions and 2D array of colours
   public Model(float[][] pointSet, int[][] polygonSet, int[][] colourSet){
     mesh = new Geometry(pointSet, polygonSet);
-    colours = new ModelColours(colourSet, polygonSet.length);
+    colours = new ModelColours(colourSet, new float[0][3], polygonSet.length, mesh.returnPoints().length);
     modelMatrix = new Matrix();
     //Initializing data
     modelPosition[0] = 0;

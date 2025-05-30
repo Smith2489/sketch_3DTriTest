@@ -180,7 +180,7 @@ public class sketch_3DTriTest extends PApplet{;
     testPallets[7] = LoadModelFile.loadPallet(PATH_BASE+"MODELS/TestBillBoard.txt");
     testGeometry[7] = LoadModelFile.loadGeometry(PATH_BASE+"MODELS/flag.txt");
     testPallets[8] = LoadModelFile.loadPallet(PATH_BASE+"MODELS/flag.txt");
-    testPallets[9] = new ModelColours(black, 12);
+    testPallets[9] = new ModelColours(black, new float[0][3], 12, 8);
     testPallets[10] = LoadModelFile.loadPallet(PATH_BASE+"MODELS/slab.txt");
     testGeometry[8] = LoadModelFile.loadGeometry(PATH_BASE+"MODELS/slab.txt");
     //Test models

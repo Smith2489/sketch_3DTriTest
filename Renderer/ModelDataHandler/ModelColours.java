@@ -2,6 +2,8 @@ package Renderer.ModelDataHandler;
 import Maths.Extensions.*;
 public class ModelColours {
     private int polygonCount = 12;
+    private int vertexCount = 8;
+    private float[][] vertexColours = new float[8][3];
     private int[][] colours = new int[12][2]; //0 = stroke, 1 = fill (front face)
     private int numberOfVisibleBacks = 0;
     private int[] backVisible = new int[0]; //Triangles with visible back faces   <----+
@@ -11,6 +13,13 @@ public class ModelColours {
 
     public ModelColours(){
         polygonCount = 12;
+        vertexCount = 8;
+        vertexColours = new float[8][3];
+        for(byte i = 0; i < 8; i++){
+            vertexColours[i][0] = 1;
+            vertexColours[i][1] = 1;
+            vertexColours[i][2] = 1;
+        }
         colours = new int[12][2];
         numberOfVisibleBacks = 0;
         backVisible = new int[0];
@@ -25,9 +34,24 @@ public class ModelColours {
         }
         completelyBlack = false;
     }
-    public ModelColours(int[][] colourSet, int polygonNum){
+    public ModelColours(int[][] colourSet, float[][] vertexColourSet, int polygonNum, int vertexNum){
         polygonCount = polygonNum;
         colours = new int[polygonCount][2];
+        vertexCount = vertexNum;
+        vertexColours = new float[vertexCount][3];
+        for(int i = 0; i < vertexCount; i++){
+            if(i < vertexColourSet.length){
+                vertexColours[i][0] = vertexColourSet[i][0];
+                vertexColours[i][1] = vertexColourSet[i][1];
+                vertexColours[i][2] = vertexColourSet[i][2];
+            }
+            else{
+                vertexColours[i][0] = 1;
+                vertexColours[i][1] = 1;
+                vertexColours[i][2] = 1;
+            }
+
+        }
         numberOfVisibleBacks = 0;
         backVisible = new int[0];
         backColour = new int[0][2];
@@ -95,6 +119,28 @@ public class ModelColours {
     public int[][] returnColours(){
         return colours;
     }
+    public void setVertexColours(float[][] vertexColourSet, int vertexNum){
+        vertexCount = vertexNum;
+        vertexColours = new float[vertexCount][3];
+        for(int i = 0; i < vertexCount; i++){
+            if(i < vertexColourSet.length){
+                vertexColours[i][0] = vertexColourSet[i][0];
+                vertexColours[i][1] = vertexColourSet[i][1];
+                vertexColours[i][2] = vertexColourSet[i][2];
+            }
+            else{
+                vertexColours[i][0] = 1;
+                vertexColours[i][1] = 1;
+                vertexColours[i][2] = 1;
+            }
+
+        }
+    }
+
+    public float[][] returnVertexColours(){
+        return vertexColours;
+    }
+
     //Sets the front-face colour of one of the polygons
     public void setSingleFrontColour(int[] newColours, int index){
         if(index < polygonCount){

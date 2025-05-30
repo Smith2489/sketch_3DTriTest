@@ -41,3 +41,8 @@ o rearStroke #Sets the stroke for the back
 m fillStroke #Sets the fill for the back
 
 #Some of the above will be ignored if you are only loading in the colours or only loading in the mesh
+
+a r g b #Vertex colours 
+#Will be handled in the file ModelColours
+#The number is the same as the number of vertices
+#r, g, and b will range from 0 to 1, but will default to 1 if not specified
