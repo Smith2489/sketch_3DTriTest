@@ -904,7 +904,7 @@ public class sketch_3DTriTest extends PApplet{;
   }
 
   public void settings(){
-    size(525, 700);
+    size(480, 640);
     noSmooth();
   }
   static public void main(String[] passedArgs) {

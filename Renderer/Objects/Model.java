@@ -549,6 +549,10 @@ public class Model{
     return mesh.returnVertexNormals();
   }
 
+  public float[][] returnVertexColours(){
+    return colours.returnVertexColours();
+  }
+
   //Returns if a triangle is visible when facing away from the camera or not
   public boolean returnBackVisible(int index){
     return colours.returnBackVisible(index);

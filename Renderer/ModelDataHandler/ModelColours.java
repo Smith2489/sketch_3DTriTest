@@ -136,6 +136,14 @@ public class ModelColours {
 
         }
     }
+    
+    public void setVertexColour(float[] newColour, int index){
+        if(index < vertexCount){
+            vertexColours[index][0] = Math.max(0, Math.min(newColour[0], 1));
+            vertexColours[index][1] = Math.max(0, Math.min(newColour[1], 1));
+            vertexColours[index][2] = Math.max(0, Math.min(newColour[2], 1));
+        }
+    }
 
     public float[][] returnVertexColours(){
         return vertexColours;
