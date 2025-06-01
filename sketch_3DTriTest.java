@@ -490,6 +490,8 @@ public class sketch_3DTriTest extends PApplet{;
     ScreenMake.setBillboardList(testBillboardLinked);
     ScreenMake.isInteractive();
 
+    //ScreenMake.drawScene(output.pixels, eye);
+
     ScreenMake.drawScene(output.pixels, eye, lightsPrimary, 1.5f);
     
     //float[][] testColours = {{0, 0, 1}, {0, 1, 0}, {1, 0, 0}};

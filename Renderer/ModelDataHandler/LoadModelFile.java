@@ -13,7 +13,7 @@ public class LoadModelFile {
   private static final String NOT_FOUND = " NOT FOUND";
   private static final String SUCCESS = " SUCCESSFULLY LOADED\n";
   private static final String LOADING = "LOADING ";
-  private static final String[] ARRAYS = {"VERTEX", "POLYGON", "COLOUR", "VISIBLE BACK", "BACK COLOUR"};
+  private static final String[] ARRAYS = {"VERTEX", "POLYGON", "COLOUR", "VISIBLE BACK", "BACK COLOUR", "VERTEX COLOUR"};
   private static final String[] TYPE = {"MODEL", "MESH", "PALLET"};
 
   private static boolean messageEnabled = true;
@@ -31,6 +31,7 @@ public class LoadModelFile {
     float[][] model = new float[0][3]; //Vertex list
     int[][] poly = new int[0][3]; //Polygon list
     int[][] colour = new int[1][2]; //i, 0 = stroke; i, 1 = fill
+    float[][] vertexColours = new float[0][3]; //Vertex colour list
     File file; //Stores the current file
     Scanner fileReader; //Reads each line of the file
     int polygonIndex = -1; //Tracks the current polygon's vertices
@@ -41,6 +42,8 @@ public class LoadModelFile {
     int backIndex = 0; //Tracks the current index of the list of polygons that are exempt from backface culling
     int backFillIndex = -1;//Tracks the current back face fill index
     int backStrokeIndex = -1; //Tracks the current back face stroke index
+    int vertexColourIndex = -1; //Tracks the current vertex colour
+    int vertexColourChannel = 0; //Tracks the current colour channel for the current vertex colour
     String currLine = ""; //Holds the current line
     char currArray = 0; //Holds the array currently being filled (taken from the start of the line)
     boolean[] sizeSet = {false, false, false, false, false}; //0 = vertex array, 1 = colour array
@@ -71,6 +74,12 @@ public class LoadModelFile {
                 if(!sizeSet[0]){
                   if(lineReader.hasNextInt()){
                     model = new float[lineReader.nextInt()][3];
+                    vertexColours = new float[model.length][3];
+                    for(int i = 0; i < vertexColours.length; i++){
+                      vertexColours[i][0] = 1;
+                      vertexColours[i][1] = 1;
+                      vertexColours[i][2] = 1;
+                    }
                     sizeSet[0] = true;
                     break;
                   }
@@ -171,6 +180,10 @@ public class LoadModelFile {
                   polygonIndex++;
                   vertexAxisIndex = 0;
                   break;
+                case 'a':
+                  vertexColourIndex++;
+                  vertexColourChannel = 0;
+                  break;
                 case 'I':
                   vertexIndex++;
                   vertexAxisIndex = 0;
@@ -210,6 +223,23 @@ public class LoadModelFile {
                   
                   if(model.length <= 0){
                     System.out.println(ERROR+ARRAYS[0]+TOO_SMALL);
+                    fileReader.close();
+                    lineReader.close();
+                    lineRead.close();
+                    System.exit(1);
+                  }
+                  if(lineRead.hasNext()){
+                    lineRead.next();
+                    break;
+                  }
+                case 'a':
+                  if(vertexColourIndex < vertexColours.length && vertexColourChannel < 3){
+                    vertexColours[vertexColourIndex][vertexColourChannel] = (float)lineRead.nextDouble();
+                    vertexColourChannel++;
+                    break;
+                  }
+                  if(vertexColours.length <= 0){
+                    System.out.println(ERROR+ARRAYS[5]+TOO_SMALL);
                     fileReader.close();
                     lineReader.close();
                     lineRead.close();
@@ -393,6 +423,7 @@ public class LoadModelFile {
     ModelColours outputColours = new ModelColours(colour, new float[0][3], poly.length, model.length);
     outputColours.initBackVisible(backVisible.length);
     outputColours.initBackColours(backColour.length);
+    outputColours.setVertexColours(vertexColours, vertexColours.length);
     for(int i = 0; i < backVisible.length; i++){
       if(backVisible[i] > -1)
         outputColours.setBackVisible(backVisible[i]);
@@ -572,6 +603,7 @@ public class LoadModelFile {
   public static ModelColours loadPallet(String dir){
     int vertexCount = 0;
     int[][] colour = new int[1][2]; //i, 0 = stroke; i, 1 = fill
+    float[][] vertexColours = new float[0][3]; //Vertex colour list
     File file; //Stores the current file
     Scanner fileReader; //Reads each line of the file
     int strokeIndex = -1; //Tracks the current stroke
@@ -580,10 +612,14 @@ public class LoadModelFile {
     int backIndex = 0; //Tracks the current index of the list of polygons that are exempt from backface culling
     int backFillIndex = -1;//Tracks the current back face fill index
     int backStrokeIndex = -1; //Tracks the current back face stroke index
+    int vertexColourIndex = -1; //Tracks the current vertex colour
+    int vertexColourChannel = 0; //Tracks the current colour channel for the current vertex colour
     String currLine = ""; //Holds the current line
     char currArray = 0; //Holds the array currently being filled (taken from the start of the line)
-    boolean[] sizeSet = {false, false, false}; //0 = colour array
-                                               //1 = back visible array, 2 = back colour array, 
+    boolean[] sizeSet = {false, false, false, false}; //0 = colour array
+                                               //1 = back visible array
+                                               //2 = back colour array, 
+                                               //3 = vertex colour array
                                                //;If true, tells the program to skip setting the array's size
     int[] backVisible = new int[0]; //Stores whether or not each polygon has backface culling (false = has; true = does not have)
     int[][] backColour = new int[0][2];
@@ -605,15 +641,27 @@ public class LoadModelFile {
             //Reads if the length of the current token is 1 and if it is outside of the range of ASCII 48 - 57
             switch(line.charAt(0)) {
               case 'V':
-                if(lineReader.hasNextInt()){
-                  vertexCount = lineReader.nextInt();
-                  break;
+                if(!sizeSet[3]){
+                  if(lineReader.hasNextInt()){
+                    vertexCount = lineReader.nextInt();
+                    vertexColours = new float[vertexCount][3];
+                    for(int i = 0; i < vertexCount; i++){
+                      vertexColours[i][0] = 1;
+                      vertexColours[i][1] = 1;
+                      vertexColours[i][2] = 1;
+                    }
+                    sizeSet[3] = true;
+                    break;
+                  }
+                  System.out.println(NOT_AN_INT);
+                  lineReader.close();
+                  fileReader.close();
+                  lineRead.close();
+                  System.exit(1);
                 }
-                System.out.println(NOT_AN_INT);
-                lineReader.close();
-                fileReader.close();
-                lineRead.close();
-                System.exit(1);
+                System.out.println(ARRAYS[5]+ALREADY_SET);
+                if(lineRead.hasNext())
+                  lineRead.next();
                 break;
               case 'p':
                 if(lineReader.hasNextInt()){
@@ -688,6 +736,10 @@ public class LoadModelFile {
               //Cases for setting the current array to be modified
               currArray = line.charAt(0);
               switch(currArray){
+                case 'a':
+                  vertexColourIndex++;
+                  vertexColourChannel = 0;
+                break;
                 case 's':
                   strokeIndex++;
                   break;
@@ -737,7 +789,23 @@ public class LoadModelFile {
                       lineRead.next();
                       break;
                     }
-  
+                case 'a':
+                  if(vertexColourIndex < vertexColours.length && vertexColourChannel < 3){
+                    vertexColours[vertexColourIndex][vertexColourChannel] = (float)lineRead.nextDouble();
+                    vertexColourChannel++;
+                    break;
+                  }
+                  if(vertexColours.length <= 0){
+                    System.out.println(ERROR+ARRAYS[5]+TOO_SMALL);
+                    fileReader.close();
+                    lineReader.close();
+                    lineRead.close();
+                    System.exit(1);
+                  }
+                  if(lineRead.hasNext()){
+                    lineRead.next();
+                    break;
+                  }
                 case 'f': //Fill data
                   if(fillIndex < colour.length){
                     if(lineRead.hasNextInt()){
@@ -852,6 +920,7 @@ public class LoadModelFile {
     ModelColours outputColours = new ModelColours(colour, new float[0][3], polygonCount, vertexCount);
     outputColours.initBackVisible(backVisible.length);
     outputColours.initBackColours(backColour.length);
+    outputColours.setVertexColours(vertexColours, vertexCount);
     for(int i = 0; i < backVisible.length; i++){
       if(backVisible[i] > -1)
         outputColours.setBackVisible(backVisible[i]);
