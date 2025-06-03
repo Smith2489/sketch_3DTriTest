@@ -11,7 +11,6 @@ public class Rasterizer{
   private static byte stencilMask = -1; //A mask for the stencil test
   private static int heig = 100; //Height
   private static int background = 0xFF000000; //Background colour
-  private static float alphaNorm = 0;
   private static float maxProbability = 1;
   private static float threshold = 1.1f;
   private static float[] invZ = {0, 0, 0};
@@ -23,6 +22,7 @@ public class Rasterizer{
   private static int stroke = 0; //Outline colour
   private static int[] brokenUpColour = {0, 0, 0, 0};
   private static int[] brokenUpFill = {0, 0, 0};
+  private static float alphaNorm = 0;
   /*
     bit 0 = stencil test results
     bit 1 = anti aliasing 
@@ -367,7 +367,7 @@ public class Rasterizer{
                                   frame[pixelPos] & 0xFF};
             //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
             if(brokenUpColour[0] < 0xFF)
-              frame[pixelPos] = Colour.interpolateColours(brokenUpFill, brokenUpFrame);
+              frame[pixelPos] = Colour.interpolateColours(brokenUpFill, brokenUpFrame, alphaNorm);
             else
               frame[pixelPos] = fill;
           }
@@ -461,7 +461,7 @@ public class Rasterizer{
               computeLighting(tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
-                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos);
+                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos, alphaNorm);
               else
                 frame[pixelPos] = (brokenUpColour[0] << 24)|(brokenUpColour[1] << 16)|(brokenUpColour[2] << 8)|brokenUpColour[3];
               zBuff[pixelPos] = z;
@@ -572,7 +572,7 @@ public class Rasterizer{
               computeLighting(tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
-                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos);
+                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos, alphaNorm);
               else
                 frame[pixelPos] = (brokenUpColour[0] << 24)|(brokenUpColour[1] << 16)|(brokenUpColour[2] << 8)|brokenUpColour[3];
               zBuff[pixelPos] = z;
@@ -670,7 +670,7 @@ public class Rasterizer{
               computeLighting(tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
-                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos);
+                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos, alphaNorm);
               else{
                 //Normalizes the stencil to be between 0 and 1
                 float stencilNorm = ((~stencil[pixelPos]) & 0xFF)*0.003921569f;
@@ -791,7 +791,7 @@ public class Rasterizer{
               computeLighting(tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
-                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos);
+                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos, alphaNorm);
               else{
                 //Normalizes the stencil to be between 0 and 1
                 float stencilNorm = ((~stencil[pixelPos]) & 0xFF)*0.003921569f;
