@@ -15,7 +15,10 @@ import processing.opengl.*;
 
 public class sketch_3DTriTest extends PApplet{;
   //SCREEN DIMENSIONS
-  private final int[][] RESOLUTIONS = {{75, 150, 300, 600, 37}, {100, 200, 400, 800, 50}};
+  private final int WIDTH = 480;
+  private final int HEIGHT = 640;
+  private final int[][] RESOLUTIONS = {{WIDTH >>> 3, WIDTH >>> 2, WIDTH >>> 1, WIDTH, WIDTH >>> 4}, 
+                                       {HEIGHT >>> 3, HEIGHT >>> 2, HEIGHT >>> 1, HEIGHT, HEIGHT >>> 4}};
   private final float THREE_FOUR = 0.75f;
   private int QUARTER_WIDTH = RESOLUTIONS[0][3] >>> 2;
   private int QUARTER_HEIGHT = RESOLUTIONS[1][3] >>> 2;

@@ -1006,9 +1006,9 @@ public class ScreenMake{
     float lightBlue = (lightColour & 0xFF)*lightIntensity;
     for(int i = 0; i < totalPixelCount; i++){
       int[] tempColour = {0xFF000000,
-                          (int)(Math.min(255, (((((screen[i] >>> 16) & 0xFF))*lightRed)*0.003921569f))) << 16,
-                          (int)(Math.min(255, ((((screen[i] >>> 8) & 0xFF))*lightGreen)*0.003921569f)) << 8,
-                          (int)(Math.min(255, (((screen[i] & 0xFF))*lightBlue)*0.003921569f))};
+                          (int)(Math.min(255, (((((screen[i] >>> 16) & 0xFF))*lightRed)*Colour.INV_255))) << 16,
+                          (int)(Math.min(255, ((((screen[i] >>> 8) & 0xFF))*lightGreen)*Colour.INV_255)) << 8,
+                          (int)(Math.min(255, (((screen[i] & 0xFF))*lightBlue)*Colour.INV_255))};
       screen[i] = tempColour[0]|tempColour[1]|tempColour[2]|tempColour[3];
     }
   }

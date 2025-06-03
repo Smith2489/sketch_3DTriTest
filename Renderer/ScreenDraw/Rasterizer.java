@@ -133,7 +133,7 @@ public class Rasterizer{
     a&=0xFF;
     fill = (a << 24)|(r << 16)|(g << 8)|b;
     brokenUpColour[0] = a;
-    alphaNorm = a*0.003921569f;
+    alphaNorm = a*Colour.INV_255;
     brokenUpFill[0] = r;
     brokenUpFill[1] = g;
     brokenUpFill[2] = b;
@@ -150,7 +150,7 @@ public class Rasterizer{
     }
     fill = colour;
     brokenUpColour[0] = fill >>> 24;
-    alphaNorm = brokenUpColour[0]*0.003921569f;
+    alphaNorm = brokenUpColour[0]*Colour.INV_255;
     brokenUpFill[0] = (fill >>> 16) & 0xFF;
     brokenUpFill[1] = (fill >>> 8) & 0xFF;
     brokenUpFill[2] = fill & 0xFF;
@@ -164,7 +164,7 @@ public class Rasterizer{
     else
       fill = (alpha << 24)|(colour << 16)|(colour << 8)|colour;
     brokenUpColour[0] = alpha;
-    alphaNorm = alpha*0.003921569f;
+    alphaNorm = alpha*Colour.INV_255;
     brokenUpFill[0] = (fill >>> 16) & 0xFF;
     brokenUpFill[1] = (fill >>> 8) & 0xFF;
     brokenUpFill[2] = fill & 0xFF;
@@ -495,7 +495,7 @@ public class Rasterizer{
     stroke = triangle.getStroke();
     fill = triangle.getFill();
     brokenUpColour[0] = fill >>> 24;
-    alphaNorm = brokenUpColour[0]*0.003921569f;
+    alphaNorm = brokenUpColour[0]*Colour.INV_255;
     brokenUpFill[0] = (fill >>> 16) & 0xFF;
     brokenUpFill[1] = (fill >>> 8) & 0xFF;
     brokenUpFill[2] = fill & 0xFF;
@@ -673,7 +673,7 @@ public class Rasterizer{
                 frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos, alphaNorm);
               else{
                 //Normalizes the stencil to be between 0 and 1
-                float stencilNorm = ((~stencil[pixelPos]) & 0xFF)*0.003921569f;
+                float stencilNorm = ((~stencil[pixelPos]) & 0xFF)*Colour.INV_255;
                 //Computes the brightness of each pixel
                 brokenUpColour[1] = (int)(brokenUpColour[1]*stencilNorm);
                 brokenUpColour[2] = (int)(brokenUpColour[2]*stencilNorm);
@@ -713,7 +713,7 @@ public class Rasterizer{
     stroke = triangle.getStroke();
     fill = triangle.getFill();
     brokenUpColour[0] = fill >>> 24;
-    alphaNorm = brokenUpColour[0]*0.003921569f;
+    alphaNorm = brokenUpColour[0]*Colour.INV_255;
     brokenUpFill[0] = (fill >>> 16) & 0xFF;
     brokenUpFill[1] = (fill >>> 8) & 0xFF;
     brokenUpFill[2] = fill & 0xFF;
@@ -794,7 +794,7 @@ public class Rasterizer{
                 frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos, alphaNorm);
               else{
                 //Normalizes the stencil to be between 0 and 1
-                float stencilNorm = ((~stencil[pixelPos]) & 0xFF)*0.003921569f;
+                float stencilNorm = ((~stencil[pixelPos]) & 0xFF)*Colour.INV_255;
                 //Computes the brightness of each pixel
                 brokenUpColour[1] = (int)(brokenUpColour[1]*stencilNorm);
                 brokenUpColour[2] = (int)(brokenUpColour[2]*stencilNorm);
@@ -1258,9 +1258,9 @@ public class Rasterizer{
   //End of Barycentric coordinates
   public static int interpolatePixels(int pixelA, int pixelB, int stencilIndex){
     //Computing t and 1-t for pixelA
-    float alpha = (pixelA >>> 24)*0.003921569f;
+    float alpha = (pixelA >>> 24)*Colour.INV_255;
     //Getting the normalized stencil value
-    float stencilNorm = ((~stencil[stencilIndex]) & 0xFF)*0.003921569f;
+    float stencilNorm = ((~stencil[stencilIndex]) & 0xFF)*Colour.INV_255;
     //Extracting the individual channels' data for pixel A and pixel B
     int[][] channels = {{(pixelA >>> 16) & 0xFF, (pixelB >>> 16) & 0xFF}, {(pixelA >>> 8) & 0xFF, (pixelB >>> 8) & 0xFF}, {pixelA & 0xFF, pixelB & 0xFF}};
     int[] returnChannels = {0, 0, 0};
@@ -1275,7 +1275,7 @@ public class Rasterizer{
 
   public static int interpolatePixels(int pixelA, int pixelB, int stencilIndex, float alpha){
     //Getting the normalized stencil value
-    float stencilNorm = ((~stencil[stencilIndex]) & 0xFF)*0.003921569f;
+    float stencilNorm = ((~stencil[stencilIndex]) & 0xFF)*Colour.INV_255;
     //Extracting the individual channels' data for pixel A and pixel B
     int[][] channels = {{(pixelA >>> 16) & 0xFF, (pixelB >>> 16) & 0xFF}, {(pixelA >>> 8) & 0xFF, (pixelB >>> 8) & 0xFF}, {pixelA & 0xFF, pixelB & 0xFF}};
     int[] returnChannels = {0, 0, 0};
@@ -1288,8 +1288,8 @@ public class Rasterizer{
     return (pixelA & 0xFF000000)|(returnChannels[0] << 16)|(returnChannels[1] << 8)|returnChannels[2];
   }
   public static int interpolatePixels(int[] pixelA, int[] pixelB, int stencilIndex){
-    float alphaNorm = pixelA[0]*0.003921569f;
-    float stencilNorm = ((~stencil[stencilIndex]) & 0xFF)*0.003921569f;
+    float alphaNorm = pixelA[0]*Colour.INV_255;
+    float stencilNorm = ((~stencil[stencilIndex]) & 0xFF)*Colour.INV_255;
     int[] colour = {(int)(((pixelA[0] - pixelB[0])*alphaNorm + pixelB[0])*stencilNorm) << 24,
                     (int)(((pixelA[1] - pixelB[1])*alphaNorm + pixelB[1])*stencilNorm) << 16,
                     (int)(((pixelA[2] - pixelB[2])*alphaNorm + pixelB[2])*stencilNorm) << 8,
@@ -1297,7 +1297,7 @@ public class Rasterizer{
     return colour[0]|colour[1]|colour[2]|colour[3];
   }
   public static int interpolatePixels(int[] pixelA, int[] pixelB, int stencilIndex, float alphaNorm){
-    float stencilNorm = ((~stencil[stencilIndex]) & 0xFF)*0.003921569f;
+    float stencilNorm = ((~stencil[stencilIndex]) & 0xFF)*Colour.INV_255;
     int[] colour = {(int)(((pixelA[0] - pixelB[0])*alphaNorm + pixelB[0])*stencilNorm) << 24,
                     (int)(((pixelA[1] - pixelB[1])*alphaNorm + pixelB[1])*stencilNorm) << 16,
                     (int)(((pixelA[2] - pixelB[2])*alphaNorm + pixelB[2])*stencilNorm) << 8,
