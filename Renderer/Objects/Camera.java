@@ -3,6 +3,7 @@ import java.util.*;
 import Wrapper.*;
 import Actions.*;
 import Renderer.ScreenDraw.MVP;
+import Renderer.Objects.Physics.*;
 import Maths.LinearAlgebra.*;
 public class Camera{
   private float[] pos = {0, 0, 0}; //Holds the camera's position in 3D space
@@ -17,6 +18,7 @@ public class Camera{
   private float[] invColour = {1, 1, 1}; 
   private BooleanWrapper alwaysMultiply = new BooleanWrapper();
   private FloatWrapper drawDistance = new FloatWrapper();
+  private Physics physics = new Physics(pos, rot);
   public Camera(){
     alwaysPerform = true;
     camAsMod = new Matrix();
@@ -28,6 +30,7 @@ public class Camera{
       shear[i][0] = 0;
       shear[i][1] = 0;
     }
+    physics = new Physics(pos, rot);
     colour.val = 0xFFFFFFFF;
     invColour[0] = 1;
     invColour[1] = 1;
@@ -46,6 +49,7 @@ public class Camera{
       shear[i][0] = shr[i][0];
       shear[i][1] = shr[i][1];
     }
+    physics = new Physics(pos, rot);
     colour.val = 0xFFFFFFFF;
     invColour[0] = 1;
     invColour[1] = 1;
@@ -71,6 +75,7 @@ public class Camera{
     shear[1][1] = shearY[1];
     shear[2][0] = shearZ[0];
     shear[2][1] = shearZ[1];
+    physics = new Physics(pos, rot);
     actionList = new LinkedList<Action>();
     colour.val = 0xFFFFFFFF;
     invColour[0] = 1;
@@ -89,6 +94,7 @@ public class Camera{
       newAction.setColour(colour, invColour);
       newAction.setDrawDistance(drawDistance);
       newAction.setAlwaysMultiply(alwaysMultiply);
+      newAction.setPhysics(physics);
       actionList.add(newAction);
     }
     else
@@ -128,6 +134,9 @@ public class Camera{
   }
   public float[] returnPosition(){
     return pos;
+  }
+  public Physics returnPhysicsPtr(){
+    return physics;
   }
   //A pair of functions which set the camera colour
   public void colour(int rgb){

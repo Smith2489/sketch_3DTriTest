@@ -3,7 +3,8 @@ import Wrapper.*;
 import Renderer.Objects.*;
 //Draws triangles to a frame buffer
 public class Rasterizer{
-
+  private static int halfWidth = 50;
+  private static int halfHeight = 50;
   private static int[] frame = new int[10000];
   private static float[] zBuff = new float[10000]; //Z-buffer
   private static byte[] stencil = new byte[10000]; //Stencil buffer (why is stencil such a weirdly spelt word?) 00000000 = completely black (no draw), 11111111 = completely white (draw), in between values should affect the brightness
@@ -52,6 +53,8 @@ public class Rasterizer{
   public static void initBuffers(int width, int height){
      wid = width;
      heig = height;
+     halfWidth = width >>> 1;
+     halfHeight = height >>> 1;
      zBuff = new float[width*height];
      stencil = new byte[width*height];
      for(int i = 0; i < width*height; i++){
@@ -83,6 +86,13 @@ public class Rasterizer{
   public static void setProbabilities(float newMax, float newThreshold){
     maxProbability = newMax;
     threshold = newThreshold;
+  }
+
+  public static int halfWidth(){
+    return halfWidth;
+  }
+  public static int halfHeight(){
+    return halfHeight;
   }
 
   //Setting the background colour

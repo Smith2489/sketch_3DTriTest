@@ -3,6 +3,7 @@ import java.util.*;
 import Wrapper.*;
 import Actions.*;
 import Maths.LinearAlgebra.*;
+import Renderer.Objects.Physics.*;
 import Renderer.ScreenDraw.MVP;
 //A class for defining single-pixel objects which exist in 3-dimensional space
 public class Dot {
@@ -16,6 +17,7 @@ public class Dot {
     private LinkedList<Action> actionList = new LinkedList<Action>();
     private FloatWrapper uniTint = new FloatWrapper();
     private Action tempAction;
+    private Physics physics = new Physics(pos, rot);
     public Dot(){
         dotModel = new Matrix();
         pos[0] = 0;
@@ -36,6 +38,7 @@ public class Dot {
         stroke = 0xFF000000;
         uniTint.val = 1;
         actionList = new LinkedList<Action>();
+        physics = new Physics(pos, rot);
     }
     public Dot(float[] newPos, int rgba){
         dotModel = new Matrix();
@@ -60,6 +63,7 @@ public class Dot {
             System.out.println("ERROR: TOO FEW DIMENSIONS");
             System.exit(1);
         }
+        physics = new Physics(pos, rot);
         if((rgba >>> 24) == 0){
             if(rgba <= 0xFF)
                 stroke = 0xFF000000 | (rgba << 16) | (rgba << 8) | rgba;
@@ -81,6 +85,7 @@ public class Dot {
             newAction.setShear(shear);
             newAction.setMatrix(dotModel);
             newAction.setModelTint(uniTint);
+            newAction.setPhysics(physics);
             actionList.add(newAction);
         }
         else
@@ -263,6 +268,9 @@ public class Dot {
         return pos;
     }
       
+    public Physics returnPhysicsPtr(){
+        return physics;
+    }
     public int returnStroke(){
         return stroke;
     }

@@ -1,8 +1,10 @@
 package Actions;
 import Maths.LinearAlgebra.*;
+import Renderer.Objects.Physics.*;
 public abstract class Action{
     protected float[] pos = {0, 0, 0};
     protected float[] rot = {0, 0, 0};
+    protected Physics physics = new Physics(pos, rot);
     protected boolean reverseVertical = false;
     protected boolean reverseHorizontal = false;
     public abstract void perform();
@@ -18,6 +20,9 @@ public abstract class Action{
     }
     public void setRot(float[] newRot){
         rot = newRot;
+    }
+    public void setPhysics(Physics newPhysics){
+        physics = newPhysics;
     }
     protected float dist(float[] otherPos){
         if(pos.length != 3 || otherPos.length != 3){

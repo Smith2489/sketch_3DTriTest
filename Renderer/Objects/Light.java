@@ -3,6 +3,7 @@ import java.util.*;
 import Actions.*;
 import Maths.Extensions.*;
 import Maths.LinearAlgebra.*;
+import Renderer.Objects.Physics.*;
 import Renderer.ScreenDraw.MVP;
 public class Light{
     private static final float[] ONE = {0, 0, -1, 0};
@@ -25,6 +26,7 @@ public class Light{
     private Action tempAction;
     private float[] lightDir = {0, 0, 0};
     private boolean alwaysPerform = false;
+    private Physics physics = new Physics(position, rotation);
     public Light(){
         position[0] = 0;
         position[1] = 0;
@@ -43,6 +45,8 @@ public class Light{
         lightType = 'p';
         spotlightSpread[0] = 0;
         spotlightSpread[1] = -1;
+        actionList = new LinkedList<Action>();
+        physics = new Physics(position, rotation);
     }
     public Light(float[] newPosition){
         position[0] = newPosition[0];
@@ -62,6 +66,8 @@ public class Light{
         lightType = 'p';
         spotlightSpread[0] = 0;
         spotlightSpread[1] = -1;
+        actionList = new LinkedList<Action>();
+        physics = new Physics(position, rotation);
     }
     public Light(float newX, float newY, float newZ){
         position[0] = newX;
@@ -81,6 +87,8 @@ public class Light{
         lightType = 'p';
         spotlightSpread[0] = 0;
         spotlightSpread[1] = -1;
+        actionList = new LinkedList<Action>();
+        physics = new Physics(position, rotation);
     }
 
 
@@ -91,6 +99,7 @@ public class Light{
             newAction.setIntensities(intensities);
             newAction.setColour(lightColour);
             newAction.setDirection(lightDir);
+            newAction.setPhysics(physics);
             actionList.add(newAction);
         }
         else
@@ -177,6 +186,9 @@ public class Light{
     }
     public float returnInnerSpread(){
         return spotlightSpread[0];
+    }
+    public Physics returnPhysicsPtr(){
+        return physics;
     }
     public void setOuterSpread(float spread){
         if(spread < 0)

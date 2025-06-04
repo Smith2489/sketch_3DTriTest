@@ -457,8 +457,8 @@ public class ScreenMake{
                 }
                 //System.out.println(i+" "+vertexIndex+" "+points[s][2]);
                 //Adjusts point positions to place the screen origin at the centre of the canvas, with scaling with respect to the screen dimensions
-                points[s][0] = (0.5f*Rasterizer.returnWidth()*(points[s][0]+1)-0.0001f);
-                points[s][1] = (0.5f*Rasterizer.returnHeight()*(points[s][1]+1)-0.0001f);
+                points[s][0] = (Rasterizer.halfWidth()*(points[s][0]+1)-0.5001f);
+                points[s][1] = (Rasterizer.halfHeight()*(points[s][1]+1)-0.5001f);
                   
                 //Tracks which points are in front of the near plane or behind the near plane
                 if(inFrustum){
@@ -732,8 +732,8 @@ public class ScreenMake{
               points[j][1]/=points[j][3];
               points[j][2]/=points[j][3];
             }
-            points[j][0] = (0.5f*Rasterizer.returnWidth())*(points[j][0]+1)-0.0001f;
-            points[j][1] = (0.5f*Rasterizer.returnHeight())*(points[j][1]+1)-0.0001f;
+            points[j][0] = (Rasterizer.halfWidth()*(points[j][0]+1)-0.5001f);
+            points[j][1] = (Rasterizer.halfHeight()*(points[j][1]+1)-0.5001f);
             isInside|=(points[j][3] > 0);
           }
     
@@ -1124,8 +1124,8 @@ public class ScreenMake{
               }
               
               //Adjusts point positions to place the screen origin at the centre of the canvas, with scaling with respect to the screen dimensions
-              points[s][0] = (0.5f*Rasterizer.returnWidth()*(points[s][0]+1)-0.0001f);
-              points[s][1] = (0.5f*Rasterizer.returnHeight()*(points[s][1]+1)-0.0001f);
+              points[s][0] = (Rasterizer.halfWidth()*(points[s][0]+1)-0.5001f);
+              points[s][1] = (Rasterizer.halfHeight()*(points[s][1]+1)-0.5001f);
               
               //Tracks which points are in front of the near plane or behind the near plane
               if(inFrustum){
@@ -1379,8 +1379,8 @@ public class ScreenMake{
             points[j][1]/=points[j][3];
             points[j][2]/=points[j][3];
           }
-          points[j][0] = (0.5f*Rasterizer.returnWidth())*(points[j][0]+1)-0.0001f;
-          points[j][1] = (0.5f*Rasterizer.returnHeight())*(points[j][1]+1)-0.0001f;
+          points[j][0] = (Rasterizer.halfWidth()*(points[j][0]+1)-0.5001f);
+          points[j][1] = (Rasterizer.halfHeight()*(points[j][1]+1)-0.5001f);
           isInside|=(points[j][3] > 0);
         }
   
@@ -1485,8 +1485,8 @@ public class ScreenMake{
                 points[s][1]/=points[s][3];
                 points[s][2]/=points[s][3];
               }
-              points[s][0] = 0.5f*Rasterizer.returnWidth()*(points[s][0]+1)-0.0001f;
-              points[s][1] = 0.5f*Rasterizer.returnHeight()*(points[s][1]+1)-0.0001f;
+              points[s][0] = (Rasterizer.halfWidth()*(points[s][0]+1)-0.5001f);
+              points[s][1] = (Rasterizer.halfHeight()*(points[s][1]+1)-0.5001f);
               vertices[endPoints[s]] = new float[4];
               vertices[endPoints[s]][0] = points[s][0];
               vertices[endPoints[s]][1] = points[s][1];
@@ -1572,8 +1572,8 @@ public class ScreenMake{
         point[1]/=point[3];
         point[2]/=point[3];
       }
-      point[0] = (0.5f*Rasterizer.returnWidth())*(point[0]+1)-0.0001f;
-      point[1] = (0.5f*Rasterizer.returnHeight())*(point[1]+1)-0.0001f;
+      point[0] = (Rasterizer.halfWidth()*(point[0]+1)-0.5001f);
+      point[1] = (Rasterizer.halfHeight()*(point[1]+1)-0.5001f);
       isInside = (isInside || (point[3] > 0 && clipCheck.returnData(2, 0) >= -1 && clipCheck.returnData(2,0) <= drawDist)) && (point[0] >= 0 && point[0] <= Rasterizer.returnWidth() && point[1] >= 0 && point[1] <= Rasterizer.returnHeight());
       if(isInside && tempDot.returnModelTint() > 0){
         int colour = tempDot.returnStroke(); 

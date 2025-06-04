@@ -3,6 +3,7 @@ import java.util.*;
 import Wrapper.*;
 import Actions.*;
 import Maths.LinearAlgebra.*;
+import Renderer.Objects.Physics.*;
 import Renderer.ScreenDraw.MVP;
 import Renderer.ModelDataHandler.BillboardImg;
 public class Billboard {
@@ -28,6 +29,7 @@ public class Billboard {
   private float maxFizzel = 1;
   private float fizzelThreshold = 1.1f;
   private FloatWrapper uniTint = new FloatWrapper();
+  private Physics physics = new Physics(pos, rot);
   public Billboard(){
     image = new BillboardImg();
     pos[0] = 0;
@@ -42,6 +44,7 @@ public class Billboard {
     maxFizzel = 1;
     fizzelThreshold = 1.1f;
     actionList = new LinkedList<Action>();
+    physics = new Physics(pos, rot);
     uniTint.val = 1;
   }
 
@@ -57,7 +60,9 @@ public class Billboard {
     shininess = 4;
     maxFizzel = 1;
     fizzelThreshold = 1.1f;
+    physics = new Physics(pos, rot);
     uniTint.val = 1;
+    actionList = new LinkedList<Action>();
     flags = 8;
   }
   public Billboard(String imagePath, int newFill){
@@ -72,6 +77,7 @@ public class Billboard {
     shininess = 4;
     maxFizzel = 1;
     fizzelThreshold = 1.1f;
+    physics = new Physics(pos, rot);
     uniTint.val = 1;
     flags = 8;
     actionList = new LinkedList<Action>();
@@ -89,6 +95,7 @@ public class Billboard {
     maxFizzel = 1;
     fizzelThreshold = 1.1f;
     flags = 8;
+    physics = new Physics(pos, rot);
     uniTint.val = 1;
     actionList = new LinkedList<Action>();
   }
@@ -104,6 +111,7 @@ public class Billboard {
     fill = 0xFFFFFFFF;
     maxFizzel = 1;
     fizzelThreshold = 1.1f;
+    physics = new Physics(pos, rot);
     uniTint.val = 1;
     flags = 8;
     actionList = new LinkedList<Action>();
@@ -121,6 +129,7 @@ public class Billboard {
     fill = 0xFFFFFFFF;
     maxFizzel = 1;
     fizzelThreshold = 1.1f;
+    physics = new Physics(pos, rot);
     uniTint.val = 1;
     flags = 8;
     actionList = new LinkedList<Action>();
@@ -136,6 +145,7 @@ public class Billboard {
     maxFizzel = 1;
     fizzelThreshold = 1.1f;
     shininess = 4;
+    physics = new Physics(pos, rot);
     uniTint.val = 1;
     fill(newFill); 
     flags = 8;
@@ -161,6 +171,7 @@ public class Billboard {
       newAction.setShear(shear);
       newAction.setMatrix(billModel);
       newAction.setModelTint(uniTint);
+      newAction.setPhysics(physics);
       actionList.add(newAction);
     }
     else
@@ -224,6 +235,9 @@ public class Billboard {
   }
   public int returnHeight(){
     return image.returnHeight();
+  }
+  public Physics returnPhysicsPtr(){
+    return physics;
   }
   public void setImage(String imagePath){
     image.setImage(imagePath);

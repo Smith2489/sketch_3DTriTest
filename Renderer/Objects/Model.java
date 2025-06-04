@@ -3,6 +3,7 @@ import java.util.*;
 import Wrapper.*;
 import Actions.*;
 import Maths.LinearAlgebra.*;
+import Renderer.Objects.Physics.*;
 import Renderer.ScreenDraw.MVP;
 import Renderer.ModelDataHandler.*;
 //Class for abstracting away a model's data
@@ -29,6 +30,7 @@ public class Model{
   private float maxFizzel = 1;
   private float fizzelThreshold = 1.1f;
   private FloatWrapper uniTint = new FloatWrapper();
+  private Physics physics = new Physics(modelPosition, modelAngles);
   //Default constructor
   public Model(){
     mesh = new Geometry();
@@ -50,6 +52,7 @@ public class Model{
     uniTint.val = 1;
     flags = 34;
     actionList = new LinkedList<Action>();
+    physics = new Physics(modelPosition, modelAngles);
   }
   
   //Constructor with 3D array of vertex positions, 2D array of colours, and 2 booleans for if the model has a stroke or a fill
@@ -74,6 +77,7 @@ public class Model{
     fizzelThreshold = 1.1f;
     flags = (byte)(((hasStroke) ? 1 : 0)|((hasFill) ? 2 : 0)|32);
     actionList = new LinkedList<Action>();
+    physics = new Physics(modelPosition, modelAngles);
     
   }
   //Constructor with 3D array of vertex positions and 2D array of colours
@@ -97,6 +101,7 @@ public class Model{
     uniTint.val = 1;
     fizzelThreshold = 1.1f;
     actionList = new LinkedList<Action>();
+    physics = new Physics(modelPosition, modelAngles);
   }
 
   public Model(Geometry newMesh, ModelColours newPallet){
@@ -119,6 +124,7 @@ public class Model{
     uniTint.val = 1;
     fizzelThreshold = 1.1f;
     actionList = new LinkedList<Action>();
+    physics = new Physics(modelPosition, modelAngles);
   }
   public Model(Geometry newMesh, ModelColours newPallet, boolean hasStroke, boolean hasFill){
     mesh = newMesh;
@@ -139,6 +145,7 @@ public class Model{
     fizzelThreshold = 1.1f;
     flags = (byte)(((hasStroke) ? 1 : 0)|((hasFill) ? 2 : 0)|32);
     actionList = new LinkedList<Action>();
+    physics = new Physics(modelPosition, modelAngles);
     brightness = 1;
   }
   public void setFizzelParameters(float newMax, float newThreshold){
@@ -159,6 +166,7 @@ public class Model{
       newAction.setShear(modelShear);
       newAction.setMatrix(modelMatrix);
       newAction.setModelTint(uniTint);
+      newAction.setPhysics(physics);
       actionList.add(newAction);
     }
     else
@@ -195,6 +203,9 @@ public class Model{
       flags|=64;
     else
       flags&=-65;
+  }
+  public Physics returnPhysicsPtr(){
+    return physics;
   }
   public boolean alwaysPerform(){
     return ((flags & 64) == 64);

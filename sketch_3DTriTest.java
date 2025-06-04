@@ -4,6 +4,7 @@ import Maths.LinearAlgebra.*;
 import Renderer.ModelDataHandler.*;
 import Renderer.Objects.*;
 import Renderer.ScreenDraw.*;
+import Renderer.Objects.Physics.*;
 
 import Wrapper.*;
 
@@ -730,7 +731,11 @@ public class sketch_3DTriTest extends PApplet{;
     private boolean keyLocked = false;
     private int spinSpeed = 2;
     public void perform(){
+      Physics.gravityAcceleration = 0.005f;
+      physics.applyGravity();
       if(keyPressed){
+        if(key == 'r')
+          pos[1] = -2;
         if(!keyLocked){
           keyLocked = true;
           switch(key){
