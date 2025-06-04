@@ -3,6 +3,7 @@ import java.util.*;
 import Wrapper.*;
 import Actions.*;
 import Maths.LinearAlgebra.*;
+import Renderer.Objects.Physics.*;
 import Renderer.ScreenDraw.MVP;
 import Renderer.ModelDataHandler.LineModel;
 //A class for defining specific instances of line-based models
@@ -16,6 +17,7 @@ public class LineObj {
     private FloatWrapper uniTint = new FloatWrapper();
     private Matrix modelMatrix = new Matrix(); //The model matrix for this object
     private LinkedList<Action> actionList = new LinkedList<Action>();
+    private Physics physics = new Physics(pos, rot);
     private Action tempAction;
     public LineObj(){
         obj = new LineModel();
@@ -30,6 +32,7 @@ public class LineObj {
             shr[i][1] = 0;
         }
         actionList = new LinkedList<Action>();
+        physics = new Physics(pos, rot);
     }
     public LineObj(float[][] endPoints, int[][] lines, int[] stroke){
         obj = new LineModel(endPoints, lines, stroke);
@@ -44,6 +47,7 @@ public class LineObj {
             shr[i][1] = 0;
         }
         actionList = new LinkedList<Action>();
+        physics = new Physics(pos, rot);
     }
     public LineObj(LineModel line){
         obj = line;
@@ -58,6 +62,7 @@ public class LineObj {
             shr[i][1] = 0;
         }
         actionList = new LinkedList<Action>();
+        physics = new Physics(pos, rot);
     }
 
     public void addAction(ModelAction newAction){
@@ -68,6 +73,7 @@ public class LineObj {
         newAction.setShear(shr);
         newAction.setMatrix(modelMatrix);
         newAction.setModelTint(uniTint);
+        newAction.setPhysics(physics);
         actionList.add(newAction);
       }
       else
@@ -266,6 +272,9 @@ public class LineObj {
         return shr[2];
     }
 
+    public Physics returnPhysicsPtr(){
+        return physics;
+    }
     //Returns the line model's model matrix
     public Matrix returnModelMatrix(){
         return modelMatrix;
