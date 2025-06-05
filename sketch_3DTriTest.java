@@ -221,7 +221,7 @@ public class sketch_3DTriTest extends PApplet{;
     //Scale (1, 1, 1) cube
     testModels[4] = new Model(testGeometry[0], testPallets[1]);
     testModels[4].setPosition(-0.35f, -5.5f, 8);
-    testModels[4].setAngle(65, -20, 180);
+    testModels[4].setRotation(65, -20, 180);
     testModels[4].setGauroud(false);
     testModels[4].setFizzelParameters(5, 3);
     
@@ -249,7 +249,7 @@ public class sketch_3DTriTest extends PApplet{;
     //Pyramid
     testModels[8] = new Model(testGeometry[2], testPallets[3]);
     testModels[8].setPosition(-4, 5, 25);
-    testModels[8].setAngle(0, 90, 0);
+    testModels[8].setRotation(0, 90, 0);
     testModels[8].setScale(2.5f, 2.5f, 2.5f);
     testModels[8].addAction(new RotateAtFiveDegrees(true));
     
@@ -276,7 +276,7 @@ public class sketch_3DTriTest extends PApplet{;
     //Scale (1,1,1) cube inverted hull
     testModels[12] = new Model(testGeometry[0], testPallets[9]);
     testModels[12].setPosition(-0.35f, -5.5f, 8);
-    testModels[12].setAngle(65, -20, 180);
+    testModels[12].setRotation(65, -20, 180);
     testModels[12].setScale(1.1f, 1.1f, 1.1f);
     testModels[12].setInverted(true);
     
@@ -550,8 +550,9 @@ public class sketch_3DTriTest extends PApplet{;
 
   private class SetTransparency extends ModelAction{
     private Camera object;
-    private static final float MIN_DIST = 360;
-    private static final float MAX_DIST = 1800;
+    //ORIGINALS: 360, 1800
+    private static final float MIN_DIST = 20;
+    private static final float MAX_DIST = 50;
     public SetTransparency(Camera newCam){
       object = newCam; 
     }
@@ -645,9 +646,9 @@ public class sketch_3DTriTest extends PApplet{;
       pos[0] = model.returnPosition()[0];
       pos[1] = model.returnPosition()[1];
       pos[2] = model.returnPosition()[2];
-      rot[0] = model.returnAngle()[0];
-      rot[1] = model.returnAngle()[1];
-      rot[2] = model.returnAngle()[2];
+      rot[0] = model.returnRotation()[0];
+      rot[1] = model.returnRotation()[1];
+      rot[2] = model.returnRotation()[2];
     }
   }
 

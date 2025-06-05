@@ -190,7 +190,7 @@ public class ScreenMake{
     }
     //Takes in a frame buffer, near-z, far-z, and camera and draws a 3D scene using that data plus the model and billboard lists
     public static void drawScene(int[] screen, Camera eye){
-      eye.computeInverseView();
+      eye.setModelMatrix();
       if((flags & -128) == -128 || eye.alwaysPerform())
         eye.executeActions();
       //Initializing translucent data
@@ -232,7 +232,7 @@ public class ScreenMake{
     }
 
     public static void drawScene(int[] screen, Camera eye, int lightColour, float screenBrightness){
-      eye.computeInverseView();
+      eye.setModelMatrix();
       if((flags & -128) == -128 || eye.alwaysPerform())
         eye.executeActions();
       //Initializing translucent data
@@ -276,7 +276,7 @@ public class ScreenMake{
     }
     //The version for Blinn-Phong reflection and flat shading (1 normal per polygon)
     public static void drawScene(int[] screen, Camera eye, LinkedList<Light> lights, float generalObjectBrightness){
-      eye.computeInverseView();
+      eye.setModelMatrix();
       if((flags & -128) == -128 || eye.alwaysPerform())
         eye.executeActions();
       generalObjectBrightness = Math.max(0, generalObjectBrightness);
@@ -383,7 +383,7 @@ public class ScreenMake{
           model = MatrixOperations.matrixMultiply(view, MVP.returnTranslation(tempModel.returnPosition()));    
           model.copy(MatrixOperations.matrixMultiply(model, billBoard));       
           //Enables rotation about the z-axis and scaling along the x and y axis
-          Matrix modelMatrix = MatrixOperations.matrixMultiply(MVP.returnRotation(0, 0, tempModel.returnAngle()[2]), MVP.returnScale(tempModel.returnScale()[0], tempModel.returnScale()[1], 1));
+          Matrix modelMatrix = MatrixOperations.matrixMultiply(MVP.returnRotation(0, 0, tempModel.returnRotation()[2]), MVP.returnScale(tempModel.returnScale()[0], tempModel.returnScale()[1], 1));
           model = MatrixOperations.matrixMultiply(model, modelMatrix);
         }
         mvpFull = MatrixOperations.matrixMultiply(proj, model); 
@@ -639,18 +639,18 @@ public class ScreenMake{
                   if(edgeDir > 0){
                     if((alpha[1] & 0xFF) < 0xFF){
                       triListTranslucent.add(new Triangle(secondPoints, colour[0] , colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
-                      triListTranslucent.getLast().setDepthWrite(!tempModel.returnNoDepth());
+                      triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                       triListTranslucent.getLast().setVertexBrightness(finalBrightness);
                       triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
                       triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
                       triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
-                      translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnNoDepth(), translusentCount));
+                      translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
                       translusentCount++;
                       translucentCounter++;
                     }
                     else{
                       triListOpaque.add(new Triangle(secondPoints, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
-                      triListOpaque.getLast().setDepthWrite(!tempModel.returnNoDepth());
+                      triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                       triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
                       triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
                       triListOpaque.getLast().setVertexBrightness(finalBrightness);
@@ -665,18 +665,18 @@ public class ScreenMake{
               if(edgeDir > 0){
                 if((colour[1]  >>> 24) < 0xFF){
                   triListTranslucent.add(new Triangle(points, colour[0] , colour[1] , tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
-                  triListTranslucent.getLast().setDepthWrite(!tempModel.returnNoDepth());
+                  triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                   triListTranslucent.getLast().setVertexBrightness(vertexBrightness);
                   triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
                   triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
                   triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
-                  translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnNoDepth(), translusentCount));
+                  translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
                   translusentCount++;
                   translucentCounter++;
                 }
                 else{
                   triListOpaque.add(new Triangle(points, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
-                  triListOpaque.getLast().setDepthWrite(!tempModel.returnNoDepth());
+                  triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                   triListOpaque.getLast().setVertexBrightness(vertexBrightness);
                   triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
                   triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
@@ -700,9 +700,9 @@ public class ScreenMake{
         float distCamToBillboard = (float)Math.sqrt(fromCamToBillboard[0]*fromCamToBillboard[0]+fromCamToBillboard[1]*fromCamToBillboard[1]+fromCamToBillboard[2]*fromCamToBillboard[2]);
         float[] position = {tempBillboard.returnPosition()[0], tempBillboard.returnPosition()[1], tempBillboard.returnPosition()[2]};
         //Sets up the model matrix and the MVP matrices
-        if(tempBillboard.isAttachedToCamera())
+        if(tempBillboard.returnAttachedToCamera())
           attachObjectToCamera(tempBillboard.returnPosition(), eye);
-        tempBillboard.setBillBoardModelMatrix();
+        tempBillboard.setModelMatrix();
         if(distCamToBillboard <= eye.getDrawDistance() && tempBillboard.returnModelTint() > 0){
           
 
@@ -762,8 +762,8 @@ public class ScreenMake{
               billboardDisplayOpaque.getLast().copy(tempBillboard);
               billboardDisplayOpaque.getLast().setScale(sizeX, sizeY);
               billboardDisplayOpaque.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
-              billboardDisplayOpaque.getLast().setOutline(tempBillboard.hasOutline() || (flags & 12) != 8);
-              billboardDisplayOpaque.getLast().setInside(tempBillboard.hasImage() && (flags & 8) == 8);
+              billboardDisplayOpaque.getLast().setHasStroke(tempBillboard.returnHasStroke() || (flags & 12) != 8);
+              billboardDisplayOpaque.getLast().setHasFill(tempBillboard.hasImage() && (flags & 8) == 8);
               billboardDisplayOpaque.getLast().fill(fill, alpha[1]);
               billboardDisplayOpaque.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
             }
@@ -772,11 +772,11 @@ public class ScreenMake{
               billboardDisplayTranslucent.getLast().copy(tempBillboard);
               billboardDisplayTranslucent.getLast().setScale(sizeX, sizeY);
               billboardDisplayTranslucent.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
-              billboardDisplayTranslucent.getLast().setOutline(tempBillboard.hasOutline() || (flags & 12) != 8);
-              billboardDisplayTranslucent.getLast().setInside(tempBillboard.hasImage() && (flags & 8) == 8);
+              billboardDisplayTranslucent.getLast().setHasStroke(tempBillboard.returnHasStroke() || (flags & 12) != 8);
+              billboardDisplayTranslucent.getLast().setHasFill(tempBillboard.hasImage() && (flags & 8) == 8);
               billboardDisplayTranslucent.getLast().fill(fill, alpha[1]);
               billboardDisplayTranslucent.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
-              translucentData.add(new TranslucentData((byte)2, points[0][2], tempBillboard.noDraw(), billBoardCountTranslucent));
+              translucentData.add(new TranslucentData((byte)2, points[0][2], tempBillboard.returnDepthWrite(), billBoardCountTranslucent));
               translucentCounter++;
               billBoardCountTranslucent++;
             }
@@ -796,7 +796,7 @@ public class ScreenMake{
     private static void drawObjects(int[] screen){
       while(!dotDisplayOpaque.isEmpty()){
         tempDot = dotDisplayOpaque.removeFirst();
-        Rasterizer.setPixel(tempDot.returnStroke(), (int)tempDot.returnPosition()[0], (int)tempDot.returnPosition()[1], tempDot.returnPosition()[2], tempDot.returnDepthDisable());
+        Rasterizer.setPixel(tempDot.returnStroke(), (int)tempDot.returnPosition()[0], (int)tempDot.returnPosition()[1], tempDot.returnPosition()[2], tempDot.returnDepthWrite());
       }
       while(!lineDisplayOpaque.isEmpty()){
         tempLine = lineDisplayOpaque.removeFirst();
@@ -1062,7 +1062,7 @@ public class ScreenMake{
         mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, billBoard));
         
         //Enables rotation about the z-axis and scaling along the x and y axis
-        Matrix modelMatrix = MatrixOperations.matrixMultiply(MVP.returnRotation(0, 0, tempModel.returnAngle()[2]), MVP.returnScale(tempModel.returnScale()[0], tempModel.returnScale()[1], 1));
+        Matrix modelMatrix = MatrixOperations.matrixMultiply(MVP.returnRotation(0, 0, tempModel.returnRotation()[2]), MVP.returnScale(tempModel.returnScale()[0], tempModel.returnScale()[1], 1));
         mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, modelMatrix));
       }
 
@@ -1288,18 +1288,18 @@ public class ScreenMake{
               if(edgeDir > 0){
                 if((alpha[1] & 0xFF) < 0xFF){
                   triListTranslucent.add(new Triangle(secondPoints, colour[0] , colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
-                  triListTranslucent.getLast().setDepthWrite(!tempModel.returnNoDepth());
+                  triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                   triListTranslucent.getLast().setVertexBrightness(finalBrightness);
                   triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
                   triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
                   triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
-                  translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnNoDepth(), translusentCount));
+                  translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
                   translusentCount++;
                   translucentCounter++;
                 }
                 else{
                   triListOpaque.add(new Triangle(secondPoints, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
-                  triListOpaque.getLast().setDepthWrite(!tempModel.returnNoDepth());
+                  triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                   triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
                   triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
                   triListOpaque.getLast().setVertexBrightness(finalBrightness);
@@ -1314,12 +1314,12 @@ public class ScreenMake{
             if(edgeDir > 0){
               if((alpha[1] & 0xFF) < 0xFF){
                 triListTranslucent.add(new Triangle(points, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
-                triListTranslucent.getLast().setDepthWrite(!tempModel.returnNoDepth());
+                triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                 triListTranslucent.getLast().setVertexBrightness(vertexBrightness);
                 triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
                 triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
                 triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
-                translucentData.add(new TranslucentData((byte)1, triListTranslucent.peekLast().getAverageZ(), tempModel.returnNoDepth(), translusentCount));
+                translucentData.add(new TranslucentData((byte)1, triListTranslucent.peekLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
                 translusentCount++;
                 translucentCounter++;
               }
@@ -1328,7 +1328,7 @@ public class ScreenMake{
                 triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
                 triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
                 triListOpaque.getLast().setVertexBrightness(vertexBrightness);
-                triListOpaque.getLast().setDepthWrite(!tempModel.returnNoDepth());
+                triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                 triListOpaque.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
               }
             }
@@ -1352,9 +1352,9 @@ public class ScreenMake{
       float distCamToBillboard = (float)Math.sqrt(fromCamToBillboard[0]*fromCamToBillboard[0]+fromCamToBillboard[1]*fromCamToBillboard[1]+fromCamToBillboard[2]*fromCamToBillboard[2]);
       float[] position = {tempBillboard.returnPosition()[0], tempBillboard.returnPosition()[1], tempBillboard.returnPosition()[2]};
       //Sets up the model matrix and the MVP matrices
-      if(tempBillboard.isAttachedToCamera())
+      if(tempBillboard.returnAttachedToCamera())
         attachObjectToCamera(tempBillboard.returnPosition(), eye);
-      tempBillboard.setBillBoardModelMatrix();
+      tempBillboard.setModelMatrix();
       if(distCamToBillboard <= drawDist && tempBillboard.returnModelTint() > 0){
         //Constructs the transformation matrix for the point
         mvpFull.copy(MatrixOperations.matrixMultiply(mvp, MVP.returnTranslation(tempBillboard.returnPosition())));
@@ -1404,8 +1404,8 @@ public class ScreenMake{
             billboardDisplayOpaque.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
             billboardDisplayOpaque.getLast().fill(fill, alpha[1]);
             billboardDisplayOpaque.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
-            billboardDisplayOpaque.getLast().setOutline(tempBillboard.hasOutline() || (flags & 12) != 8);
-            billboardDisplayOpaque.getLast().setInside(tempBillboard.hasImage() && (flags & 8) == 8);
+            billboardDisplayOpaque.getLast().setHasStroke(tempBillboard.returnHasStroke() || (flags & 12) != 8);
+            billboardDisplayOpaque.getLast().setHasFill(tempBillboard.hasImage() && (flags & 8) == 8);
           }
           else{
             billboardDisplayTranslucent.add(new Billboard());
@@ -1414,9 +1414,9 @@ public class ScreenMake{
             billboardDisplayTranslucent.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
             billboardDisplayTranslucent.getLast().fill(fill, alpha[1]);
             billboardDisplayTranslucent.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
-            billboardDisplayTranslucent.getLast().setOutline(tempBillboard.hasOutline() || (flags & 12) != 8);
-            billboardDisplayTranslucent.getLast().setInside(tempBillboard.hasImage() && (flags & 8) == 8);
-            translucentData.add(new TranslucentData((byte)2, points[0][2], tempBillboard.noDraw(), billBoardCountTranslucent));
+            billboardDisplayTranslucent.getLast().setHasStroke(tempBillboard.returnHasStroke() || (flags & 12) != 8);
+            billboardDisplayTranslucent.getLast().setHasFill(tempBillboard.hasImage() && (flags & 8) == 8);
+            translucentData.add(new TranslucentData((byte)2, points[0][2], tempBillboard.returnDepthWrite(), billBoardCountTranslucent));
             translucentCounter++;
             billBoardCountTranslucent++;
           }
@@ -1527,13 +1527,13 @@ public class ScreenMake{
             if((alpha & 0xFF) == 255){
               lineDisplayOpaque.add(new LineDisp(points, colour));
               lineDisplayOpaque.getLast().setAlpha(alpha);
-              lineDisplayOpaque.getLast().setDepthWrite(tempLineObj.returnDepthDisable());
+              lineDisplayOpaque.getLast().setDepthWrite(tempLineObj.returnDepthWrite());
             }
             else{
               lineDisplayTranslucent.add(new LineDisp(points, colour));
               lineDisplayTranslucent.getLast().setAlpha(alpha);
-              lineDisplayTranslucent.getLast().setDepthWrite(tempLineObj.returnDepthDisable());
-              translucentData.add(new TranslucentData((byte)3, (points[1][2]+points[0][2])*0.5f, tempLineObj.returnDepthDisable(), lineCountTranslucent));
+              lineDisplayTranslucent.getLast().setDepthWrite(tempLineObj.returnDepthWrite());
+              translucentData.add(new TranslucentData((byte)3, (points[1][2]+points[0][2])*0.5f, tempLineObj.returnDepthWrite(), lineCountTranslucent));
               translucentCounter++;
               lineCountTranslucent++;
             }
@@ -1581,13 +1581,13 @@ public class ScreenMake{
         if((alpha & 0xFF) == 255){
           dotDisplayOpaque.add(new Dot(point, colour));
           dotDisplayOpaque.getLast().setAlpha(alpha);
-          dotDisplayOpaque.getLast().setDepthWrite(tempDot.returnDepthDisable());
+          dotDisplayOpaque.getLast().setDepthWrite(tempDot.returnDepthWrite());
         }
         else{
           dotDisplayTranslucent.add(new Dot(point, colour));
-          dotDisplayTranslucent.getLast().setDepthWrite(tempDot.returnDepthDisable());
+          dotDisplayTranslucent.getLast().setDepthWrite(tempDot.returnDepthWrite());
           dotDisplayTranslucent.getLast().setAlpha(alpha);
-          translucentData.add(new TranslucentData((byte)4, point[2], tempDot.returnDepthDisable(), dotCountTranslucent));
+          translucentData.add(new TranslucentData((byte)4, point[2], tempDot.returnDepthWrite(), dotCountTranslucent));
           translucentCounter++;
           dotCountTranslucent++;
         }
@@ -1632,7 +1632,7 @@ public class ScreenMake{
           Rasterizer.drawLine(new IntWrapper(Math.round(endPoints[0][0])), new IntWrapper(Math.round(endPoints[0][1])), endPoints[0][2], new IntWrapper(Math.round(endPoints[1][0])), new IntWrapper(Math.round(endPoints[1][1])), endPoints[1][2], tempLines[j].returnStroke(), tempLines[j].returnDepthDisable());
           break;
         case 4:
-          Rasterizer.setPixel(tempDots[j].returnStroke(), tempDots[j].returnPosition()[0], tempDots[j].returnPosition()[1], tempDots[j].returnPosition()[2], tempDots[j].returnDepthDisable());
+          Rasterizer.setPixel(tempDots[j].returnStroke(), tempDots[j].returnPosition()[0], tempDots[j].returnPosition()[1], tempDots[j].returnPosition()[2], tempDots[j].returnDepthWrite());
           break;
       }
     }

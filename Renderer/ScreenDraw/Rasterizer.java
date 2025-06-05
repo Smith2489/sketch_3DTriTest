@@ -258,16 +258,16 @@ public class Rasterizer{
     int x = (int)xPos;
     int y = (int)yPos;
     if((flags & 16) == 16 && x >= 0 && x < wid && y >= 0 && y < heig){
-      zPos = 1/zPos;
       if(noDraw)
         zPos*=-1;
       int pixelPos = x+y*wid;
-      if((noDraw && (zPos >= zBuff[pixelPos] || zPos >= 0)) || (!noDraw && (zPos < zBuff[pixelPos])) || Float.isNaN(zBuff[pixelPos])){
+      if((noDraw && zPos < zBuff[pixelPos]) || (!noDraw && zPos > zBuff[pixelPos]) || Float.isNaN(zBuff[pixelPos])){
           //Interpolate between the fill and the current pixel if the fill's alpha channel is less than 255. Otherwise, simply overwrite the current pixel with the fill
           if((fill >>> 24) < 0xFF)
             frame[pixelPos] = Colour.interpolateColours(fill, frame[pixelPos]);
           else
             frame[pixelPos] = fill;
+          zBuff[pixelPos] = zPos;
       }
       else{
         if((frame[pixelPos] >>> 24) < 0xFF)
@@ -279,16 +279,16 @@ public class Rasterizer{
     int x = (int)xPos;
     int y = (int)yPos;
     if((flags & 8) == 8 && x >= 0 && x < wid && y >= 0 && y < heig){
-      zPos = 1/zPos;
       if(noDraw)
         zPos*=-1;
       int pixelPos = x+y*wid;
-      if((noDraw && (zPos >= zBuff[pixelPos] || zPos >= 0)) || (!noDraw && (zPos < zBuff[pixelPos])) || Float.isNaN(zBuff[pixelPos])){
+      if((noDraw && zPos < zBuff[pixelPos]) || (!noDraw && zPos > zBuff[pixelPos]) || Float.isNaN(zBuff[pixelPos])){
           //Interpolate between the stroke and the current pixel if the stroke's alpha channel is less than 255. Otherwise, simply overwrite the current pixel with the stroke
           if((stroke >>> 24) < 0xFF)
             frame[pixelPos] = Colour.interpolateColours(stroke, frame[pixelPos]);
           else
             frame[pixelPos] = stroke;
+          zBuff[pixelPos] = zPos;
       }
       else{
         if((frame[pixelPos] >>> 24) < 0xFF)
@@ -300,16 +300,16 @@ public class Rasterizer{
     int x = (int)xPos;
     int y = (int)yPos;
     if(x >= 0 && x < wid && y >= 0 && y < heig){
-      zPos = 1/zPos;
       if(noDraw)
         zPos*=-1;
       int pixelPos = x+y*wid;
-      if((noDraw && (zPos >= zBuff[pixelPos] || zPos >= 0)) || (!noDraw && (zPos < zBuff[pixelPos])) || Float.isNaN(zBuff[pixelPos])){
+      if((noDraw && zPos < zBuff[pixelPos]) || (!noDraw && zPos > zBuff[pixelPos]) || Float.isNaN(zBuff[pixelPos])){
         //Interpolate between the stroke and the current pixel if the colour's alpha channel is less than 255. Otherwise, simply overwrite the current pixel with the stroke
         if((colour >>> 24) < 0xFF)
           frame[pixelPos] = Colour.interpolateColours(colour, frame[pixelPos]);
         else
           frame[pixelPos] = colour;
+        zBuff[pixelPos] = zPos;
       }
       else{
         if((frame[pixelPos] >>> 24) < 0xFF)
@@ -832,7 +832,7 @@ public class Rasterizer{
 
   public static void billBoardDraw(Billboard sprite, float x, float y, float z, float sizeX, float sizeY){
     //Sets the sprite to be drawn in front of everything else
-    if(sprite.noDraw())
+    if(sprite.returnDepthWrite())
       z*=-1;
     if(Math.abs(sizeX) > 0.0001 && Math.abs(sizeY) > 0.0001){
       //Grabs the recipricol of the scale of the image
@@ -868,7 +868,7 @@ public class Rasterizer{
               colour|=((int)Math.min(((sprite.returnPixels()[imgPixel] >>> 16) & 255)*((sprite.returnFill() >>> 16) & 255)*0.003921568f, 255)) << 16;
               colour|=((int)Math.min(((sprite.returnPixels()[imgPixel] >>> 8) & 255)*((sprite.returnFill() >>> 8) & 255)*0.003921568f, 255)) << 8;
               colour|=((int)Math.min((sprite.returnPixels()[imgPixel] & 255)*(sprite.returnFill() & 255)*0.003921568f, 255));
-              if((sprite.noDraw() && (z < zBuff[pixelPos] || zBuff[pixelPos] <= 0) || !sprite.noDraw() && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
+              if((sprite.returnDepthWrite() && (z < zBuff[pixelPos] || zBuff[pixelPos] <= 0) || !sprite.returnDepthWrite() && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
                 //Copying the image's pixel to the frame buffer
                 if((sprite.returnFill() >>> 24) == 255)
                   frame[pixelPos] = 0xFF000000|colour;
@@ -885,7 +885,7 @@ public class Rasterizer{
             scX+=scaleX;
         }
       }
-      if(sprite.hasOutline()){
+      if(sprite.returnHasStroke()){
         start[0] = Math.round(Math.min(x, x+sizeX));
         end[0] = Math.round(Math.max(x, x+sizeX));
 
@@ -896,14 +896,14 @@ public class Rasterizer{
             alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[1]; i < end[1]; i++){
                 side = i*wid+start[0];
-                if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+                if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                   frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
               }
             }
           else
            for(int i = start[1]; i < end[1]; i++){
               side = i*wid+start[0];
-              if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+              if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                 frame[side] = sprite.returnStroke();
             }
         }
@@ -912,14 +912,14 @@ public class Rasterizer{
             alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[1]; i < end[1]; i++){
               side = i*wid+end[0];
-              if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+              if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                 frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
             }
           }
           else
             for(int i = start[1]; i < end[1]; i++){
               side = i*wid+end[0];
-              if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+              if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                 frame[side] = sprite.returnStroke();
            }
         }
@@ -933,14 +933,14 @@ public class Rasterizer{
             alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[0]; i < end[0]; i++){
               side = start[1]*wid+i;
-              if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+              if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                 frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
             }
         }
         else
            for(int i = start[0]; i < end[0]; i++){
               side = start[1]*wid+i;
-              if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+              if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                 frame[side] = sprite.returnStroke();
             }
         }
@@ -949,14 +949,14 @@ public class Rasterizer{
             alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[0]; i < end[0]; i++){
               side = end[1]*wid+i;
-              if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+              if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                 frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
             }
           }
           else
             for(int i = start[0]; i < end[0]; i++){
               side = end[1]*wid+i;
-              if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+              if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                 frame[side] = sprite.returnStroke();
            }
         }
@@ -965,7 +965,7 @@ public class Rasterizer{
   }
   public static void billBoardDraw(Billboard sprite, float x, float y, float z, float sizeX, float sizeY, byte compVal, char testType){
     //Sets the sprite to be drawn in front of everything else
-    if(sprite.noDraw())
+    if(sprite.returnDepthWrite())
       z*=-1;
     if(Math.abs(sizeX) > 0.0001 && Math.abs(sizeY) > 0.0001){
       //Grabs the recipricol of the scale of the image
@@ -1001,7 +1001,7 @@ public class Rasterizer{
               colour|=((int)Math.min(((sprite.returnPixels()[imgPixel] >>> 16) & 255)*((sprite.returnFill() >>> 16) & 255)*0.003921568f, 255)) << 16;
               colour|=((int)Math.min(((sprite.returnPixels()[imgPixel] >>> 8) & 255)*((sprite.returnFill() >>> 8) & 255)*0.003921568f, 255)) << 8;
               colour|=((int)Math.min((sprite.returnPixels()[imgPixel] & 255)*(sprite.returnFill() & 255)*0.003921568f, 255));
-              if((sprite.noDraw() && (z < zBuff[pixelPos] || zBuff[pixelPos] <= 0) || !sprite.noDraw() && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
+              if((sprite.returnDepthWrite() && (z < zBuff[pixelPos] || zBuff[pixelPos] <= 0) || !sprite.returnDepthWrite() && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
                 //Copying the image's pixel to the frame buffer
                 if((sprite.returnFill() >>> 24) == 255){
                   float stencilNorm = ((~stencil[pixelPos]) & 255)*0.003921568f;
@@ -1023,8 +1023,8 @@ public class Rasterizer{
             scX+=scaleX;
         }
       }
-      if(sprite.hasOutline()){
-        z = (sprite.noDraw()) ? z-0.0004f : z+0.0004f;
+      if(sprite.returnHasStroke()){
+        z = (sprite.returnDepthWrite()) ? z-0.0004f : z+0.0004f;
         start[0] = Math.round(Math.min(x, x+sizeX));
         end[0] = Math.round(Math.max(x, x+sizeX));
 
@@ -1036,14 +1036,14 @@ public class Rasterizer{
             alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[1]; i < end[1]; i++){
                 side = i*wid+start[0];
-                if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+                if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                   frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
               }
             }
           else
            for(int i = start[1]; i < end[1]; i++){
               side = i*wid+start[0];
-              if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+              if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                 frame[side] = sprite.returnStroke();
             }
         }
@@ -1052,14 +1052,14 @@ public class Rasterizer{
             alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[1]; i < end[1]; i++){
               side = i*wid+end[0];
-              if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+              if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                 frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
             }
           }
           else
             for(int i = start[1]; i < end[1]; i++){
               side = i*wid+end[0];
-              if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+              if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                 frame[side] = sprite.returnStroke();
            }
         }
@@ -1073,14 +1073,14 @@ public class Rasterizer{
             alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[0]; i < end[0]; i++){
               side = start[1]*wid+i;
-              if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+              if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                 frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
             }
         }
         else
            for(int i = start[0]; i < end[0]; i++){
               side = start[1]*wid+i;
-              if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+              if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                 frame[side] = sprite.returnStroke();
             }
         }
@@ -1089,14 +1089,14 @@ public class Rasterizer{
             alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[0]; i < end[0]; i++){
               side = end[1]*wid+i;
-              if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+              if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                 frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
             }
           }
           else
             for(int i = start[0]; i < end[0]; i++){
               side = end[1]*wid+i;
-              if((!sprite.noDraw() && z >= zBuff[side]) || (sprite.noDraw() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
+              if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
                 frame[side] = sprite.returnStroke();
            }
         }

@@ -1,16 +1,15 @@
 package Renderer.Objects;
-import java.util.*;
 import Actions.*;
 import Maths.Extensions.*;
 import Maths.LinearAlgebra.*;
-import Renderer.Objects.Physics.*;
 import Renderer.ScreenDraw.MVP;
-public class Light{
+import Renderer.Objects.Parents.*;
+//Class for abstracting away light object data
+public class Light extends SceneEntity{
     private static final float[] ONE = {0, 0, -1, 0};
-    private static final char[] VALID_TYPES = {'p', 'd', 's'};
     //Position if point light, rotation for directional light, both for spot light
-    private float[] position = new float[3];
-    private float[] rotation = new float[3];
+    private static final char[] VALID_TYPES = {'p', 'd', 's'};
+
     //Intensity
     //  0: ambient
     //  1: diffuse
@@ -22,18 +21,10 @@ public class Light{
     private float[][] lightColour = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
     //0 = inner spread, 1 = outer spread
     private float[] spotlightSpread = {0, -1};
-    private LinkedList<Action> actionList = new LinkedList<Action>();
-    private Action tempAction;
     private float[] lightDir = {0, 0, 0};
     private boolean alwaysPerform = false;
-    private Physics physics = new Physics(position, rotation);
     public Light(){
-        position[0] = 0;
-        position[1] = 0;
-        position[2] = 0;
-        rotation[0] = 0;
-        rotation[1] = 0;
-        rotation[2] = 0;
+        super();
         intensities[0] = 1;
         intensities[1] = 1;
         intensities[2] = 1;
@@ -45,19 +36,12 @@ public class Light{
         lightType = 'p';
         spotlightSpread[0] = 0;
         spotlightSpread[1] = -1;
-        actionList = new LinkedList<Action>();
-        physics = new Physics(position, rotation);
     }
     public Light(float[] newPosition){
-        position[0] = newPosition[0];
-        position[1] = newPosition[1];
-        position[2] = newPosition[2];
+        super(newPosition);
         intensities[0] = 1;
         intensities[1] = 1;
         intensities[2] = 1;
-        rotation[0] = 0;
-        rotation[1] = 0;
-        rotation[2] = 0;
         for(byte i = 0; i < 3; i++){
             lightColour[i][0] = 1;
             lightColour[i][1] = 1;
@@ -66,19 +50,12 @@ public class Light{
         lightType = 'p';
         spotlightSpread[0] = 0;
         spotlightSpread[1] = -1;
-        actionList = new LinkedList<Action>();
-        physics = new Physics(position, rotation);
     }
     public Light(float newX, float newY, float newZ){
-        position[0] = newX;
-        position[1] = newY;
-        position[2] = newZ;
+        super(newX, newY, newZ);
         intensities[0] = 1;
         intensities[1] = 1;
         intensities[2] = 1;
-        rotation[0] = 0;
-        rotation[1] = 0;
-        rotation[2] = 0;
         for(byte i = 0; i < 3; i++){
             lightColour[i][0] = 1;
             lightColour[i][1] = 1;
@@ -87,49 +64,19 @@ public class Light{
         lightType = 'p';
         spotlightSpread[0] = 0;
         spotlightSpread[1] = -1;
-        actionList = new LinkedList<Action>();
-        physics = new Physics(position, rotation);
     }
 
 
     public void addAction(LightAction newAction){
         if(newAction != null){
-            newAction.setPos(position);
-            newAction.setRot(rotation);
+            super.addAction(newAction);
             newAction.setIntensities(intensities);
             newAction.setColour(lightColour);
             newAction.setDirection(lightDir);
-            newAction.setPhysics(physics);
             actionList.add(newAction);
         }
         else
             System.out.println("ERROR: ACTION CANNOT BE NULL");
-    }
-    public Action removeFirstAction(){
-        return actionList.removeFirst();
-    }
-    public Action removeLastAction(){
-        return actionList.removeLast();
-    }
-    public Action removeAction(int i){
-        return actionList.remove(i);
-    }
-    public void clearActionList(){
-        actionList.clear();
-    }
-    public boolean hasActions(){
-        return !actionList.isEmpty();
-    }
-    public int numOfActions(){
-        return actionList.size();
-    }
-    public void executeActions(){
-        int length = actionList.size();
-        for(int i = 0; i < length; i++){
-            tempAction = actionList.removeFirst();
-            actionList.add(tempAction);
-            tempAction.perform();
-        }
     }
     public void alwaysPerform(boolean perform){
         alwaysPerform = perform;
@@ -187,9 +134,7 @@ public class Light{
     public float returnInnerSpread(){
         return spotlightSpread[0];
     }
-    public Physics returnPhysicsPtr(){
-        return physics;
-    }
+
     public void setOuterSpread(float spread){
         if(spread < 0)
             spread = 0;
@@ -239,34 +184,10 @@ public class Light{
         lightColour[2][1] = lightColour[0][1];
         lightColour[2][2] = lightColour[0][2];
     }
-    public void setPosition(float x, float y, float z){
-        position[0] = x;
-        position[1] = y;
-        position[2] = z;
-    }
-    public void setPosition(float[] newPos){
-        position[0] = newPos[0];
-        position[1] = newPos[1];
-        position[2] = newPos[2];
-    }
-    public float[] returnPosition(){
-        return position;
-    }
-    public void setRotations(float alpha, float beta, float gamma){
-        rotation[0] = alpha;
-        rotation[1] = beta;
-        rotation[2] = gamma;
-    }
-    public void setRotation(float[] newRot){
-        rotation[0] = newRot[0];
-        rotation[1] = newRot[1];
-        rotation[2] = newRot[2];
-    }
-    public float[] returnRotation(){
-        return rotation;
-    }
+
+
     public void computeDirection(){
-        Matrix lightDirMatrix = MatrixOperations.matrixMultiply(MVP.returnRotation(rotation), ONE);
+        Matrix lightDirMatrix = MatrixOperations.matrixMultiply(MVP.returnRotation(rot), ONE);
         lightDir[0] = lightDirMatrix.returnData(0, 0);
         lightDir[1] = lightDirMatrix.returnData(1, 0);
         lightDir[2] = lightDirMatrix.returnData(2, 0);
@@ -303,70 +224,15 @@ public class Light{
         return (spotlightSpread[1] - dot)/spreadDiff;
     }
 
-    public boolean equals(Object o){
-        if(o instanceof Light){
-            Light l = (Light)o;
-            boolean isEquals = true;
-            for(byte i = 0; i < 3; i++){
-                isEquals&=(Math.abs(lightColour[i][0]-l.lightColour[i][0]) <= 0.0001);
-                isEquals&=(Math.abs(lightColour[i][1]-l.lightColour[i][1]) <= 0.0001);
-                isEquals&=(Math.abs(lightColour[i][2]-l.lightColour[i][2]) <= 0.0001);
-            }
-            isEquals&=(Math.abs(position[0] - l.position[0]) <= 0.0001);
-            isEquals&=(Math.abs(position[1] - l.position[1]) <= 0.0001);
-            isEquals&=(Math.abs(position[2] - l.position[2]) <= 0.0001);
-            isEquals&=(Math.abs(rotation[0] - l.rotation[0]) <= 0.0001);
-            isEquals&=(Math.abs(rotation[1] - l.rotation[1]) <= 0.0001);
-            isEquals&=(Math.abs(rotation[2] - l.rotation[2]) <= 0.0001);
-            isEquals&=(Math.abs(intensities[0] - l.intensities[0]) <= 0.0001);
-            isEquals&=(Math.abs(intensities[1] - l.intensities[1]) <= 0.0001);
-            isEquals&=(Math.abs(intensities[2] - l.intensities[2]) <= 0.0001);
-            isEquals&=(Math.abs(spotlightSpread[0] - l.spotlightSpread[0]) <= 0.0001);
-            isEquals&=(Math.abs(spotlightSpread[1] - l.spotlightSpread[1]) <= 0.0001);
-            isEquals&=(lightType == l.lightType);
-            isEquals&=(alwaysPerform == l.alwaysPerform);
-            return isEquals;
-        }
-        else
-            return false;
-    }
-
-    public boolean equals(Light l){
-        boolean isEquals = true;
-        for(byte i = 0; i < 3; i++){
-            isEquals&=(Math.abs(lightColour[i][0]-l.lightColour[i][0]) <= 0.0001);
-            isEquals&=(Math.abs(lightColour[i][1]-l.lightColour[i][1]) <= 0.0001);
-            isEquals&=(Math.abs(lightColour[i][2]-l.lightColour[i][2]) <= 0.0001);
-        }
-        isEquals&=(Math.abs(position[0] - l.position[0]) <= 0.0001);
-        isEquals&=(Math.abs(position[1] - l.position[1]) <= 0.0001);
-        isEquals&=(Math.abs(position[2] - l.position[2]) <= 0.0001);
-        isEquals&=(Math.abs(rotation[0] - l.rotation[0]) <= 0.0001);
-        isEquals&=(Math.abs(rotation[1] - l.rotation[1]) <= 0.0001);
-        isEquals&=(Math.abs(rotation[2] - l.rotation[2]) <= 0.0001);
-        isEquals&=(Math.abs(intensities[0] - l.intensities[0]) <= 0.0001);
-        isEquals&=(Math.abs(intensities[1] - l.intensities[1]) <= 0.0001);
-        isEquals&=(Math.abs(intensities[2] - l.intensities[2]) <= 0.0001);
-        isEquals&=(Math.abs(spotlightSpread[0] - l.spotlightSpread[0]) <= 0.0001);
-        isEquals&=(Math.abs(spotlightSpread[1] - l.spotlightSpread[1]) <= 0.0001);
-        isEquals&=(lightType == l.lightType);
-        isEquals&=(alwaysPerform == l.alwaysPerform);
-        return isEquals;
-    }
     public void copy(Object o){
         if(o instanceof Light){
             Light l = (Light)o;
+            super.copy(l);
             for(byte i = 0; i < 3; i++){
                 lightColour[i][0] = l.lightColour[i][0];
                 lightColour[i][1] = l.lightColour[i][1];
                 lightColour[i][2] = l.lightColour[i][2];
             }
-            position[0] = l.position[0];
-            position[1] = l.position[1];
-            position[2] = l.position[2];
-            rotation[0] = l.rotation[0];
-            rotation[1] = l.rotation[1];
-            rotation[2] = l.rotation[2];
             spotlightSpread[0] = l.spotlightSpread[0];
             spotlightSpread[1] = l.spotlightSpread[1];
             lightType = l.lightType;
@@ -377,17 +243,12 @@ public class Light{
         }
     }
     public void copy(Light l){
+        super.copy(l);
         for(byte i = 0; i < 3; i++){
             lightColour[i][0] = l.lightColour[i][0];
             lightColour[i][1] = l.lightColour[i][1];
             lightColour[i][2] = l.lightColour[i][2];
         }
-        position[0] = l.position[0];
-        position[1] = l.position[1];
-        position[2] = l.position[2];
-        rotation[0] = l.rotation[0];
-        rotation[1] = l.rotation[1];
-        rotation[2] = l.rotation[2];
         spotlightSpread[0] = l.spotlightSpread[0];
         spotlightSpread[1] = l.spotlightSpread[1];
         lightType = l.lightType;
@@ -395,5 +256,44 @@ public class Light{
         intensities[1] = l.intensities[1];
         intensities[2] = l.intensities[2];
         alwaysPerform = l.alwaysPerform;
+    }
+
+    public boolean equals(Object o){
+        if(o instanceof Light){
+            Light l = (Light)o;
+            boolean isEquals = super.equals(l);;
+            for(byte i = 0; i < 3; i++){
+                isEquals&=(Math.abs(lightColour[i][0]-l.lightColour[i][0]) <= EPSILON);
+                isEquals&=(Math.abs(lightColour[i][1]-l.lightColour[i][1]) <= EPSILON);
+                isEquals&=(Math.abs(lightColour[i][2]-l.lightColour[i][2]) <= EPSILON);
+            }
+            isEquals&=(Math.abs(intensities[0] - l.intensities[0]) <= EPSILON);
+            isEquals&=(Math.abs(intensities[1] - l.intensities[1]) <= EPSILON);
+            isEquals&=(Math.abs(intensities[2] - l.intensities[2]) <= EPSILON);
+            isEquals&=(Math.abs(spotlightSpread[0] - l.spotlightSpread[0]) <= EPSILON);
+            isEquals&=(Math.abs(spotlightSpread[1] - l.spotlightSpread[1]) <= EPSILON);
+            isEquals&=(lightType == l.lightType);
+            isEquals&=(alwaysPerform == l.alwaysPerform);
+            return isEquals;
+        }
+        else
+            return false;
+    }
+
+    public boolean equals(Light l){
+        boolean isEquals = super.equals(l);;
+        for(byte i = 0; i < 3; i++){
+            isEquals&=(Math.abs(lightColour[i][0]-l.lightColour[i][0]) <= EPSILON);
+            isEquals&=(Math.abs(lightColour[i][1]-l.lightColour[i][1]) <= EPSILON);
+            isEquals&=(Math.abs(lightColour[i][2]-l.lightColour[i][2]) <= EPSILON);
+        }
+        isEquals&=(Math.abs(intensities[0] - l.intensities[0]) <= EPSILON);
+        isEquals&=(Math.abs(intensities[1] - l.intensities[1]) <= EPSILON);
+        isEquals&=(Math.abs(intensities[2] - l.intensities[2]) <= EPSILON);
+        isEquals&=(Math.abs(spotlightSpread[0] - l.spotlightSpread[0]) <= EPSILON);
+        isEquals&=(Math.abs(spotlightSpread[1] - l.spotlightSpread[1]) <= EPSILON);
+        isEquals&=(lightType == l.lightType);
+        isEquals&=(alwaysPerform == l.alwaysPerform);
+        return isEquals;
     }
 }
