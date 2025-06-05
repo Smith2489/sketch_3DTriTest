@@ -776,15 +776,26 @@ public class sketch_3DTriTest extends PApplet{;
   private class SpinSlab extends ModelAction{
     private boolean keyLocked = false;
     private int spinSpeed = 2;
+    private float startHeight;
+    private float currentCrossSectionArea = 1.25f;
+    private float mass = 5;
     public void init(){
-      
+      startHeight = pos[1];
+      Physics.fluidDensity = 0.25f;
+      Physics.gravityAcceleration = 0.005f;
+      physics.setGravityVelocity();
+      physics.setMass(5);
+      physics.setCrossSectionArea(1.25f);
+      mass = 5;
     }
     public void perform(){
-      Physics.gravityAcceleration = 0.005f;
+      
       physics.applyGravity();
       if(keyPressed){
-        if(key == 'r')
-          pos[1] = -2;
+        if(key == 'r'){
+          pos[1] = startHeight;
+          physics.setGravityVelocity();
+        }
         if(!keyLocked){
           keyLocked = true;
           switch(key){
@@ -809,15 +820,21 @@ public class sketch_3DTriTest extends PApplet{;
         if(key == '8'){
           if(scale[0] < 10){
             scale[0]+=0.5;
-
+            currentCrossSectionArea+=0.25;
+            mass++;
           }
         }
         else if(key == '3'){
-          if(scale[0] > 0.5)
+          if(scale[0] > 0.5){
             scale[0]-=0.5;
+            currentCrossSectionArea-=0.25;
+            mass--;
+          }
         }
         scale[1] = scale[0];
         scale[2] = scale[0];
+        physics.setCrossSectionArea(currentCrossSectionArea);
+        physics.setMass(mass);
       }
       rot[2]+=spinSpeed*speed;
       rot[1]+=(spinSpeed+0.001)*speed;
