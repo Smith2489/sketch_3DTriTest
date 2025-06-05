@@ -65,6 +65,7 @@ public class SceneEntity{
         newAction.setPos(pos);
         newAction.setRot(rot);
         newAction.setPhysics(physics);
+        newAction.init();
     }
 
     public Action removeFirstAction(){

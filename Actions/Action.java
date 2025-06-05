@@ -2,6 +2,7 @@ package Actions;
 import Maths.LinearAlgebra.*;
 import Renderer.Objects.Physics.*;
 public abstract class Action{
+    private static int counter = 0;
     protected float[] pos = {0, 0, 0};
     protected float[] rot = {0, 0, 0};
     protected Physics physics = new Physics(pos, rot);
@@ -14,6 +15,11 @@ public abstract class Action{
     protected abstract float[] getRight();
     protected abstract float[] getUp();
     protected abstract float[] getDown();
+
+    public void init(){
+        System.out.println(counter+": NO INITIALIZATION METHOD SET");
+        counter++;
+    }
 
     public void setPos(float[] newPos){
         pos = newPos;

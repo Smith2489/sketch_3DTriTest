@@ -41,10 +41,10 @@ public class Camera extends ScalableEntity{
   }
   public void addAction(CameraAction newAction){
     if(newAction != null){
-      super.addAction(newAction);
       newAction.setColour(colour, invColour);
       newAction.setDrawDistance(drawDistance);
       newAction.setAlwaysMultiply(alwaysMultiply);
+      super.addAction(newAction);
       actionList.add(newAction);
     }
     else

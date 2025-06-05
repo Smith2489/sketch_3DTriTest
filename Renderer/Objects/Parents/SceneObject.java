@@ -39,8 +39,8 @@ public class SceneObject extends ScalableEntity{
 
     public void addAction(ModelAction newAction){
         if(newAction != null){
-            super.addAction(newAction);
             newAction.setModelTint(uniTint);
+            super.addAction(newAction);
             actionList.add(newAction);
           }
           else

@@ -109,6 +109,7 @@ public class sketch_3DTriTest extends PApplet{;
     light[1].setOuterSpread(90);
     light[1].setType('s');
     light[1].addAction(new RotateLight());
+    light[1].addAction(new ColonThree());
     secondLight = new Light();
     secondLight.copy(light[0]);
     secondLight.setLightColour(0xFF);
@@ -551,10 +552,13 @@ public class sketch_3DTriTest extends PApplet{;
   private class SetTransparency extends ModelAction{
     private Camera object;
     //ORIGINALS: 360, 1800
-    private static final float MIN_DIST = 20;
-    private static final float MAX_DIST = 50;
+    private static final float MIN_DIST = 360;
+    private static final float MAX_DIST = 1800;
     public SetTransparency(Camera newCam){
       object = newCam; 
+    }
+    public void init(){
+
     }
     public void perform(){
       float tint = dist(object.returnPosition());
@@ -566,6 +570,9 @@ public class sketch_3DTriTest extends PApplet{;
   }
 
   private class RotateMess extends ModelAction{
+    public void init(){
+      
+    }
     public void perform(){
       rot[0]-=1.5f*speed;
       rot[2]-=1.5f*speed;
@@ -577,6 +584,9 @@ public class sketch_3DTriTest extends PApplet{;
   }
 
   private class RotateTetrahedron extends ModelAction{
+    public void init(){
+      
+    }
     public void perform(){
       rot[0]-=1.5f*speed;
       rot[1]+=3*speed;
@@ -588,20 +598,34 @@ public class sketch_3DTriTest extends PApplet{;
   }
 
   private class SpinTwoTriangles extends ModelAction{
+    private int direction = 0;
+    public void init(){
+      direction = (int)(Math.random()*2)-1;
+      if(direction == 0)
+        direction = 1;
+    }
     public void perform(){
-      rot[1]-=0.5f*speed;
+      rot[1]-=0.5f*direction*speed;
       if(rot[1] < 0)
         rot[1]+=360;
+      else if(rot[1] >= 360)
+        rot[1]-=360;
     }
   }
 
-  private class ColonThree extends ModelAction{
+  private class ColonThree extends LightAction{
+    public void init(){
+      System.out.println("Started. :3");
+    }
     public void perform(){
-      System.out.println(":3");
+
     }
   }
 
   private class RotateLongModel extends ModelAction{
+    public void init(){
+      
+    }
     public void perform(){
       float[] modelForward = getForward();
       if(keyPressed){
@@ -642,6 +666,9 @@ public class sketch_3DTriTest extends PApplet{;
     public RotateLongInvertedHull(Model newModel){
       model = newModel;
     }
+    public void init(){
+      
+    }
     public void perform(){
       pos[0] = model.returnPosition()[0];
       pos[1] = model.returnPosition()[1];
@@ -662,6 +689,9 @@ public class sketch_3DTriTest extends PApplet{;
       else
         direction = -1;
     }
+    public void init(){
+      
+    }
     public void perform(){
       rot[1]+=(5*direction*speed);
       if(rot[1] >= 360)
@@ -670,6 +700,9 @@ public class sketch_3DTriTest extends PApplet{;
   }
 
   private class RotateBillboard extends ModelAction{
+    public void init(){
+      
+    }
     public void perform(){
       rot[2]+=(0.25f*speed);
       if(rot[2] >= 360)
@@ -677,6 +710,9 @@ public class sketch_3DTriTest extends PApplet{;
     }
   }
   private class RotateDefaultModel extends ModelAction{
+    public void init(){
+      
+    }
     public void perform(){
       rot[0]+=(0.25f*speed);
       rot[1]+=(0.25f*speed);
@@ -690,6 +726,9 @@ public class sketch_3DTriTest extends PApplet{;
     }
   }
   private class RotateRhombohedron extends ModelAction{
+    public void init(){
+      
+    }
     public void perform(){
       rot[0]+=2*speed;
       rot[1]-=2*speed;
@@ -701,6 +740,9 @@ public class sketch_3DTriTest extends PApplet{;
   }
 
   private class RotateLight extends LightAction{
+    public void init(){
+      
+    }
     private float angularVelocity = 1f;
     public void perform(){
       rot[1]+=angularVelocity;
@@ -715,6 +757,9 @@ public class sketch_3DTriTest extends PApplet{;
 
   private class MoveLight extends LightAction{
     private float velocity = 0.05f;
+    public void init(){
+      
+    }
     public void perform(){
         pos[2]+=velocity*speed;
         if(pos[2] > 100){
@@ -731,6 +776,9 @@ public class sketch_3DTriTest extends PApplet{;
   private class SpinSlab extends ModelAction{
     private boolean keyLocked = false;
     private int spinSpeed = 2;
+    public void init(){
+      
+    }
     public void perform(){
       Physics.gravityAcceleration = 0.005f;
       physics.applyGravity();
@@ -786,6 +834,9 @@ public class sketch_3DTriTest extends PApplet{;
 
 
   private class MoveCamera extends CameraAction{
+    public void init(){
+      
+    }
     public void perform(){
       float[] eyeForward = getForward();
       float[] eyeRight = getRight();
@@ -807,14 +858,14 @@ public class sketch_3DTriTest extends PApplet{;
             addToPosition(0.05f*speed, eyeForward);
           break;
           case '2':
-          addToPosition(-0.05f*speed, eyeForward);
-          break;
+            addToPosition(-0.05f*speed, eyeForward);
+            break;
           case '9':
-          addToPosition(-0.05f*speed, eyeRight);
-          break;
+            addToPosition(-0.05f*speed, eyeRight);
+            break;
           case '0':
-          addToPosition(0.05f*speed, eyeRight);
-          break;
+            addToPosition(0.05f*speed, eyeRight);
+            break;
         }
       }
       
@@ -849,6 +900,9 @@ public class sketch_3DTriTest extends PApplet{;
     public ManageSecondCamera(Camera newCamera){
       cPressed = false;
       other = newCamera;
+    }
+    public void init(){
+      
     }
     public void perform(){
       if(keyPressed){
@@ -903,6 +957,9 @@ public class sketch_3DTriTest extends PApplet{;
     private Light tempLight;
     public CopyLight(Light newLight){
       tempLight = newLight; 
+    }
+    public void init(){
+      
     }
     public void perform(){
       pos[0] = tempLight.returnPosition()[0];

@@ -95,10 +95,10 @@ public class ScalableEntity extends SceneEntity{
 
     
     protected void addAction(ObjectAction newAction){
-        super.addAction(newAction);
         newAction.setScale(scale);
         newAction.setShear(shear);
         newAction.setMatrix(modelMatrix);
+        super.addAction(newAction);
     }
 
     //Methods for setting the shear in all three axes

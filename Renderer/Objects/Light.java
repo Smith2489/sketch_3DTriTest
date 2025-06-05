@@ -69,10 +69,10 @@ public class Light extends SceneEntity{
 
     public void addAction(LightAction newAction){
         if(newAction != null){
-            super.addAction(newAction);
             newAction.setIntensities(intensities);
             newAction.setColour(lightColour);
             newAction.setDirection(lightDir);
+            super.addAction(newAction);
             actionList.add(newAction);
         }
         else
