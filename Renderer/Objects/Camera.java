@@ -170,7 +170,7 @@ public class Camera extends ScalableEntity{
       boolean isEqual = super.equals(c);
       isEqual&=(alwaysPerform == c.alwaysPerform);
       isEqual&=(colour.val == c.colour.val);
-      isEqual&=(Math.abs(drawDistance.val - c.drawDistance.val) < EPSILON);
+      isEqual&=(Math.abs(drawDistance.val - c.drawDistance.val) <= EPSILON);
       isEqual&=(alwaysMultiply.val == c.alwaysMultiply.val);
       for(byte i = 0; i < 3; i++)
         isEqual&=(Math.abs(invColour[i] - c.invColour[i]) <= EPSILON);
@@ -182,7 +182,7 @@ public class Camera extends ScalableEntity{
     boolean isEqual = super.equals(c);
     isEqual&=(alwaysPerform == c.alwaysPerform);
     isEqual&=(colour.val == c.colour.val);
-    isEqual&=(Math.abs(drawDistance.val - c.drawDistance.val) < EPSILON);
+    isEqual&=(Math.abs(drawDistance.val - c.drawDistance.val) <= EPSILON);
     isEqual&=(alwaysMultiply.val == c.alwaysMultiply.val);
     for(byte i = 0; i < 3; i++)
       isEqual&=(Math.abs(invColour[i] - c.invColour[i]) <= EPSILON);
