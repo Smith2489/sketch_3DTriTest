@@ -61,6 +61,12 @@ public class SceneEntity{
         actionList = new LinkedList<Action>();
     }
 
+    protected void addAction(Action newAction){
+        newAction.setPos(pos);
+        newAction.setRot(rot);
+        newAction.setPhysics(physics);
+    }
+
     public Action removeFirstAction(){
         return actionList.removeFirst();
     }
@@ -78,12 +84,6 @@ public class SceneEntity{
     }
     public int numOfActions(){
         return actionList.size();
-    }
-
-    protected void addAction(Action newAction){
-        newAction.setPos(pos);
-        newAction.setRot(rot);
-        newAction.setPhysics(physics);
     }
 
     public void executeActions(){

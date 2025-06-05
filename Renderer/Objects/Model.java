@@ -160,7 +160,4 @@ public class Model extends ShadedObject{
     isEqual&=colours.equals(m.colours);
     return isEqual;
   }
-
-  
-
 }
