@@ -25,6 +25,7 @@ public class Physics {
     } 
     public void useSpeedCap(){
         flags&=-2;
+        dragAcceleration = 0;
     }
 
     public Physics(float[] newPos, float[] newRot){
@@ -61,15 +62,16 @@ public class Physics {
         gravityDirection = VectorOperations.vectorNormalization3D(gravityDirection);
     }
     public void applyGravity(){
-        dragAcceleration = (flags & 1)*(0.5f*fluidDensity*(gravityVelocity-fluidVelocity)*(gravityVelocity-fluidVelocity)*dragCoefficient*crossSectionArea)/mass;
+        if((flags & 1) == 1)
+            dragAcceleration = (0.5f*fluidDensity*(gravityVelocity-fluidVelocity)*(gravityVelocity-fluidVelocity)*dragCoefficient*crossSectionArea)/mass;
+        else if(Math.abs(gravityVelocity) > Math.abs(terminalVelocity))
+            gravityVelocity = terminalVelocity;
         //System.out.println(dragAcceleration);
         pos[0]+=(gravityDirection[0]*gravityVelocity);
         pos[1]+=(gravityDirection[1]*gravityVelocity);
         pos[2]+=(gravityDirection[2]*gravityVelocity);
         gravityVelocity+=(gravityAcceleration-dragAcceleration);
-        System.out.println(gravityVelocity);
-        if((flags & 1) == 0 && Math.abs(gravityVelocity) > Math.abs(terminalVelocity))
-            gravityVelocity = terminalVelocity;
+
     }
     public void setGravityVelocity(){
         gravityVelocity = 0;
