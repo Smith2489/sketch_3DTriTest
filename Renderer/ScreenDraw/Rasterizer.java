@@ -471,7 +471,7 @@ public class Rasterizer{
               computeLighting(tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
-                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos, alphaNorm);
+                frame[pixelPos] = Colour.interpolateColours(brokenUpColour, brokenUpFrame, alphaNorm);
               else
                 frame[pixelPos] = (brokenUpColour[0] << 24)|(brokenUpColour[1] << 16)|(brokenUpColour[2] << 8)|brokenUpColour[3];
               zBuff[pixelPos] = z;
@@ -479,7 +479,7 @@ public class Rasterizer{
             //For when there were triangles drawn at the current pixel that were closer than the current triangle
             else if(brokenUpFrame[0] < 0xFF){
                 computeLighting(tempZ, invZ, vertexBrightness);
-                frame[pixelPos] = interpolatePixels(brokenUpFrame, brokenUpColour, pixelPos);
+                frame[pixelPos] = Colour.interpolateColours(brokenUpFrame, brokenUpColour);
             }
           }
          }
@@ -582,7 +582,7 @@ public class Rasterizer{
               computeLighting(tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
-                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos, alphaNorm);
+                frame[pixelPos] = Colour.interpolateColours(brokenUpColour, brokenUpFrame, alphaNorm);
               else
                 frame[pixelPos] = (brokenUpColour[0] << 24)|(brokenUpColour[1] << 16)|(brokenUpColour[2] << 8)|brokenUpColour[3];
               zBuff[pixelPos] = z;
@@ -590,7 +590,7 @@ public class Rasterizer{
             //For when there were triangles drawn at the current pixel that were closer than the current triangle
             else if(brokenUpFrame[0] < 0xFF){
               computeLighting(tempZ, invZ, vertexBrightness);
-              frame[pixelPos] = interpolatePixels(brokenUpFrame, brokenUpColour, pixelPos);
+              frame[pixelPos] = Colour.interpolateColours(brokenUpFrame, brokenUpColour);
             }
           }
         }
@@ -862,7 +862,7 @@ public class Rasterizer{
             int imgPixel = (int)(scY)*sprite.returnWidth()+(int)(scX); //Determining where in the image the current desired pixel is
             //Checks if a pixel is not a specific colour defined in the Billboard object and if there is nothing already in front of where the sprite is being drawn
             //If it passes, it draws the sprite's pixel to the new location
-            if((maxProbability <= threshold || Math.random()*maxProbability < threshold) && (sprite.shouldDrawPixel(imgPixel) || sprite.hasRemoval())){
+            if((maxProbability <= threshold || Math.random()*maxProbability < threshold) && stencil[pixelPos] == 0 && (sprite.shouldDrawPixel(imgPixel) || sprite.hasRemoval())){
               //Adjusting the brightness level of each pixel
               int colour = (sprite.returnFill() & 0xFF000000);
               colour|=((int)Math.min(((sprite.returnPixels()[imgPixel] >>> 16) & 255)*((sprite.returnFill() >>> 16) & 255)*0.003921568f, 255)) << 16;
