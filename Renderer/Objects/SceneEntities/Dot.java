@@ -1,4 +1,4 @@
-package Renderer.Objects;
+package Renderer.Objects.SceneEntities;
 import Renderer.Objects.Parents.*;
 //A class for defining single-pixel objects which exist in 3-dimensional space
 public class Dot extends SceneObject{

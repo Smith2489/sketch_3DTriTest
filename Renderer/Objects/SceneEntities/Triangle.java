@@ -1,4 +1,4 @@
-package Renderer.Objects;
+package Renderer.Objects.SceneEntities;
 //Class for abstracting triangles
 public class Triangle{
   private float[][] vertices = new float[3][4];

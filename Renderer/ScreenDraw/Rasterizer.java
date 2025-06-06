@@ -1,6 +1,6 @@
 package Renderer.ScreenDraw;
 import Wrapper.*;
-import Renderer.Objects.*;
+import Renderer.Objects.SceneEntities.*;
 //Draws triangles to a frame buffer
 public class Rasterizer{
   private static int halfWidth = 50;

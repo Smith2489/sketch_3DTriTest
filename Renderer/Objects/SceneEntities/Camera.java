@@ -1,4 +1,4 @@
-package Renderer.Objects;
+package Renderer.Objects.SceneEntities;
 import Wrapper.*;
 import Actions.*;
 import Renderer.Objects.Parents.*;

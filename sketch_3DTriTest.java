@@ -2,7 +2,7 @@ import java.util.*;
 import Actions.*;
 import Maths.LinearAlgebra.*;
 import Renderer.ModelDataHandler.*;
-import Renderer.Objects.*;
+import Renderer.Objects.SceneEntities.*;
 import Renderer.ScreenDraw.*;
 import Renderer.Objects.Physics.*;
 
@@ -776,24 +776,23 @@ public class sketch_3DTriTest extends PApplet{;
   private class SpinSlab extends ModelAction{
     private boolean keyLocked = false;
     private int spinSpeed = 2;
-    private float startHeight;
-    private float currentCrossSectionArea = 1.25f;
-    private float mass = 5;
+    private float[] startPosition = {0, 0, 0};
     public void init(){
-      startHeight = pos[1];
+      startPosition[0] = pos[0];
+      startPosition[1] = pos[1];
+      startPosition[2] = pos[2];
       Physics.fluidDensity = 0.25f;
       Physics.gravityAcceleration = 0.005f;
+      physics.terminalVelocity = 0.5f;
       physics.setGravityVelocity();
-      physics.setMass(5);
-      physics.setCrossSectionArea(1.25f);
-      mass = 5;
     }
     public void perform(){
-      
       physics.applyGravity();
       if(keyPressed){
         if(key == 'r'){
-          pos[1] = startHeight;
+          pos[0] = startPosition[0];
+          pos[1] = startPosition[1];
+          pos[2] = startPosition[2];
           physics.setGravityVelocity();
         }
         if(!keyLocked){
@@ -818,23 +817,15 @@ public class sketch_3DTriTest extends PApplet{;
         keyLocked = false;
       if(keyPressed){
         if(key == '8'){
-          if(scale[0] < 10){
+          if(scale[0] < 10)
             scale[0]+=0.5;
-            currentCrossSectionArea+=0.25;
-            mass++;
-          }
         }
         else if(key == '3'){
-          if(scale[0] > 0.5){
+          if(scale[0] > 0.5)
             scale[0]-=0.5;
-            currentCrossSectionArea-=0.25;
-            mass--;
-          }
         }
         scale[1] = scale[0];
         scale[2] = scale[0];
-        physics.setCrossSectionArea(currentCrossSectionArea);
-        physics.setMass(mass);
       }
       rot[2]+=spinSpeed*speed;
       rot[1]+=(spinSpeed+0.001)*speed;

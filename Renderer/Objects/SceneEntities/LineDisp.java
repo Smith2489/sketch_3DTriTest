@@ -1,4 +1,4 @@
-package Renderer.Objects;
+package Renderer.Objects.SceneEntities;
 //A class for defining lines that get drawn
 public class LineDisp {
     private float[][] endPoints = {{-0.5f, 0, 0}, {0.5f, 0, 0}}; //The endpoints of the line

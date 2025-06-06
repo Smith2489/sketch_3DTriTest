@@ -1,7 +1,7 @@
 package Renderer.ModelDataHandler;
 import java.util.*;
 import java.io.*;
-import Renderer.Objects.Model;
+import Renderer.Objects.SceneEntities.Model;
 
 //A class which loads and holds model data, which will be copied into the models
 public class LoadModelFile {

@@ -1,7 +1,7 @@
 package Renderer.Objects.Physics;
 import Maths.LinearAlgebra.*;
 public class Physics {
-
+    private static byte flags = 0;//bit 0 = use realistic drag calculations
     //General object information
     private float[] pos = {0, 0, 0};
     private float[] rot = {0, 0, 0};
@@ -18,6 +18,14 @@ public class Physics {
     public static float gravityAcceleration = 0.2f;
     private float gravityVelocity = 0;
     private float[] gravityDirection = {0, 1, 0};
+    public float terminalVelocity = Float.MAX_VALUE;
+
+    public void useDragCalculations(){
+        flags|=1;
+    } 
+    public void useSpeedCap(){
+        flags&=-2;
+    }
 
     public Physics(float[] newPos, float[] newRot){
         pos = newPos;
@@ -53,12 +61,15 @@ public class Physics {
         gravityDirection = VectorOperations.vectorNormalization3D(gravityDirection);
     }
     public void applyGravity(){
-        dragAcceleration = (0.5f*fluidDensity*(gravityVelocity-fluidVelocity)*(gravityVelocity-fluidVelocity)*dragCoefficient*crossSectionArea)/mass;
+        dragAcceleration = (flags & 1)*(0.5f*fluidDensity*(gravityVelocity-fluidVelocity)*(gravityVelocity-fluidVelocity)*dragCoefficient*crossSectionArea)/mass;
         //System.out.println(dragAcceleration);
         pos[0]+=(gravityDirection[0]*gravityVelocity);
         pos[1]+=(gravityDirection[1]*gravityVelocity);
         pos[2]+=(gravityDirection[2]*gravityVelocity);
         gravityVelocity+=(gravityAcceleration-dragAcceleration);
+        System.out.println(gravityVelocity);
+        if((flags & 1) == 0 && Math.abs(gravityVelocity) > Math.abs(terminalVelocity))
+            gravityVelocity = terminalVelocity;
     }
     public void setGravityVelocity(){
         gravityVelocity = 0;

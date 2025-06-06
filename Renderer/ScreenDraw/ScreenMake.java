@@ -2,7 +2,7 @@ package Renderer.ScreenDraw;
 import Wrapper.*;
 import java.util.*;
 import Maths.LinearAlgebra.*;
-import Renderer.Objects.*;
+import Renderer.Objects.SceneEntities.*;
 public class ScreenMake{
     //Set up for the stencil test
     private static byte stencilComp = 0;

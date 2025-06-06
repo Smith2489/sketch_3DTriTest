@@ -1,4 +1,4 @@
-package Renderer.Objects;
+package Renderer.Objects.SceneEntities;
 import Renderer.ModelDataHandler.BillboardImg;
 import Renderer.Objects.Parents.*;
 //Class for abstracting away billboarded sprite object data

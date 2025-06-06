@@ -1,4 +1,4 @@
-package Renderer.Objects;
+package Renderer.Objects.SceneEntities;
 import Actions.*;
 import Maths.Extensions.*;
 import Maths.LinearAlgebra.*;
