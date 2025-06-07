@@ -4,7 +4,7 @@ public class Triangle{
   private float[][] vertices = new float[3][4];
   private byte flags = 0; //bit 0 = hasStroke; bit 1 = hasFill
   private int[] colour = {0xFFFFFFFF, 0xFFFFFFFF};
-  private float[][] vertexBrightness = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
+  private float[][] vertexBrightness = {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}};
   private float maxFizzel = 1;
   private float fizzelThreshold = 1.1f;
   //Default constructor
@@ -18,12 +18,15 @@ public class Triangle{
     vertexBrightness[0][0] = 1;
     vertexBrightness[0][1] = 1;
     vertexBrightness[0][2] = 1;
+    vertexBrightness[0][3] = 1;
     vertexBrightness[1][0] = 1;
     vertexBrightness[1][1] = 1;
     vertexBrightness[1][2] = 1;
+    vertexBrightness[1][3] = 1;
     vertexBrightness[2][0] = 1;
     vertexBrightness[2][1] = 1;
     vertexBrightness[2][2] = 1;
+    vertexBrightness[2][3] = 1;
     maxFizzel = 1;
     fizzelThreshold = 1.1f;
     flags = 3;
@@ -47,12 +50,15 @@ public class Triangle{
     vertexBrightness[0][0] = 1;
     vertexBrightness[0][1] = 1;
     vertexBrightness[0][2] = 1;
+    vertexBrightness[0][3] = 1;
     vertexBrightness[1][0] = 1;
     vertexBrightness[1][1] = 1;
     vertexBrightness[1][2] = 1;
+    vertexBrightness[1][3] = 1;
     vertexBrightness[2][0] = 1;
     vertexBrightness[2][1] = 1;
     vertexBrightness[2][2] = 1;
+    vertexBrightness[2][3] = 1;
     maxFizzel = 1;
     fizzelThreshold = 1.1f;
     flags = (byte)(((hasStroke) ? 1 : 0)|((hasFill) ? 2 : 0));
@@ -87,12 +93,15 @@ public class Triangle{
     vertexBrightness[0][0] = 1;
     vertexBrightness[0][1] = 1;
     vertexBrightness[0][2] = 1;
+    vertexBrightness[0][3] = 1;
     vertexBrightness[1][0] = 1;
     vertexBrightness[1][1] = 1;
     vertexBrightness[1][2] = 1;
+    vertexBrightness[1][3] = 1;
     vertexBrightness[2][0] = 1;
     vertexBrightness[2][1] = 1;
     vertexBrightness[2][2] = 1;
+    vertexBrightness[2][3] = 1;
     maxFizzel = 1;
     fizzelThreshold = 1.1f;
     flags = (byte)(((hasStroke) ? 1 : 0)|((hasFill) ? 2 : 0));
@@ -249,27 +258,57 @@ public class Triangle{
     else
       flags&=-5;
   }
-  public void setVertexBrightness(float vertex1, float vertex2, float vertex3, byte index){
-    vertexBrightness[index][0] = vertex1;
-    vertexBrightness[index][1] = vertex2;
-    vertexBrightness[index][2] = vertex3;
+  public void setVertexBrightness(float r, float g, float b, byte index){
+    vertexBrightness[index][1] = r;
+    vertexBrightness[index][2] = g;
+    vertexBrightness[index][3] = b;
+  }
+  public void setVertexBrightness(float a, float r, float g, float b, byte index){
+    vertexBrightness[index][0] = a;
+    vertexBrightness[index][1] = r;
+    vertexBrightness[index][2] = g;
+    vertexBrightness[index][3] = b;
   }
   public void setVertexBrightness(float[] brightnessLevels, byte index){
-    vertexBrightness[index][0] = brightnessLevels[0];
-    vertexBrightness[index][1] = brightnessLevels[1];
-    vertexBrightness[index][2] = brightnessLevels[2];
+    if(brightnessLevels.length <= 3){
+      vertexBrightness[index][1] = brightnessLevels[0];
+      vertexBrightness[index][2] = brightnessLevels[1];
+      vertexBrightness[index][3] = brightnessLevels[2];
+    }
+    else{
+      vertexBrightness[index][0] = brightnessLevels[0];
+      vertexBrightness[index][1] = brightnessLevels[1];
+      vertexBrightness[index][2] = brightnessLevels[2];
+      vertexBrightness[index][3] = brightnessLevels[3];
+    }
   }
 
   public void setVertexBrightness(float[][] brightnessLevels){
-    vertexBrightness[0][0] = brightnessLevels[0][0];
-    vertexBrightness[0][1] = brightnessLevels[0][1];
-    vertexBrightness[0][2] = brightnessLevels[0][2];
-    vertexBrightness[1][0] = brightnessLevels[1][0];
-    vertexBrightness[1][1] = brightnessLevels[1][1];
-    vertexBrightness[1][2] = brightnessLevels[1][2];
-    vertexBrightness[2][0] = brightnessLevels[2][0];
-    vertexBrightness[2][1] = brightnessLevels[2][1];
-    vertexBrightness[2][2] = brightnessLevels[2][2];
+    if(brightnessLevels[0].length <= 3){
+      vertexBrightness[0][1] = brightnessLevels[0][0];
+      vertexBrightness[0][2] = brightnessLevels[0][1];
+      vertexBrightness[0][3] = brightnessLevels[0][2];
+      vertexBrightness[1][1] = brightnessLevels[1][0];
+      vertexBrightness[1][2] = brightnessLevels[1][1];
+      vertexBrightness[1][3] = brightnessLevels[1][2];
+      vertexBrightness[2][1] = brightnessLevels[2][0];
+      vertexBrightness[2][2] = brightnessLevels[2][1];
+      vertexBrightness[2][3] = brightnessLevels[2][2];
+    }
+    else{
+      vertexBrightness[0][0] = brightnessLevels[0][0];
+      vertexBrightness[0][1] = brightnessLevels[0][1];
+      vertexBrightness[0][2] = brightnessLevels[0][2];
+      vertexBrightness[0][3] = brightnessLevels[0][3];
+      vertexBrightness[1][0] = brightnessLevels[1][0];
+      vertexBrightness[1][1] = brightnessLevels[1][1];
+      vertexBrightness[1][2] = brightnessLevels[1][2];
+      vertexBrightness[1][3] = brightnessLevels[1][3];
+      vertexBrightness[2][0] = brightnessLevels[2][0];
+      vertexBrightness[2][1] = brightnessLevels[2][1];
+      vertexBrightness[2][2] = brightnessLevels[2][2];
+      vertexBrightness[2][3] = brightnessLevels[2][3];
+    }
   }
   
   
@@ -338,6 +377,7 @@ public class Triangle{
         isEqual&=(Math.abs(vertexBrightness[i][0]-t.vertexBrightness[i][0]) <= 0.0001);
         isEqual&=(Math.abs(vertexBrightness[i][1]-t.vertexBrightness[i][1]) <= 0.0001);
         isEqual&=(Math.abs(vertexBrightness[i][2]-t.vertexBrightness[i][2]) <= 0.0001);
+        isEqual&=(Math.abs(vertexBrightness[i][3]-t.vertexBrightness[i][3]) <= 0.0001);
       }
       isEqual&=(colour[0] == t.colour[0]);
       isEqual&=(colour[1] == t.colour[1]);
@@ -360,6 +400,7 @@ public class Triangle{
         vertexBrightness[i][0] = t.vertexBrightness[i][0];
         vertexBrightness[i][1] = t.vertexBrightness[i][1];
         vertexBrightness[i][2] = t.vertexBrightness[i][2];
+        vertexBrightness[i][3] = t.vertexBrightness[i][3];
       }
       colour[0] = t.colour[0];
       colour[1] = t.colour[1];
@@ -378,6 +419,7 @@ public class Triangle{
       isEqual&=(Math.abs(vertexBrightness[i][0]-t.vertexBrightness[i][0]) <= 0.0001);
       isEqual&=(Math.abs(vertexBrightness[i][1]-t.vertexBrightness[i][1]) <= 0.0001);
       isEqual&=(Math.abs(vertexBrightness[i][2]-t.vertexBrightness[i][2]) <= 0.0001);
+      isEqual&=(Math.abs(vertexBrightness[i][0]-t.vertexBrightness[i][0]) <= 0.0001);
     }
     isEqual&=(colour[0] == t.colour[0]);
     isEqual&=(colour[1] == t.colour[1]);
@@ -395,6 +437,7 @@ public class Triangle{
       vertexBrightness[i][0] = t.vertexBrightness[i][0];
       vertexBrightness[i][1] = t.vertexBrightness[i][1];
       vertexBrightness[i][2] = t.vertexBrightness[i][2];
+      vertexBrightness[i][3] = t.vertexBrightness[i][3];
     }
     colour[0] = t.colour[0];
     colour[1] = t.colour[1];

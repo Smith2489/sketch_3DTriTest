@@ -3,7 +3,7 @@ import Maths.Extensions.*;
 public class ModelColours {
     private int polygonCount = 12;
     private int vertexCount = 8;
-    private float[][] vertexColours = new float[8][3];
+    private float[][] vertexColours = new float[8][4];
     private int[][] colours = new int[12][2]; //0 = stroke, 1 = fill (front face)
     private int numberOfVisibleBacks = 0;
     private int[] backVisible = new int[0]; //Triangles with visible back faces   <----+
@@ -14,11 +14,12 @@ public class ModelColours {
     public ModelColours(){
         polygonCount = 12;
         vertexCount = 8;
-        vertexColours = new float[8][3];
+        vertexColours = new float[8][4];
         for(byte i = 0; i < 8; i++){
             vertexColours[i][0] = 1;
             vertexColours[i][1] = 1;
             vertexColours[i][2] = 1;
+            vertexColours[i][3] = 1;
         }
         colours = new int[12][2];
         numberOfVisibleBacks = 0;
@@ -38,19 +39,43 @@ public class ModelColours {
         polygonCount = polygonNum;
         colours = new int[polygonCount][2];
         vertexCount = vertexNum;
-        vertexColours = new float[vertexCount][3];
-        for(int i = 0; i < vertexCount; i++){
-            if(i < vertexColourSet.length){
-                vertexColours[i][0] = Math.max(0, Math.min(vertexColourSet[i][0], 1));
-                vertexColours[i][1] = Math.max(0, Math.min(vertexColourSet[i][1], 1));
-                vertexColours[i][2] = Math.max(0, Math.min(vertexColourSet[i][2], 1));
-            }
-            else{
+        vertexColours = new float[vertexCount][4];
+        byte start = 0;
+        if(vertexColourSet == null || vertexColourSet.length <= 0){
+            for(int i = 0; i < vertexCount; i++){
                 vertexColours[i][0] = 1;
                 vertexColours[i][1] = 1;
                 vertexColours[i][2] = 1;
+                vertexColours[i][3] = 1;
             }
+        }
+        else{
+            if(vertexColourSet[0].length > 3){
+                start = 1;
+                for(int i = 0; i < vertexCount; i++){
+                    if(i < vertexColourSet.length)
+                        vertexColours[i][0] = vertexColourSet[i][0];
+                    else
+                        vertexColours[i][0] = 1;
+                }
+            }
+            else{
+                for(int i = 0; i < vertexCount; i++)
+                    vertexColours[i][0] = 1;
+            }
+            for(int i = 0; i < vertexCount; i++){
+                if(i < vertexColourSet.length){
+                    vertexColours[i][1] = Math.max(0, Math.min(vertexColourSet[i][start], 1));
+                    vertexColours[i][2] = Math.max(0, Math.min(vertexColourSet[i][start+1], 1));
+                    vertexColours[i][3] = Math.max(0, Math.min(vertexColourSet[i][start+2], 1));
+                }
+                else{
+                    vertexColours[i][1] = 1;
+                    vertexColours[i][2] = 1;
+                    vertexColours[i][3] = 1;
+                }
 
+            }
         }
         numberOfVisibleBacks = 0;
         backVisible = new int[0];
@@ -121,27 +146,60 @@ public class ModelColours {
     }
     public void setVertexColours(float[][] vertexColourSet, int vertexNum){
         vertexCount = vertexNum;
-        vertexColours = new float[vertexCount][3];
-        for(int i = 0; i < vertexCount; i++){
-            if(i < vertexColourSet.length){
-                vertexColours[i][0] = Math.max(0, Math.min(vertexColourSet[i][0], 1));
-                vertexColours[i][1] = Math.max(0, Math.min(vertexColourSet[i][1], 1));
-                vertexColours[i][2] = Math.max(0, Math.min(vertexColourSet[i][2], 1));
-            }
-            else{
+        vertexColours = new float[vertexCount][4];
+        byte start = 0;
+        if(vertexColourSet == null || vertexColourSet.length <= 0){
+            for(int i = 0; i < vertexCount; i++){
                 vertexColours[i][0] = 1;
                 vertexColours[i][1] = 1;
                 vertexColours[i][2] = 1;
+                vertexColours[i][3] = 1;
             }
+        }
+        else{
+            if(vertexColourSet[0].length > 3){
+                start = 1;
+                for(int i = 0; i < vertexCount; i++){
+                    if(i < vertexColourSet.length)
+                        vertexColours[i][0] = vertexColourSet[i][0];
+                    else
+                        vertexColours[i][0] = 1;
+                }
+            }
+            else{
+                for(int i = 0; i < vertexCount; i++)
+                    vertexColours[i][0] = 1;
+            }
+            for(int i = 0; i < vertexCount; i++){
+                if(i < vertexColourSet.length){
+                    vertexColours[i][1] = Math.max(0, Math.min(vertexColourSet[i][start], 1));
+                    vertexColours[i][2] = Math.max(0, Math.min(vertexColourSet[i][start+1], 1));
+                    vertexColours[i][3] = Math.max(0, Math.min(vertexColourSet[i][start+2], 1));
+                }
+                else{
+                    vertexColours[i][1] = 1;
+                    vertexColours[i][2] = 1;
+                    vertexColours[i][3] = 1;
+                }
 
+            }
         }
     }
     
     public void setVertexColour(float[] newColour, int index){
         if(index < vertexCount){
-            vertexColours[index][0] = Math.max(0, Math.min(newColour[0], 1));
-            vertexColours[index][1] = Math.max(0, Math.min(newColour[1], 1));
-            vertexColours[index][2] = Math.max(0, Math.min(newColour[2], 1));
+            if(newColour.length < 4){
+                vertexColours[index][0] = 1;
+                vertexColours[index][1] = Math.max(0, Math.min(newColour[0], 1));
+                vertexColours[index][2] = Math.max(0, Math.min(newColour[1], 1));
+                vertexColours[index][3] = Math.max(0, Math.min(newColour[2], 1));
+            }
+            else{
+                vertexColours[index][0] = newColour[0];
+                vertexColours[index][1] = Math.max(0, Math.min(newColour[1], 1));
+                vertexColours[index][2] = Math.max(0, Math.min(newColour[2], 1));
+                vertexColours[index][3] = Math.max(0, Math.min(newColour[3], 1));
+            }
         }
     }
 
@@ -322,6 +380,12 @@ public class ModelColours {
             isEquals&=(numberOfVisibleBacks == mC.numberOfVisibleBacks);
             isEquals&=(ends[0] == mC.ends[0]);
             isEquals&=(ends[1] == mC.ends[1]);
+            for(int i = 0; i < vertexColours.length; i++){
+                isEquals&=(Math.abs(vertexColours[i][0] - mC.vertexColours[i][0]) <= 0.0001);
+                isEquals&=(Math.abs(vertexColours[i][1] - mC.vertexColours[i][1]) <= 0.0001);
+                isEquals&=(Math.abs(vertexColours[i][2] - mC.vertexColours[i][2]) <= 0.0001);
+                isEquals&=(Math.abs(vertexColours[i][3] - mC.vertexColours[i][3]) <= 0.0001);
+            }
             for(int i = 0; i < colours.length; i++){
                 isEquals&=(colours[i][0] == mC.colours[i][0]);
                 isEquals&=(colours[i][1] == mC.colours[i][1]);
@@ -347,6 +411,12 @@ public class ModelColours {
         isEquals&=(numberOfVisibleBacks == mC.numberOfVisibleBacks);
         isEquals&=(ends[0] == mC.ends[0]);
         isEquals&=(ends[1] == mC.ends[1]);
+        for(int i = 0; i < vertexColours.length; i++){
+            isEquals&=(Math.abs(vertexColours[i][0] - mC.vertexColours[i][0]) <= 0.0001);
+            isEquals&=(Math.abs(vertexColours[i][1] - mC.vertexColours[i][1]) <= 0.0001);
+            isEquals&=(Math.abs(vertexColours[i][2] - mC.vertexColours[i][2]) <= 0.0001);
+            isEquals&=(Math.abs(vertexColours[i][3] - mC.vertexColours[i][3]) <= 0.0001);
+        }
         for(int i = 0; i < colours.length; i++){
             isEquals&=(colours[i][0] == mC.colours[i][0]);
             isEquals&=(colours[i][1] == mC.colours[i][1]);
@@ -370,6 +440,12 @@ public class ModelColours {
             colours = new int[mC.colours.length][2];
             backColour = new int[mC.backColour.length][2];
             backVisible = new int[mC.backVisible.length];
+            for(int i = 0; i < vertexColours.length; i++){
+                vertexColours[i][0] = mC.vertexColours[i][0];
+                vertexColours[i][1] = mC.vertexColours[i][1];
+                vertexColours[i][2] = mC.vertexColours[i][2];
+                vertexColours[i][3] = mC.vertexColours[i][3];
+            }
             for(int i = 0; i < colours.length; i++){
                 colours[i][0] = mC.colours[i][0];
                 colours[i][1] = mC.colours[i][1];
@@ -392,6 +468,12 @@ public class ModelColours {
         colours = new int[mC.colours.length][2];
         backColour = new int[mC.backColour.length][2];
         backVisible = new int[mC.backVisible.length];
+        for(int i = 0; i < vertexColours.length; i++){
+            vertexColours[i][0] = mC.vertexColours[i][0];
+            vertexColours[i][1] = mC.vertexColours[i][1];
+            vertexColours[i][2] = mC.vertexColours[i][2];
+            vertexColours[i][3] = mC.vertexColours[i][3];
+        }
         for(int i = 0; i < colours.length; i++){
             colours[i][0] = mC.colours[i][0];
             colours[i][1] = mC.colours[i][1];

@@ -22,7 +22,7 @@ public class Rasterizer{
   private static int fill = 0; //Fill colour
   private static int stroke = 0; //Outline colour
   private static int[] brokenUpColour = {0, 0, 0, 0};
-  private static int[] brokenUpFill = {0, 0, 0};
+  private static int[] brokenUpFill = {0, 0, 0, 0};
   private static float alphaNorm = 0;
   /*
     bit 0 = stencil test results
@@ -34,19 +34,35 @@ public class Rasterizer{
   private static byte flags = 0b0001110;
 
   //Stores how much light is reflected off of each vertex for Gouraud shading
-  private static float[][] vertexBrightness = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
+  private static float[][] vertexBrightness = {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}};
 
   //Sets the brightness of each vertex
   public static void setVertexBrightness(float[][] brightnessLevels){
-    vertexBrightness[0][0] = brightnessLevels[0][0];
-    vertexBrightness[0][1] = brightnessLevels[0][1];
-    vertexBrightness[0][2] = brightnessLevels[0][2];
-    vertexBrightness[1][0] = brightnessLevels[1][0];
-    vertexBrightness[1][1] = brightnessLevels[1][1];
-    vertexBrightness[1][2] = brightnessLevels[1][2];
-    vertexBrightness[2][0] = brightnessLevels[2][0];
-    vertexBrightness[2][1] = brightnessLevels[2][1];
-    vertexBrightness[2][2] = brightnessLevels[2][2];
+    if(brightnessLevels[0].length <= 3){
+      vertexBrightness[0][1] = brightnessLevels[0][0];
+      vertexBrightness[0][2] = brightnessLevels[0][1];
+      vertexBrightness[0][3] = brightnessLevels[0][2];
+      vertexBrightness[1][1] = brightnessLevels[1][0];
+      vertexBrightness[1][2] = brightnessLevels[1][1];
+      vertexBrightness[1][3] = brightnessLevels[1][2];
+      vertexBrightness[2][1] = brightnessLevels[2][0];
+      vertexBrightness[2][2] = brightnessLevels[2][1];
+      vertexBrightness[2][3] = brightnessLevels[2][2];
+    }
+    else{
+      vertexBrightness[0][0] = brightnessLevels[0][0];
+      vertexBrightness[0][1] = brightnessLevels[0][1];
+      vertexBrightness[0][2] = brightnessLevels[0][2];
+      vertexBrightness[0][3] = brightnessLevels[0][3];
+      vertexBrightness[1][0] = brightnessLevels[1][0];
+      vertexBrightness[1][1] = brightnessLevels[1][1];
+      vertexBrightness[1][2] = brightnessLevels[1][2];
+      vertexBrightness[1][3] = brightnessLevels[1][3];
+      vertexBrightness[2][0] = brightnessLevels[2][0];
+      vertexBrightness[2][1] = brightnessLevels[2][1];
+      vertexBrightness[2][2] = brightnessLevels[2][2];
+      vertexBrightness[2][3] = brightnessLevels[2][3];
+    }
   }
 
   //Initial z-buffer and frame buffer initialization
@@ -131,9 +147,10 @@ public class Rasterizer{
     fill = 0xFF000000|(r << 16)|(g << 8)|b;
     brokenUpColour[0] = 0xFF;
     alphaNorm = 1;
-    brokenUpFill[0] = r;
-    brokenUpFill[1] = g;
-    brokenUpFill[2] = b;
+    brokenUpFill[0] = 0xFF;
+    brokenUpFill[1] = r;
+    brokenUpFill[2] = g;
+    brokenUpFill[3] = b;
   }
   public static void fill(short r, short g, short b, short a){
     flags|=16;
@@ -144,9 +161,10 @@ public class Rasterizer{
     fill = (a << 24)|(r << 16)|(g << 8)|b;
     brokenUpColour[0] = a;
     alphaNorm = a*Colour.INV_255;
-    brokenUpFill[0] = r;
-    brokenUpFill[1] = g;
-    brokenUpFill[2] = b;
+    brokenUpFill[0] = a;
+    brokenUpFill[1] = r;
+    brokenUpFill[2] = g;
+    brokenUpFill[3] = b;
   }
   public static void fill(int colour){
     flags|=16;
@@ -161,9 +179,10 @@ public class Rasterizer{
     fill = colour;
     brokenUpColour[0] = fill >>> 24;
     alphaNorm = brokenUpColour[0]*Colour.INV_255;
-    brokenUpFill[0] = (fill >>> 16) & 0xFF;
-    brokenUpFill[1] = (fill >>> 8) & 0xFF;
-    brokenUpFill[2] = fill & 0xFF;
+    brokenUpFill[0] = brokenUpColour[0];
+    brokenUpFill[1] = (fill >>> 16) & 0xFF;
+    brokenUpFill[2] = (fill >>> 8) & 0xFF;
+    brokenUpFill[3] = fill & 0xFF;
   }
   public static void fill(int colour, short alpha){
     flags|=16;
@@ -175,9 +194,10 @@ public class Rasterizer{
       fill = (alpha << 24)|(colour << 16)|(colour << 8)|colour;
     brokenUpColour[0] = alpha;
     alphaNorm = alpha*Colour.INV_255;
-    brokenUpFill[0] = (fill >>> 16) & 0xFF;
-    brokenUpFill[1] = (fill >>> 8) & 0xFF;
-    brokenUpFill[2] = fill & 0xFF;
+    brokenUpFill[0] = brokenUpColour[0];
+    brokenUpFill[1] = (fill >>> 16) & 0xFF;
+    brokenUpFill[2] = (fill >>> 8) & 0xFF;
+    brokenUpFill[3] = fill & 0xFF;
   }
   
   //Setting the stroke colour of the triangles
@@ -471,7 +491,7 @@ public class Rasterizer{
               computeLighting(tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
-                frame[pixelPos] = Colour.interpolateColours(brokenUpColour, brokenUpFrame, alphaNorm);
+                frame[pixelPos] = Colour.interpolateColours(brokenUpColour, brokenUpFrame);
               else
                 frame[pixelPos] = (brokenUpColour[0] << 24)|(brokenUpColour[1] << 16)|(brokenUpColour[2] << 8)|brokenUpColour[3];
               zBuff[pixelPos] = z;
@@ -506,9 +526,10 @@ public class Rasterizer{
     fill = triangle.getFill();
     brokenUpColour[0] = fill >>> 24;
     alphaNorm = brokenUpColour[0]*Colour.INV_255;
-    brokenUpFill[0] = (fill >>> 16) & 0xFF;
-    brokenUpFill[1] = (fill >>> 8) & 0xFF;
-    brokenUpFill[2] = fill & 0xFF;
+    brokenUpFill[0] = brokenUpColour[0];
+    brokenUpFill[1] = (fill >>> 16) & 0xFF;
+    brokenUpFill[2] = (fill >>> 8) & 0xFF;
+    brokenUpFill[3] = fill & 0xFF;
     flags = (byte)(((triangle.getHasStroke()) ? flags|8 : flags&-9));
     flags = (byte)(((triangle.getHasFill()) ? flags|16 : flags&-17));
     
@@ -582,7 +603,7 @@ public class Rasterizer{
               computeLighting(tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
-                frame[pixelPos] = Colour.interpolateColours(brokenUpColour, brokenUpFrame, alphaNorm);
+                frame[pixelPos] = Colour.interpolateColours(brokenUpColour, brokenUpFrame);
               else
                 frame[pixelPos] = (brokenUpColour[0] << 24)|(brokenUpColour[1] << 16)|(brokenUpColour[2] << 8)|brokenUpColour[3];
               zBuff[pixelPos] = z;
@@ -680,7 +701,7 @@ public class Rasterizer{
               computeLighting(tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
-                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos, alphaNorm);
+                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos);
               else{
                 //Normalizes the stencil to be between 0 and 1
                 float stencilNorm = ((~stencil[pixelPos]) & 0xFF)*Colour.INV_255;
@@ -724,9 +745,10 @@ public class Rasterizer{
     fill = triangle.getFill();
     brokenUpColour[0] = fill >>> 24;
     alphaNorm = brokenUpColour[0]*Colour.INV_255;
-    brokenUpFill[0] = (fill >>> 16) & 0xFF;
-    brokenUpFill[1] = (fill >>> 8) & 0xFF;
-    brokenUpFill[2] = fill & 0xFF;
+    brokenUpFill[0] = brokenUpColour[0];
+    brokenUpFill[1] = (fill >>> 16) & 0xFF;
+    brokenUpFill[2] = (fill >>> 8) & 0xFF;
+    brokenUpFill[3] = fill & 0xFF;
     flags = (byte)((triangle.getHasStroke()) ? flags|8 : flags&-9);
     flags = (byte)((triangle.getHasFill()) ? flags|16 : flags&-17);
     //Setting up the bounding box
@@ -801,7 +823,7 @@ public class Rasterizer{
               computeLighting(tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
-                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos, alphaNorm);
+                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos);
               else{
                 //Normalizes the stencil to be between 0 and 1
                 float stencilNorm = ((~stencil[pixelPos]) & 0xFF)*Colour.INV_255;
@@ -1466,13 +1488,15 @@ public class Rasterizer{
     float adjustedGamma = invZ[2]*gamma;
     float[] overallBrightness = {z*(Math.max(0, vertexBrightness[0][0]*adjustedAlpha+vertexBrightness[1][0]*adjustedBeta+vertexBrightness[2][0]*adjustedGamma)),
                                  z*(Math.max(0, vertexBrightness[0][1]*adjustedAlpha+vertexBrightness[1][1]*adjustedBeta+vertexBrightness[2][1]*adjustedGamma)),
-                                 z*(Math.max(0, vertexBrightness[0][2]*adjustedAlpha+vertexBrightness[1][2]*adjustedBeta+vertexBrightness[2][2]*adjustedGamma))};
+                                 z*(Math.max(0, vertexBrightness[0][2]*adjustedAlpha+vertexBrightness[1][2]*adjustedBeta+vertexBrightness[2][2]*adjustedGamma)),
+                                 z*(Math.max(0, vertexBrightness[0][3]*adjustedAlpha+vertexBrightness[1][3]*adjustedBeta+vertexBrightness[2][3]*adjustedGamma))};
     // float[] overallBrightness = {Math.max(0, vertexBrightness[0][0]*alpha+vertexBrightness[1][0]*beta+vertexBrightness[2][0]*gamma),
     //                              Math.max(0, vertexBrightness[0][1]*alpha+vertexBrightness[1][1]*beta+vertexBrightness[2][1]*gamma),
     //                              Math.max(0, vertexBrightness[0][2]*alpha+vertexBrightness[1][2]*beta+vertexBrightness[2][2]*gamma)};
-    brokenUpColour[1] = (int)Math.min(255, (brokenUpFill[0]*overallBrightness[0]));
-    brokenUpColour[2] = (int)Math.min(255, (brokenUpFill[1]*overallBrightness[1]));
-    brokenUpColour[3] = (int)Math.min(255, (brokenUpFill[2]*overallBrightness[2]));
+    brokenUpColour[0] = (int)(brokenUpFill[0]*overallBrightness[0]);
+    brokenUpColour[1] = (int)Math.min(255, (brokenUpFill[1]*overallBrightness[1]));
+    brokenUpColour[2] = (int)Math.min(255, (brokenUpFill[2]*overallBrightness[2]));
+    brokenUpColour[3] = (int)Math.min(255, (brokenUpFill[3]*overallBrightness[3]));
   }
 
   //Finds the left and right edges of a triangle at a given scanline

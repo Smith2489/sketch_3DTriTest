@@ -31,7 +31,7 @@ public class LoadModelFile {
     float[][] model = new float[0][3]; //Vertex list
     int[][] poly = new int[0][3]; //Polygon list
     int[][] colour = new int[1][2]; //i, 0 = stroke; i, 1 = fill
-    float[][] vertexColours = new float[0][3]; //Vertex colour list
+    float[][] vertexColours = new float[0][4]; //Vertex colour list
     File file; //Stores the current file
     Scanner fileReader; //Reads each line of the file
     int polygonIndex = -1; //Tracks the current polygon's vertices
@@ -79,6 +79,7 @@ public class LoadModelFile {
                       vertexColours[i][0] = 1;
                       vertexColours[i][1] = 1;
                       vertexColours[i][2] = 1;
+                      vertexColours[i][3] = 1;
                     }
                     sizeSet[0] = true;
                     break;
@@ -233,7 +234,7 @@ public class LoadModelFile {
                     break;
                   }
                 case 'a':
-                  if(vertexColourIndex < vertexColours.length && vertexColourChannel < 3){
+                  if(vertexColourIndex < vertexColours.length && vertexColourChannel < 4){
                     vertexColours[vertexColourIndex][vertexColourChannel] = (float)lineRead.nextDouble();
                     vertexColourChannel++;
                     break;
@@ -420,10 +421,9 @@ public class LoadModelFile {
     }
     //Copying the data to an object of the model class
     Geometry outputModel =  new Geometry(model, poly, isBillBoard);
-    ModelColours outputColours = new ModelColours(colour, new float[0][3], poly.length, model.length);
+    ModelColours outputColours = new ModelColours(colour, vertexColours, poly.length, vertexColours.length);
     outputColours.initBackVisible(backVisible.length);
     outputColours.initBackColours(backColour.length);
-    outputColours.setVertexColours(vertexColours, vertexColours.length);
     for(int i = 0; i < backVisible.length; i++){
       if(backVisible[i] > -1)
         outputColours.setBackVisible(backVisible[i]);
@@ -603,7 +603,7 @@ public class LoadModelFile {
   public static ModelColours loadPallet(String dir){
     int vertexCount = 0;
     int[][] colour = new int[1][2]; //i, 0 = stroke; i, 1 = fill
-    float[][] vertexColours = new float[0][3]; //Vertex colour list
+    float[][] vertexColours = new float[0][4]; //Vertex colour list
     File file; //Stores the current file
     Scanner fileReader; //Reads each line of the file
     int strokeIndex = -1; //Tracks the current stroke
@@ -644,11 +644,12 @@ public class LoadModelFile {
                 if(!sizeSet[3]){
                   if(lineReader.hasNextInt()){
                     vertexCount = lineReader.nextInt();
-                    vertexColours = new float[vertexCount][3];
+                    vertexColours = new float[vertexCount][4];
                     for(int i = 0; i < vertexCount; i++){
                       vertexColours[i][0] = 1;
                       vertexColours[i][1] = 1;
                       vertexColours[i][2] = 1;
+                      vertexColours[i][3] = 1;
                     }
                     sizeSet[3] = true;
                     break;
@@ -790,7 +791,7 @@ public class LoadModelFile {
                       break;
                     }
                 case 'a':
-                  if(vertexColourIndex < vertexColours.length && vertexColourChannel < 3){
+                  if(vertexColourIndex < vertexColours.length && vertexColourChannel < 4){
                     vertexColours[vertexColourIndex][vertexColourChannel] = (float)lineRead.nextDouble();
                     vertexColourChannel++;
                     break;
@@ -917,10 +918,9 @@ public class LoadModelFile {
       System.out.println(ERROR+"FILE "+dir+NOT_FOUND);
       System.exit(1);
     }
-    ModelColours outputColours = new ModelColours(colour, new float[0][3], polygonCount, vertexCount);
+    ModelColours outputColours = new ModelColours(colour, vertexColours, polygonCount, vertexCount);
     outputColours.initBackVisible(backVisible.length);
     outputColours.initBackColours(backColour.length);
-    outputColours.setVertexColours(vertexColours, vertexCount);
     for(int i = 0; i < backVisible.length; i++){
       if(backVisible[i] > -1)
         outputColours.setBackVisible(backVisible[i]);

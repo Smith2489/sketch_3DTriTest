@@ -362,7 +362,7 @@ public class ScreenMake{
         vertices = new float[tempModel.returnVertexNormals().length][];
         frustumFlags = new boolean[vertices.length];
         primativeVertices = new float[vertices.length][4];
-        brightnessValues = new float[vertices.length][3];
+        brightnessValues = new float[vertices.length][4];
         float[] fromCamToModel = {(tempModel.returnModelCentre()[0]+tempModel.returnPosition()[0])-eye.returnPosition()[0],
                                   (tempModel.returnModelCentre()[1]+tempModel.returnPosition()[1])-eye.returnPosition()[1],
                                   (tempModel.returnModelCentre()[2]+tempModel.returnPosition()[2])-eye.returnPosition()[2]};
@@ -413,7 +413,7 @@ public class ScreenMake{
             boolean inFrustum = false; //If the triangle's point is in front of the near plane
             byte numOfInside = 0; //Number of points in the near plane
             byte[] insidePoints = {-1, -1, -1}; //Tracking the indices of the points in the near plane
-            float[][] vertexBrightness = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
+            float[][] vertexBrightness = {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}};
             for(byte s = 0; s < 3; s++){
               //Takes the current point and turns it into a homeogenous vector
               float[] homogeneousPoint = from3DVecTo4DVec(tempModel.returnPoints()[tempModel.returnPolygons()[j][s]]);
@@ -421,15 +421,17 @@ public class ScreenMake{
               
               int vertexIndex = tempModel.returnPolygons()[j][s];
               if(vertices[vertexIndex] == null){
+                vertexBrightness[s][0] = tempModel.returnVertexColours()[vertexIndex][0];
+                brightnessValues[vertexIndex][0] = vertexBrightness[s][0];
                 //projection = MatrixOperations.matrixMultiply(model, homogeneousPoint);
                 if(!tempModel.isCompletelyBlack() && tempModel.isGauroud()){
-                  vertexBrightness[s] = computeLighting(lights, lightPos, lightAngle, lightColour, homogeneousPoint, tempModel.returnVertexNormals()[vertexIndex], tempModel.returnShininess(), tempModel.returnBrightness()*generalObjectBrightness, model, tempModel, j, false);
-                  vertexBrightness[s][0]*=tempModel.returnVertexColours()[vertexIndex][0];
-                  vertexBrightness[s][1]*=tempModel.returnVertexColours()[vertexIndex][1];
-                  vertexBrightness[s][2]*=tempModel.returnVertexColours()[vertexIndex][2];
-                  brightnessValues[vertexIndex][0] = vertexBrightness[s][0];
+                  float[] lightBrightness = computeLighting(lights, lightPos, lightAngle, lightColour, homogeneousPoint, tempModel.returnVertexNormals()[vertexIndex], tempModel.returnShininess(), tempModel.returnBrightness()*generalObjectBrightness, model, tempModel, j, false);
+                  vertexBrightness[s][1] = lightBrightness[0]*tempModel.returnVertexColours()[vertexIndex][1];
+                  vertexBrightness[s][2] = lightBrightness[1]*tempModel.returnVertexColours()[vertexIndex][2];
+                  vertexBrightness[s][3] = lightBrightness[2]*tempModel.returnVertexColours()[vertexIndex][3];
                   brightnessValues[vertexIndex][1] = vertexBrightness[s][1];
                   brightnessValues[vertexIndex][2] = vertexBrightness[s][2];
+                  brightnessValues[vertexIndex][3] = vertexBrightness[s][3];
                 }
 
                 projection = MatrixOperations.matrixMultiply(mvpFull, homogeneousPoint);
@@ -487,6 +489,7 @@ public class ScreenMake{
                 vertexBrightness[s][0] = brightnessValues[vertexIndex][0];
                 vertexBrightness[s][1] = brightnessValues[vertexIndex][1];
                 vertexBrightness[s][2] = brightnessValues[vertexIndex][2];
+                vertexBrightness[s][3] = brightnessValues[vertexIndex][3];
                 if(frustumFlags[vertexIndex]){
                   insidePoints[numOfInside] = s;
                   numOfInside++;
@@ -511,16 +514,16 @@ public class ScreenMake{
                 float[] lightBrightness = computeLighting(lights, lightPos, lightAngle, lightColour, triCentre, tempModel.returnNormals(j), tempModel.returnShininess(), tempModel.returnBrightness()*generalObjectBrightness, model, tempModel, j, true);
                 int[] vertexIndices = {tempModel.returnPolygons()[j][0], 
                                        tempModel.returnPolygons()[j][1], 
-                                       tempModel.returnPolygons()[j][2]};
-                vertexBrightness[0][0] = lightBrightness[0]*tempModel.returnVertexColours()[vertexIndices[0]][0];
-                vertexBrightness[0][1] = lightBrightness[1]*tempModel.returnVertexColours()[vertexIndices[0]][1];
-                vertexBrightness[0][2] = lightBrightness[2]*tempModel.returnVertexColours()[vertexIndices[0]][2];
-                vertexBrightness[1][0] = lightBrightness[0]*tempModel.returnVertexColours()[vertexIndices[1]][0];
-                vertexBrightness[1][1] = lightBrightness[1]*tempModel.returnVertexColours()[vertexIndices[1]][1];
-                vertexBrightness[1][2] = lightBrightness[2]*tempModel.returnVertexColours()[vertexIndices[1]][2];
-                vertexBrightness[2][0] = lightBrightness[0]*tempModel.returnVertexColours()[vertexIndices[2]][0];
-                vertexBrightness[2][1] = lightBrightness[1]*tempModel.returnVertexColours()[vertexIndices[2]][1];
-                vertexBrightness[2][2] = lightBrightness[2]*tempModel.returnVertexColours()[vertexIndices[2]][2];
+                                       tempModel.returnPolygons()[j][2]};                       
+                vertexBrightness[0][1] = lightBrightness[0]*tempModel.returnVertexColours()[vertexIndices[0]][1];
+                vertexBrightness[0][2] = lightBrightness[1]*tempModel.returnVertexColours()[vertexIndices[0]][2];
+                vertexBrightness[0][3] = lightBrightness[2]*tempModel.returnVertexColours()[vertexIndices[0]][3];                    
+                vertexBrightness[1][1] = lightBrightness[0]*tempModel.returnVertexColours()[vertexIndices[1]][1];
+                vertexBrightness[1][2] = lightBrightness[1]*tempModel.returnVertexColours()[vertexIndices[1]][2];
+                vertexBrightness[1][3] = lightBrightness[2]*tempModel.returnVertexColours()[vertexIndices[1]][3];      
+                vertexBrightness[2][1] = lightBrightness[0]*tempModel.returnVertexColours()[vertexIndices[2]][1];
+                vertexBrightness[2][2] = lightBrightness[1]*tempModel.returnVertexColours()[vertexIndices[2]][2];
+                vertexBrightness[2][3] = lightBrightness[2]*tempModel.returnVertexColours()[vertexIndices[2]][3];
                 
               }
               //Returns if the current triangle is exempt from backface culling
@@ -533,52 +536,56 @@ public class ScreenMake{
               float t2 = 0; //How far up side AC is the intersection
               //Code for handling triangles which clip the near plane
               switch(numOfInside){
-                //When 1 point is inside the frustum
-                case 1:
-                  //Calculating how far up each side the intersection occurs
-                  byte otherPoint1 = (byte)((insidePoints[0]+1)%3);
-                  byte otherPoint2 = (byte)((insidePoints[0]+2)%3);
-                  t1 = (1 - points[insidePoints[0]][2]);
-                  if(Math.abs(points[otherPoint1][2] - points[insidePoints[0]][2]) > 0) 
-                    t1/=(points[otherPoint1][2]-points[insidePoints[0]][2]);
-                  t2 = (1 - points[insidePoints[0]][2]);
-                  if(Math.abs(points[otherPoint2][2] - points[insidePoints[0]][2]) > 0) 
-                    t2/=(points[otherPoint2][2]-points[insidePoints[0]][2]);
-                      
-                  //Computing the location of the point of intersection for each intersecting side
-                  intersect1[0] = points[insidePoints[0]][0] + t1*(points[otherPoint1][0]-points[insidePoints[0]][0]);
-                  intersect1[1] = points[insidePoints[0]][1] + t1*(points[otherPoint1][1]-points[insidePoints[0]][1]);
-                  intersect1[2] = points[insidePoints[0]][2] + t1*(points[otherPoint1][2]-points[insidePoints[0]][2]);
-                  intersect1[3] = points[insidePoints[0]][3] + t1*(points[otherPoint1][3]-points[insidePoints[0]][3]);
+                  //When 1 point is inside the frustum
+                  case 1:
+                    //Calculating how far up each side the intersection occurs
+                    byte otherPoint1 = (byte)((insidePoints[0]+1)%3);
+                    byte otherPoint2 = (byte)((insidePoints[0]+2)%3);
+                    t1 = (1 - points[insidePoints[0]][2]);
+                    if(Math.abs(points[otherPoint1][2] - points[insidePoints[0]][2]) > 0) 
+                      t1/=(points[otherPoint1][2]-points[insidePoints[0]][2]);
+                    t2 = (1 - points[insidePoints[0]][2]);
+                    if(Math.abs(points[otherPoint2][2] - points[insidePoints[0]][2]) > 0) 
+                      t2/=(points[otherPoint2][2]-points[insidePoints[0]][2]);
+                          
+                    //Computing the location of the point of intersection for each intersecting side
+                    intersect1[0] = points[insidePoints[0]][0] + t1*(points[otherPoint1][0]-points[insidePoints[0]][0]);
+                    intersect1[1] = points[insidePoints[0]][1] + t1*(points[otherPoint1][1]-points[insidePoints[0]][1]);
+                    intersect1[2] = points[insidePoints[0]][2] + t1*(points[otherPoint1][2]-points[insidePoints[0]][2]);
+                    intersect1[3] = points[insidePoints[0]][3] + t1*(points[otherPoint1][3]-points[insidePoints[0]][3]);
 
-                  intersect2[0] = points[insidePoints[0]][0] + t2*(points[otherPoint2][0]-points[insidePoints[0]][0]);
-                  intersect2[1] = points[insidePoints[0]][1] + t2*(points[otherPoint2][1]-points[insidePoints[0]][1]);
-                  intersect2[2] = points[insidePoints[0]][2] + t2*(points[otherPoint2][2]-points[insidePoints[0]][2]);
-                  intersect2[3] = points[insidePoints[0]][3] + t2*(points[otherPoint2][3]-points[insidePoints[0]][3]);
-                  float[] vertexBrightness1 = {vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[otherPoint1][0]-vertexBrightness[insidePoints[0]][0]),
-                                               vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[otherPoint1][1]-vertexBrightness[insidePoints[0]][1]),
-                                               vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[otherPoint1][2]-vertexBrightness[insidePoints[0]][2])};
-                  float[] vertexBrightness2 = {vertexBrightness[insidePoints[0]][0] + t2*(vertexBrightness[otherPoint2][0]-vertexBrightness[insidePoints[0]][0]),
-                                               vertexBrightness[insidePoints[0]][1] + t2*(vertexBrightness[otherPoint2][1]-vertexBrightness[insidePoints[0]][1]),
-                                               vertexBrightness[insidePoints[0]][2] + t2*(vertexBrightness[otherPoint2][2]-vertexBrightness[insidePoints[0]][2])};
-                  //Moving the points that are behind the near plane to be at the points of intersection
-                  points[otherPoint1][0] = intersect1[0];
-                  points[otherPoint1][1] = intersect1[1];
-                  points[otherPoint1][2] = intersect1[2];
-                  points[otherPoint1][3] = intersect1[3];
-                      
-                  points[otherPoint2][0] = intersect2[0];
-                  points[otherPoint2][1] = intersect2[1];
-                  points[otherPoint2][2] = intersect2[2];
-                  points[otherPoint2][3] = intersect2[3];
+                    intersect2[0] = points[insidePoints[0]][0] + t2*(points[otherPoint2][0]-points[insidePoints[0]][0]);
+                    intersect2[1] = points[insidePoints[0]][1] + t2*(points[otherPoint2][1]-points[insidePoints[0]][1]);
+                    intersect2[2] = points[insidePoints[0]][2] + t2*(points[otherPoint2][2]-points[insidePoints[0]][2]);
+                    intersect2[3] = points[insidePoints[0]][3] + t2*(points[otherPoint2][3]-points[insidePoints[0]][3]);
+                    float[] vertexBrightness1 = {vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[otherPoint1][0]-vertexBrightness[insidePoints[0]][0]),
+                                                  vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[otherPoint1][1]-vertexBrightness[insidePoints[0]][1]),
+                                                  vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[otherPoint1][2]-vertexBrightness[insidePoints[0]][2]),
+                                                  vertexBrightness[insidePoints[0]][3] + t1*(vertexBrightness[otherPoint1][3]-vertexBrightness[insidePoints[0]][3])};
+                    float[] vertexBrightness2 = {vertexBrightness[insidePoints[0]][0] + t2*(vertexBrightness[otherPoint2][0]-vertexBrightness[insidePoints[0]][0]),
+                                                  vertexBrightness[insidePoints[0]][1] + t2*(vertexBrightness[otherPoint2][1]-vertexBrightness[insidePoints[0]][1]),
+                                                  vertexBrightness[insidePoints[0]][2] + t2*(vertexBrightness[otherPoint2][2]-vertexBrightness[insidePoints[0]][2]),
+                                                  vertexBrightness[insidePoints[0]][3] + t2*(vertexBrightness[otherPoint2][3]-vertexBrightness[insidePoints[0]][3])};
+                    //Moving the points that are behind the near plane to be at the points of intersection
+                    points[otherPoint1][0] = intersect1[0];
+                    points[otherPoint1][1] = intersect1[1];
+                    points[otherPoint1][2] = intersect1[2];
+                    points[otherPoint1][3] = intersect1[3];
+                          
+                    points[otherPoint2][0] = intersect2[0];
+                    points[otherPoint2][1] = intersect2[1];
+                    points[otherPoint2][2] = intersect2[2];
+                    points[otherPoint2][3] = intersect2[3];
 
-                  vertexBrightness[otherPoint1][0] = vertexBrightness1[0];
-                  vertexBrightness[otherPoint1][1] = vertexBrightness1[1];
-                  vertexBrightness[otherPoint1][2] = vertexBrightness1[2];
-                  vertexBrightness[otherPoint2][0] = vertexBrightness2[0];
-                  vertexBrightness[otherPoint2][1] = vertexBrightness2[1];
-                  vertexBrightness[otherPoint2][2] = vertexBrightness2[2];
-                  break;
+                    vertexBrightness[otherPoint1][0] = vertexBrightness1[0];
+                    vertexBrightness[otherPoint1][1] = vertexBrightness1[1];
+                    vertexBrightness[otherPoint1][2] = vertexBrightness1[2];
+                    vertexBrightness[otherPoint1][3] = vertexBrightness1[3];
+                    vertexBrightness[otherPoint2][0] = vertexBrightness2[0];
+                    vertexBrightness[otherPoint2][1] = vertexBrightness2[1];
+                    vertexBrightness[otherPoint2][2] = vertexBrightness2[2];
+                    vertexBrightness[otherPoint2][3] = vertexBrightness2[3];
+                    break;
                 //When 2 points are inside the frustum
                 case 2:
                   //Calculating how far up each side the points of intersection are
@@ -588,8 +595,8 @@ public class ScreenMake{
                   t2 = (1 - points[insidePoints[1]][2]);
                   if(Math.abs(points[insidePoints[2]][2] - points[insidePoints[1]][2]) > 0) 
                     t2/=(points[insidePoints[2]][2]-points[insidePoints[1]][2]);
-                  
-                  float[][] finalBrightness = new float[3][3];
+                      
+                  float[][] finalBrightness = new float[3][4];
                   //Calculating where each point of intersection is
                   intersect1[0] = points[insidePoints[0]][0] + t1*(points[insidePoints[2]][0]-points[insidePoints[0]][0]);
                   intersect1[1] = points[insidePoints[0]][1] + t1*(points[insidePoints[2]][1]-points[insidePoints[0]][1]);
@@ -598,6 +605,7 @@ public class ScreenMake{
                   finalBrightness[insidePoints[0]][0] = vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[0]][0]);
                   finalBrightness[insidePoints[0]][1] = vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[0]][1]);
                   finalBrightness[insidePoints[0]][2] = vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[0]][2]);
+                  finalBrightness[insidePoints[0]][3] = vertexBrightness[insidePoints[0]][3] + t1*(vertexBrightness[insidePoints[2]][3]-vertexBrightness[insidePoints[0]][3]);
 
                   intersect2[0] = points[insidePoints[1]][0] + t2*(points[insidePoints[2]][0]-points[insidePoints[1]][0]);
                   intersect2[1] = points[insidePoints[1]][1] + t2*(points[insidePoints[2]][1]-points[insidePoints[1]][1]);
@@ -606,6 +614,7 @@ public class ScreenMake{
                   finalBrightness[insidePoints[2]][0] = vertexBrightness[insidePoints[1]][0] + t2*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[1]][0]);
                   finalBrightness[insidePoints[2]][1] = vertexBrightness[insidePoints[1]][1] + t2*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[1]][1]);
                   finalBrightness[insidePoints[2]][2] = vertexBrightness[insidePoints[1]][2] + t2*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[1]][2]);
+                  finalBrightness[insidePoints[2]][3] = vertexBrightness[insidePoints[1]][3] + t2*(vertexBrightness[insidePoints[2]][3]-vertexBrightness[insidePoints[1]][3]);
                   float[][] secondPoints = new float[3][4];
                   //Constructing a triangle B'C'C
                   //C
@@ -616,6 +625,7 @@ public class ScreenMake{
                   finalBrightness[insidePoints[1]][0] = vertexBrightness[insidePoints[1]][0];
                   finalBrightness[insidePoints[1]][1] = vertexBrightness[insidePoints[1]][1];
                   finalBrightness[insidePoints[1]][2] = vertexBrightness[insidePoints[1]][2];
+                  finalBrightness[insidePoints[1]][3] = vertexBrightness[insidePoints[1]][3];
                   //B'
                   secondPoints[insidePoints[0]][0] = intersect1[0];
                   secondPoints[insidePoints[0]][1] = intersect1[1];
@@ -634,6 +644,7 @@ public class ScreenMake{
                   vertexBrightness[insidePoints[2]][0] = finalBrightness[insidePoints[0]][0];
                   vertexBrightness[insidePoints[2]][1] = finalBrightness[insidePoints[0]][1];
                   vertexBrightness[insidePoints[2]][2] = finalBrightness[insidePoints[0]][2];
+                  vertexBrightness[insidePoints[2]][3] = finalBrightness[insidePoints[0]][3];
                   //Adding the new triangle to the list to account for the clipped triangle being a quad
                   edgeDir = returnEdgeDir(tempModel, secondPoints, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
                   if(edgeDir > 0){
@@ -1039,7 +1050,7 @@ public class ScreenMake{
       modelList.add(tempModel);
 
       vertices = new float[tempModel.returnPoints().length][];
-      brightnessValues = new float[vertices.length][3];
+      brightnessValues = new float[vertices.length][4];
       frustumFlags = new boolean[vertices.length];
       primativeVertices = new float[vertices.length][4];
       float[] fromCamToModel = {(tempModel.returnModelCentre()[0]+tempModel.returnPosition()[0])-eye.returnPosition()[0],
@@ -1087,16 +1098,18 @@ public class ScreenMake{
           byte numOfInside = 0; //Number of points in the near plane
           byte[] insidePoints = {-1, -1, -1}; //Tracking the indices of the points in the near plane
           float[] centre = {0, 0, 0, 0};
-          float[][] vertexBrightness = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
+          float[][] vertexBrightness = {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}};
           for(byte s = 0; s < 3; s++){
             int vertexIndex = tempModel.returnPolygons()[j][s];
             if(vertices[vertexIndex] == null){
               vertexBrightness[s][0] = tempModel.returnVertexColours()[vertexIndex][0];
               vertexBrightness[s][1] = tempModel.returnVertexColours()[vertexIndex][1];
               vertexBrightness[s][2] = tempModel.returnVertexColours()[vertexIndex][2];
+              vertexBrightness[s][3] = tempModel.returnVertexColours()[vertexIndex][3];
               brightnessValues[vertexIndex][0] = vertexBrightness[s][0];
               brightnessValues[vertexIndex][1] = vertexBrightness[s][1];
               brightnessValues[vertexIndex][2] = vertexBrightness[s][2];
+              brightnessValues[vertexIndex][3] = vertexBrightness[s][3];
               //Takes the current point and turns it into a homeogenous vector
               float[] homogeneousPoint = from3DVecTo4DVec(tempModel.returnPoints()[vertexIndex]);
               //Projects the point from 3D to 2D
@@ -1151,6 +1164,7 @@ public class ScreenMake{
               vertexBrightness[s][0] = brightnessValues[vertexIndex][0];
               vertexBrightness[s][1] = brightnessValues[vertexIndex][1];
               vertexBrightness[s][2] = brightnessValues[vertexIndex][2];
+              vertexBrightness[s][3] = brightnessValues[vertexIndex][3];
               centre[0]+=primativeVertices[vertexIndex][0];
               centre[1]+=primativeVertices[vertexIndex][1];
               centre[2]+=primativeVertices[vertexIndex][2];
@@ -1206,10 +1220,12 @@ public class ScreenMake{
                 intersect2[3] = points[insidePoints[0]][3] + t2*(points[otherPoint2][3]-points[insidePoints[0]][3]);
                 float[] vertexBrightness1 = {vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[otherPoint1][0]-vertexBrightness[insidePoints[0]][0]),
                                               vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[otherPoint1][1]-vertexBrightness[insidePoints[0]][1]),
-                                              vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[otherPoint1][2]-vertexBrightness[insidePoints[0]][2])};
+                                              vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[otherPoint1][2]-vertexBrightness[insidePoints[0]][2]),
+                                              vertexBrightness[insidePoints[0]][3] + t1*(vertexBrightness[otherPoint1][3]-vertexBrightness[insidePoints[0]][3])};
                 float[] vertexBrightness2 = {vertexBrightness[insidePoints[0]][0] + t2*(vertexBrightness[otherPoint2][0]-vertexBrightness[insidePoints[0]][0]),
                                               vertexBrightness[insidePoints[0]][1] + t2*(vertexBrightness[otherPoint2][1]-vertexBrightness[insidePoints[0]][1]),
-                                              vertexBrightness[insidePoints[0]][2] + t2*(vertexBrightness[otherPoint2][2]-vertexBrightness[insidePoints[0]][2])};
+                                              vertexBrightness[insidePoints[0]][2] + t2*(vertexBrightness[otherPoint2][2]-vertexBrightness[insidePoints[0]][2]),
+                                              vertexBrightness[insidePoints[0]][3] + t2*(vertexBrightness[otherPoint2][3]-vertexBrightness[insidePoints[0]][3])};
                 //Moving the points that are behind the near plane to be at the points of intersection
                 points[otherPoint1][0] = intersect1[0];
                 points[otherPoint1][1] = intersect1[1];
@@ -1224,9 +1240,11 @@ public class ScreenMake{
                 vertexBrightness[otherPoint1][0] = vertexBrightness1[0];
                 vertexBrightness[otherPoint1][1] = vertexBrightness1[1];
                 vertexBrightness[otherPoint1][2] = vertexBrightness1[2];
+                vertexBrightness[otherPoint1][3] = vertexBrightness1[3];
                 vertexBrightness[otherPoint2][0] = vertexBrightness2[0];
                 vertexBrightness[otherPoint2][1] = vertexBrightness2[1];
                 vertexBrightness[otherPoint2][2] = vertexBrightness2[2];
+                vertexBrightness[otherPoint2][3] = vertexBrightness2[3];
                 break;
             //When 2 points are inside the frustum
             case 2:
@@ -1238,7 +1256,7 @@ public class ScreenMake{
               if(Math.abs(points[insidePoints[2]][2] - points[insidePoints[1]][2]) > 0) 
                 t2/=(points[insidePoints[2]][2]-points[insidePoints[1]][2]);
                    
-              float[][] finalBrightness = new float[3][3];
+              float[][] finalBrightness = new float[3][4];
               //Calculating where each point of intersection is
               intersect1[0] = points[insidePoints[0]][0] + t1*(points[insidePoints[2]][0]-points[insidePoints[0]][0]);
               intersect1[1] = points[insidePoints[0]][1] + t1*(points[insidePoints[2]][1]-points[insidePoints[0]][1]);
@@ -1247,7 +1265,8 @@ public class ScreenMake{
               finalBrightness[insidePoints[0]][0] = vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[0]][0]);
               finalBrightness[insidePoints[0]][1] = vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[0]][1]);
               finalBrightness[insidePoints[0]][2] = vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[0]][2]);
- 
+              finalBrightness[insidePoints[0]][3] = vertexBrightness[insidePoints[0]][3] + t1*(vertexBrightness[insidePoints[2]][3]-vertexBrightness[insidePoints[0]][3]);
+
               intersect2[0] = points[insidePoints[1]][0] + t2*(points[insidePoints[2]][0]-points[insidePoints[1]][0]);
               intersect2[1] = points[insidePoints[1]][1] + t2*(points[insidePoints[2]][1]-points[insidePoints[1]][1]);
               intersect2[2] = points[insidePoints[1]][2] + t2*(points[insidePoints[2]][2]-points[insidePoints[1]][2]);
@@ -1255,6 +1274,7 @@ public class ScreenMake{
               finalBrightness[insidePoints[2]][0] = vertexBrightness[insidePoints[1]][0] + t2*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[1]][0]);
               finalBrightness[insidePoints[2]][1] = vertexBrightness[insidePoints[1]][1] + t2*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[1]][1]);
               finalBrightness[insidePoints[2]][2] = vertexBrightness[insidePoints[1]][2] + t2*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[1]][2]);
+              finalBrightness[insidePoints[2]][3] = vertexBrightness[insidePoints[1]][3] + t2*(vertexBrightness[insidePoints[2]][3]-vertexBrightness[insidePoints[1]][3]);
               float[][] secondPoints = new float[3][4];
               //Constructing a triangle B'C'C
               //C
@@ -1265,6 +1285,7 @@ public class ScreenMake{
               finalBrightness[insidePoints[1]][0] = vertexBrightness[insidePoints[1]][0];
               finalBrightness[insidePoints[1]][1] = vertexBrightness[insidePoints[1]][1];
               finalBrightness[insidePoints[1]][2] = vertexBrightness[insidePoints[1]][2];
+              finalBrightness[insidePoints[1]][3] = vertexBrightness[insidePoints[1]][3];
               //B'
               secondPoints[insidePoints[0]][0] = intersect1[0];
               secondPoints[insidePoints[0]][1] = intersect1[1];
@@ -1283,6 +1304,7 @@ public class ScreenMake{
               vertexBrightness[insidePoints[2]][0] = finalBrightness[insidePoints[0]][0];
               vertexBrightness[insidePoints[2]][1] = finalBrightness[insidePoints[0]][1];
               vertexBrightness[insidePoints[2]][2] = finalBrightness[insidePoints[0]][2];
+              vertexBrightness[insidePoints[2]][3] = finalBrightness[insidePoints[0]][3];
               //Adding the new triangle to the list to account for the clipped triangle being a quad
               edgeDir = returnEdgeDir(tempModel, secondPoints, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
               if(edgeDir > 0){
