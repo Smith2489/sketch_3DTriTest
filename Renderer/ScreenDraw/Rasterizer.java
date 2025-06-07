@@ -1493,7 +1493,7 @@ public class Rasterizer{
     // float[] overallBrightness = {Math.max(0, vertexBrightness[0][0]*alpha+vertexBrightness[1][0]*beta+vertexBrightness[2][0]*gamma),
     //                              Math.max(0, vertexBrightness[0][1]*alpha+vertexBrightness[1][1]*beta+vertexBrightness[2][1]*gamma),
     //                              Math.max(0, vertexBrightness[0][2]*alpha+vertexBrightness[1][2]*beta+vertexBrightness[2][2]*gamma)};
-    brokenUpColour[0] = (int)(brokenUpFill[0]*overallBrightness[0]);
+    brokenUpColour[0] = (int)Math.min(255, (brokenUpFill[0]*overallBrightness[0]));
     brokenUpColour[1] = (int)Math.min(255, (brokenUpFill[1]*overallBrightness[1]));
     brokenUpColour[2] = (int)Math.min(255, (brokenUpFill[2]*overallBrightness[2]));
     brokenUpColour[3] = (int)Math.min(255, (brokenUpFill[3]*overallBrightness[3]));
