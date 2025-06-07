@@ -648,7 +648,7 @@ public class ScreenMake{
                   //Adding the new triangle to the list to account for the clipped triangle being a quad
                   edgeDir = returnEdgeDir(tempModel, secondPoints, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
                   if(edgeDir > 0){
-                    if((alpha[1] & 0xFF) < 0xFF){
+                    if((alpha[1] & 0xFF) < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1){
                       triListTranslucent.add(new Triangle(secondPoints, colour[0] , colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                       triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                       triListTranslucent.getLast().setVertexBrightness(finalBrightness);
@@ -674,7 +674,7 @@ public class ScreenMake{
               //Adding the triangle to the list
               edgeDir = returnEdgeDir(tempModel, points, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
               if(edgeDir > 0){
-                if((colour[1]  >>> 24) < 0xFF){
+                if((alpha[1] & 0xFF) < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1){
                   triListTranslucent.add(new Triangle(points, colour[0] , colour[1] , tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                   triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                   triListTranslucent.getLast().setVertexBrightness(vertexBrightness);
@@ -1308,7 +1308,7 @@ public class ScreenMake{
               //Adding the new triangle to the list to account for the clipped triangle being a quad
               edgeDir = returnEdgeDir(tempModel, secondPoints, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
               if(edgeDir > 0){
-                if((alpha[1] & 0xFF) < 0xFF){
+                if((alpha[1] & 0xFF) < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1){
                   triListTranslucent.add(new Triangle(secondPoints, colour[0] , colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                   triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                   triListTranslucent.getLast().setVertexBrightness(finalBrightness);
@@ -1334,7 +1334,7 @@ public class ScreenMake{
             //Adding the triangle to the list
             edgeDir = returnEdgeDir(tempModel, points, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
             if(edgeDir > 0){
-              if((alpha[1] & 0xFF) < 0xFF){
+              if((alpha[1] & 0xFF) < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1){
                 triListTranslucent.add(new Triangle(points, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                 triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                 triListTranslucent.getLast().setVertexBrightness(vertexBrightness);
