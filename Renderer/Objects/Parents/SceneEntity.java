@@ -1,7 +1,7 @@
 package Renderer.Objects.Parents;
 import java.util.LinkedList;
 import Renderer.Objects.Physics.*;
-import Actions.Action;
+import Actions.ObjectActions.Action;
 //Root superclass for all entities that define a scene (lights, cameras, etc.)
 public class SceneEntity{
     protected final float EPSILON = 0.0001f;

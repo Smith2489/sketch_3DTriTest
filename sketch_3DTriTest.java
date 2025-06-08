@@ -1,5 +1,6 @@
 import java.util.*;
-import Actions.*;
+import Actions.BufferActions.*;
+import Actions.ObjectActions.*;
 import Maths.LinearAlgebra.*;
 import Renderer.ModelDataHandler.*;
 import Renderer.Objects.SceneEntities.*;

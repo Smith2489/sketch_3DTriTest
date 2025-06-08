@@ -1,5 +1,5 @@
 package Renderer.Objects.SceneEntities;
-import Actions.StencilAction;
+import Actions.BufferActions.StencilAction;
 //Class for abstracting triangles
 public class Triangle{
   private float[][] vertices = new float[3][4];

@@ -1,5 +1,5 @@
 package Renderer.Objects.Parents;
-import Actions.StencilAction;
+import Actions.BufferActions.StencilAction;
 //Superclass for scene objects that have shading properties
 public class ShadedObject extends SceneObject{
     //Flag bits: 3 = hasFill, 4 = hasStroke, 5 = isGauroud

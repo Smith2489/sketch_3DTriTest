@@ -1,4 +1,4 @@
-package Actions;
+package Actions.ObjectActions;
 import Wrapper.*;
 public class ModelAction extends ObjectAction{
     private FloatWrapper tint = new FloatWrapper();

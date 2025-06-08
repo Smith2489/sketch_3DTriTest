@@ -1,5 +1,5 @@
 package Renderer.Objects.SceneEntities;
-import Actions.*;
+import Actions.ObjectActions.*;
 import Maths.Extensions.*;
 import Maths.LinearAlgebra.*;
 import Renderer.ScreenDraw.MVP;

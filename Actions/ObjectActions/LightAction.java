@@ -1,4 +1,4 @@
-package Actions;
+package Actions.ObjectActions;
 import Maths.LinearAlgebra.*;
 public class LightAction extends Action {
     protected float[] intensities = {1, 1, 1};

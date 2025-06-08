@@ -2,7 +2,7 @@ package Renderer.Objects.Parents;
 import java.util.Objects;
 import Maths.LinearAlgebra.*;
 import Renderer.ScreenDraw.MVP;
-import Actions.*;
+import Actions.ObjectActions.*;
 //Super class for scalable entities (cameras, scene objects)
 public class ScalableEntity extends SceneEntity{
     protected float[] scale = {1, 1, 1};

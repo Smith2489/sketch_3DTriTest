@@ -1,6 +1,6 @@
 package Renderer.Objects.Parents;
 import Wrapper.*;
-import Actions.*;
+import Actions.ObjectActions.*;
 //Superclass for objects that are drawn in a scene
 public class SceneObject extends ScalableEntity{
     protected byte flags = 0; //0 = noDepth, 1 = isAttachedToCamera, 2 = always perform

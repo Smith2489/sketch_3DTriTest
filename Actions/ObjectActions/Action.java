@@ -1,4 +1,4 @@
-package Actions;
+package Actions.ObjectActions;
 import Maths.LinearAlgebra.*;
 import Renderer.Objects.Physics.*;
 public abstract class Action{

@@ -1,4 +1,4 @@
-package Actions;
+package Actions.BufferActions;
 import Renderer.ScreenDraw.Colour;
 public class StencilAction{
     protected int[] rgba = {255, 255, 255, 255};

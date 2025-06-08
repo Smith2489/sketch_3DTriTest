@@ -1,6 +1,6 @@
 package Renderer.Objects.SceneEntities;
 import Wrapper.*;
-import Actions.*;
+import Actions.ObjectActions.*;
 import Renderer.Objects.Parents.*;
 //Class for abstracting away camera object data
 public class Camera extends ScalableEntity{

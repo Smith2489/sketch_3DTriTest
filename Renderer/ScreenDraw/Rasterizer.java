@@ -1,7 +1,7 @@
 package Renderer.ScreenDraw;
 import Wrapper.*;
 import Renderer.Objects.SceneEntities.*;
-import Actions.StencilAction;
+import Actions.BufferActions.StencilAction;
 //Draws triangles to a frame buffer
 public class Rasterizer{
   private static int halfWidth = 50;

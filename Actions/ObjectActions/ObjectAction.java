@@ -1,4 +1,4 @@
-package Actions;
+package Actions.ObjectActions;
 import Maths.LinearAlgebra.*;
 public class ObjectAction extends Action{
     protected float[] scale = {1, 1, 1};

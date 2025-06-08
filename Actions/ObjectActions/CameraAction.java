@@ -1,4 +1,4 @@
-package Actions;
+package Actions.ObjectActions;
 import Wrapper.*;
 public class CameraAction extends ObjectAction{
     private IntWrapper colour = new IntWrapper(0xFFFFFF);
