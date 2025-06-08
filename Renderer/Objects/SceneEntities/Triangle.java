@@ -1,4 +1,5 @@
 package Renderer.Objects.SceneEntities;
+import Actions.StencilAction;
 //Class for abstracting triangles
 public class Triangle{
   private float[][] vertices = new float[3][4];
@@ -7,6 +8,7 @@ public class Triangle{
   private float[][] vertexBrightness = {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}};
   private float maxFizzel = 1;
   private float fizzelThreshold = 1.1f;
+  private StencilAction stencil = new StencilAction();
   //Default constructor
   public Triangle(){
     for(byte i = 0; i < 3; i++){
@@ -32,6 +34,7 @@ public class Triangle{
     flags = 3;
     colour[0] = 0xFFFFFFFF;
     colour[1] = 0xFFFFFFFF;
+    stencil = new StencilAction();
   }
   //Constructor made with 9 points
   public Triangle(float x1, float y1, float z1, float w1, float x2, float y2, float z2, float w2, float x3, float y3, float z3, float w3, int stroke, int fill, boolean hasStroke, boolean hasFill){
@@ -82,6 +85,7 @@ public class Triangle{
     }
     else
       colour[1] = fill;
+    stencil = new StencilAction();
   }
   //Constructor with 2D array
   public Triangle(float[][] positions, int stroke, int fill, boolean hasStroke, boolean hasFill){
@@ -125,7 +129,17 @@ public class Triangle{
     }
     else
       colour[1] = fill;
+    stencil = new StencilAction();
   }
+
+  public void setStencilAction(StencilAction newAction){
+    stencil = newAction;
+  }
+
+  public StencilAction returnStencilActionPtr(){
+    return stencil;
+  }
+
   //Sets the vertices and computes the centre of the triangle with a 2D array
   public void setVertices(float[][] newVertices){
      for(byte i = 0; i < 3; i++){
@@ -384,6 +398,7 @@ public class Triangle{
       isEqual&=(flags == t.flags);
       isEqual&=(Math.abs(maxFizzel - t.maxFizzel) <= 0.0001);
       isEqual&=(Math.abs(fizzelThreshold - t.fizzelThreshold) <= 0.0001);
+      isEqual&=(stencil == t.stencil);
       return isEqual;
     }
     else
@@ -407,6 +422,7 @@ public class Triangle{
       maxFizzel = t.maxFizzel;
       fizzelThreshold = t.fizzelThreshold;
       flags = t.flags;
+      stencil = t.stencil;
     }
   }
 
@@ -426,6 +442,7 @@ public class Triangle{
     isEqual&=(flags == t.flags);
     isEqual&=(Math.abs(maxFizzel - t.maxFizzel) <= 0.0001);
     isEqual&=(Math.abs(fizzelThreshold - t.fizzelThreshold) <= 0.0001);
+    isEqual&=(stencil == t.stencil);
     return isEqual;
   }
   //Copies one triangle's data to another
@@ -444,6 +461,7 @@ public class Triangle{
     maxFizzel = t.maxFizzel;
     fizzelThreshold = t.fizzelThreshold;
     flags = t.flags;
+    stencil = t.stencil;
   }
   public String toString(){
     String verticesString = "Vertices: ("+vertices[0][0]+", "+vertices[0][1]+", "+vertices[0][2]+")\n";

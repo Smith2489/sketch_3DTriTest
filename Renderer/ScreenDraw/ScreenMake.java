@@ -655,6 +655,7 @@ public class ScreenMake{
                       triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
                       triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
                       triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
+                      triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
                       translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
                       translusentCount++;
                       translucentCounter++;
@@ -665,6 +666,7 @@ public class ScreenMake{
                       triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
                       triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
                       triListOpaque.getLast().setVertexBrightness(finalBrightness);
+                      triListOpaque.getLast().setStencilAction(tempModel.returnStencilActionPtr());
                       triListOpaque.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
                     }
                   }
@@ -681,6 +683,7 @@ public class ScreenMake{
                   triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
                   triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
                   triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
+                  triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
                   translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
                   translusentCount++;
                   translucentCounter++;
@@ -691,6 +694,7 @@ public class ScreenMake{
                   triListOpaque.getLast().setVertexBrightness(vertexBrightness);
                   triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
                   triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
+                  triListOpaque.getLast().setStencilAction(tempModel.returnStencilActionPtr());
                   triListOpaque.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
                 }
               }
@@ -1314,6 +1318,7 @@ public class ScreenMake{
                   triListTranslucent.getLast().setVertexBrightness(finalBrightness);
                   triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
                   triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
+                  triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
                   triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
                   translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
                   translusentCount++;
@@ -1325,6 +1330,7 @@ public class ScreenMake{
                   triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
                   triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
                   triListOpaque.getLast().setVertexBrightness(finalBrightness);
+                  triListOpaque.getLast().setStencilAction(tempModel.returnStencilActionPtr());
                   triListOpaque.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
                 }
               }
@@ -1341,6 +1347,7 @@ public class ScreenMake{
                 triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
                 triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
                 triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
+                triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
                 translucentData.add(new TranslucentData((byte)1, triListTranslucent.peekLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
                 translusentCount++;
                 translucentCounter++;
@@ -1351,6 +1358,7 @@ public class ScreenMake{
                 triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
                 triListOpaque.getLast().setVertexBrightness(vertexBrightness);
                 triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
+                triListOpaque.getLast().setStencilAction(tempModel.returnStencilActionPtr());
                 triListOpaque.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
               }
             }

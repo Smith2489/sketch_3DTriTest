@@ -1,24 +1,36 @@
 package Renderer.Objects.Parents;
+import Actions.StencilAction;
 //Superclass for scene objects that have shading properties
 public class ShadedObject extends SceneObject{
     //Flag bits: 3 = hasFill, 4 = hasStroke, 5 = isGauroud
-    protected float brightness = 1;
-    protected float shininess = 4;
-    protected float maxFizzel = 1;
-    protected float fizzelThreshold = 1.1f;
+    private float brightness = 1;
+    private float shininess = 4;
+    private float maxFizzel = 1;
+    private float fizzelThreshold = 1.1f;
+    private StencilAction stencil = new StencilAction();
     public ShadedObject(){
         super();
         brightness = 1;
         shininess = 4;
         maxFizzel = 1;
         fizzelThreshold = 1.1f;
+        stencil = new StencilAction();
     }
-    public ShadedObject(byte defaultFlags){
+    protected ShadedObject(byte defaultFlags){
         super(defaultFlags);
         brightness = 1;
         shininess = 4;
         maxFizzel = 1;
         fizzelThreshold = 1.1f;
+        stencil = new StencilAction();
+    }
+
+    public void setStencilAction(StencilAction newAction){
+        stencil = newAction;
+    }
+
+    public StencilAction returnStencilActionPtr(){
+        return stencil;
     }
 
     public void setHasFill(boolean hasFill){
@@ -84,6 +96,7 @@ public class ShadedObject extends SceneObject{
             shininess = s.shininess;
             maxFizzel = s.maxFizzel;
             fizzelThreshold = s.fizzelThreshold;
+            stencil = s.stencil;
         }
     }
     public void copy(ShadedObject s){
@@ -92,6 +105,7 @@ public class ShadedObject extends SceneObject{
         shininess = s.shininess;
         maxFizzel = s.maxFizzel;
         fizzelThreshold = s.fizzelThreshold;
+        stencil = s.stencil;
     }
 
     public boolean equals(Object o){
@@ -102,6 +116,7 @@ public class ShadedObject extends SceneObject{
             isEquals&=(Math.abs(shininess-s.shininess) <= EPSILON);
             isEquals&=(Math.abs(maxFizzel-s.maxFizzel) <= EPSILON);
             isEquals&=(Math.abs(fizzelThreshold-s.fizzelThreshold) <= EPSILON);
+            isEquals&=(stencil == s.stencil);
             return isEquals;
         }
         else
@@ -113,6 +128,7 @@ public class ShadedObject extends SceneObject{
         isEquals&=(Math.abs(shininess-s.shininess) <= EPSILON);
         isEquals&=(Math.abs(maxFizzel-s.maxFizzel) <= EPSILON);
         isEquals&=(Math.abs(fizzelThreshold-s.fizzelThreshold) <= EPSILON);
+        isEquals&=(stencil == s.stencil);
         return isEquals;
     }
 }

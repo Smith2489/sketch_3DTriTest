@@ -1,6 +1,7 @@
 package Renderer.ScreenDraw;
 import Wrapper.*;
 import Renderer.Objects.SceneEntities.*;
+import Actions.StencilAction;
 //Draws triangles to a frame buffer
 public class Rasterizer{
   private static int halfWidth = 50;
@@ -24,6 +25,7 @@ public class Rasterizer{
   private static int[] brokenUpColour = {0, 0, 0, 0};
   private static int[] brokenUpFill = {0, 0, 0, 0};
   private static float alphaNorm = 0;
+  private static StencilAction tempAction = new StencilAction();
   /*
     bit 0 = stencil test results
     bit 1 = anti aliasing 
@@ -35,6 +37,10 @@ public class Rasterizer{
 
   //Stores how much light is reflected off of each vertex for Gouraud shading
   private static float[][] vertexBrightness = {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}};
+
+  public static void setStencilAction(StencilAction newAction){
+    tempAction = newAction;
+  }
 
   //Sets the brightness of each vertex
   public static void setVertexBrightness(float[][] brightnessLevels){
@@ -396,8 +402,10 @@ public class Rasterizer{
                                   (frame[pixelPos] >>> 8) & 0xFF, 
                                   frame[pixelPos] & 0xFF};
             //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
-            if(brokenUpColour[0] < 0xFF)
-              frame[pixelPos] = Colour.interpolateColours(brokenUpFill, brokenUpFrame, alphaNorm);
+            if(brokenUpColour[0] < 0xFF){
+              Colour.interpolateColours(brokenUpFill, brokenUpFrame, alphaNorm);
+              frame[pixelPos] = (brokenUpFill[0] << 24)|(brokenUpFill[1] << 16)|(brokenUpFill[2] << 8)|(brokenUpFill[3]);
+            }
             else
               frame[pixelPos] = fill;
           }
@@ -491,15 +499,16 @@ public class Rasterizer{
               computeLighting(tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
-                frame[pixelPos] = Colour.interpolateColours(brokenUpColour, brokenUpFrame);
-              else
-                frame[pixelPos] = (brokenUpColour[0] << 24)|(brokenUpColour[1] << 16)|(brokenUpColour[2] << 8)|brokenUpColour[3];
+                Colour.interpolateColours(brokenUpColour, brokenUpFrame);
+              
+              frame[pixelPos] = (brokenUpColour[0] << 24)|(brokenUpColour[1] << 16)|(brokenUpColour[2] << 8)|brokenUpColour[3];
               zBuff[pixelPos] = z;
             }
             //For when there were triangles drawn at the current pixel that were closer than the current triangle
             else if(brokenUpFrame[0] < 0xFF){
                 computeLighting(tempZ, invZ, vertexBrightness);
-                frame[pixelPos] = Colour.interpolateColours(brokenUpFrame, brokenUpColour);
+                Colour.interpolateColours(brokenUpFrame, brokenUpColour);
+                frame[pixelPos] = (brokenUpFrame[0] << 24)|(brokenUpFrame[1] << 16)|(brokenUpFrame[2] << 8)|brokenUpFrame[3];
             }
           }
          }
@@ -603,15 +612,15 @@ public class Rasterizer{
               computeLighting(tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
-                frame[pixelPos] = Colour.interpolateColours(brokenUpColour, brokenUpFrame);
-              else
-                frame[pixelPos] = (brokenUpColour[0] << 24)|(brokenUpColour[1] << 16)|(brokenUpColour[2] << 8)|brokenUpColour[3];
+                Colour.interpolateColours(brokenUpColour, brokenUpFrame);
+              frame[pixelPos] = (brokenUpColour[0] << 24)|(brokenUpColour[1] << 16)|(brokenUpColour[2] << 8)|brokenUpColour[3];
               zBuff[pixelPos] = z;
             }
             //For when there were triangles drawn at the current pixel that were closer than the current triangle
             else if(brokenUpFrame[0] < 0xFF){
               computeLighting(tempZ, invZ, vertexBrightness);
-              frame[pixelPos] = Colour.interpolateColours(brokenUpFrame, brokenUpColour);
+              Colour.interpolateColours(brokenUpFrame, brokenUpColour);
+              frame[pixelPos] = (brokenUpFrame[0] << 24)|(brokenUpFrame[1] << 16)|(brokenUpFrame[2] << 8)|brokenUpFrame[3];
             }
           }
         }
@@ -701,24 +710,15 @@ public class Rasterizer{
               computeLighting(tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
-                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos);
-              else{
-                //Normalizes the stencil to be between 0 and 1
-                float stencilNorm = ((~stencil[pixelPos]) & 0xFF)*Colour.INV_255;
-                //Computes the brightness of each pixel
-                brokenUpColour[1] = (int)(brokenUpColour[1]*stencilNorm);
-                brokenUpColour[2] = (int)(brokenUpColour[2]*stencilNorm);
-                brokenUpColour[3] = (int)(brokenUpColour[3]*stencilNorm);
-                //Extracts the colour channel data
-                //Copies the data into the frame buffer
-                frame[pixelPos] = (brokenUpColour[0] << 24)|(brokenUpColour[1] << 16)|(brokenUpColour[2] << 8)|brokenUpColour[3];
-              }
+                Colour.interpolateColours(brokenUpColour, brokenUpFrame);
+              frame[pixelPos] = performStencilAction(brokenUpColour, j, i, compVal, pixelPos);
               zBuff[pixelPos] = z;
             }
             //For when there were triangles drawn at the current pixel that were closer than the current triangle
             else if(brokenUpFrame[0] < 0xFF){
               computeLighting(tempZ, invZ, vertexBrightness);
-              frame[pixelPos] = interpolatePixels(brokenUpFrame, brokenUpColour, pixelPos);
+              Colour.interpolateColours(brokenUpFrame, brokenUpColour);
+              frame[pixelPos] = performStencilAction(brokenUpFrame, j, i, compVal, pixelPos);
             }
           }
         }
@@ -741,6 +741,7 @@ public class Rasterizer{
   
   public static void draw(Triangle triangle, byte compVal, char testType){
     //Setting up the colour
+    tempAction = triangle.returnStencilActionPtr();
     stroke = triangle.getStroke();
     fill = triangle.getFill();
     brokenUpColour[0] = fill >>> 24;
@@ -823,23 +824,15 @@ public class Rasterizer{
               computeLighting(tempZ, invZ, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
-                frame[pixelPos] = interpolatePixels(brokenUpColour, brokenUpFrame, pixelPos);
-              else{
-                //Normalizes the stencil to be between 0 and 1
-                float stencilNorm = ((~stencil[pixelPos]) & 0xFF)*Colour.INV_255;
-                //Computes the brightness of each pixel
-                brokenUpColour[1] = (int)(brokenUpColour[1]*stencilNorm);
-                brokenUpColour[2] = (int)(brokenUpColour[2]*stencilNorm);
-                brokenUpColour[3] = (int)(brokenUpColour[3]*stencilNorm);
-                //Copies the data into the frame buffer
-                frame[pixelPos] = (brokenUpColour[0] << 24)|(brokenUpColour[1] << 16)|(brokenUpColour[2] << 8)|brokenUpColour[3];
-              }
+                Colour.interpolateColours(brokenUpColour, brokenUpFrame);
+              frame[pixelPos] = performStencilAction(brokenUpColour, j, i, compVal, pixelPos);
               zBuff[pixelPos] = z;
             }
             //For when there were triangles drawn at the current pixel that were closer than the current triangle
             else if((frame[pixelPos] >>> 24) < 0xFF){
               computeLighting(tempZ, invZ, vertexBrightness);
-              frame[pixelPos] = interpolatePixels(brokenUpFrame, brokenUpColour, pixelPos);
+              Colour.interpolateColours(brokenUpFrame, brokenUpColour);
+              frame[pixelPos] = performStencilAction(brokenUpFrame, j, i, compVal, pixelPos);
             }
           }
          }
@@ -1125,6 +1118,17 @@ public class Rasterizer{
       }
     }
   }
+
+  public static int performStencilAction(int[] colour, int x, int y, byte compVal, int pixelPos){
+    tempAction.setColour(colour);
+    tempAction.setPostion(x, y);
+    tempAction.setComparison(compVal);
+    tempAction.setStencilPixel(stencil[pixelPos]);
+    tempAction.updateStencil();
+    stencil[pixelPos] = tempAction.returnStencilValue();
+    return (colour[0] << 24)|(colour[1] << 16)|(colour[2] << 8)|colour[3];
+  }
+
   //Returns the depth buffer
   public static float[] returnDepthBuffer(){
     return zBuff;

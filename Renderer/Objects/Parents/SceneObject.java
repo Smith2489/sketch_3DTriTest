@@ -4,14 +4,14 @@ import Actions.*;
 //Superclass for objects that are drawn in a scene
 public class SceneObject extends ScalableEntity{
     protected byte flags = 0; //0 = noDepth, 1 = isAttachedToCamera, 2 = always perform
-    protected FloatWrapper uniTint = new FloatWrapper();
+    private FloatWrapper uniTint = new FloatWrapper();
 
     public SceneObject(){
         super();
         flags = 0;
         uniTint.val = 1;
     }
-    public SceneObject(byte defaultFlags){
+    protected SceneObject(byte defaultFlags){
         super();
         flags = defaultFlags;
         uniTint.val = 1;
@@ -26,12 +26,12 @@ public class SceneObject extends ScalableEntity{
         flags = 0;
         uniTint.val = 1;
     }
-    public SceneObject(float[] newPos, byte defaultFlags){
+    protected SceneObject(float[] newPos, byte defaultFlags){
         super(newPos);
         flags = defaultFlags;
         uniTint.val = 1;
     }
-    public SceneObject(float x, float y, float z, byte defaultFlags){
+    protected SceneObject(float x, float y, float z, byte defaultFlags){
         super(x, y, z);
         flags = defaultFlags;
         uniTint.val = 1;

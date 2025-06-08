@@ -230,6 +230,7 @@ public class sketch_3DTriTest extends PApplet{;
     testModels[5] = new Model(testGeometry[0], testPallets[0]);
     testModels[5].setPosition(1, 0, 18);
     testModels[5].addAction(new RotateDefaultModel());
+    testModels[5].setStencilAction(new ChangeStencil());
 
     
     //Bowser platform
@@ -253,6 +254,7 @@ public class sketch_3DTriTest extends PApplet{;
     testModels[8].setRotation(0, 90, 0);
     testModels[8].setScale(2.5f, 2.5f, 2.5f);
     testModels[8].addAction(new RotateAtFiveDegrees(true));
+
     
     //Rhombohedron
     testModels[9] = new Model(testGeometry[3], testPallets[4]);
@@ -345,6 +347,7 @@ public class sketch_3DTriTest extends PApplet{;
     ScreenMake.usePersp(RESOLUTIONS[0][3], RESOLUTIONS[1][3], 75);
     //eye.setScale(10, 10, 10);
     ScreenMake.setLineList(testLineLinked);
+    ScreenMake.setStencilTest((byte)0, 'p');
   }
 
   private static LinkedList<Model> arrayToLinkedList(Model[] arr){
@@ -475,7 +478,7 @@ public class sketch_3DTriTest extends PApplet{;
     //  TriangleRasterizer.stroke(0x000000);
     //  TriangleRasterizer.draw(pixels, tris[i].getVertices()[0][0], tris[i].getVertices()[0][1],tris[i].getVertices()[0][2],tris[i].getVertices()[1][0],tris[i].getVertices()[1][1],tris[i].getVertices()[1][2],tris[i].getVertices()[2][0],tris[i].getVertices()[2][1],tris[i].getVertices()[2][2]);
     //}
-    ScreenMake.setStencilTest((byte)0, 'e');
+    //ScreenMake.setStencilTest((byte)0, 'e');
     //ScreenMake.smooth();
     ScreenMake.imgBack();
     //ScreenMake.solidBack();
@@ -679,6 +682,11 @@ public class sketch_3DTriTest extends PApplet{;
     }
   }
 
+  private class ChangeStencil extends StencilAction{
+    public void updateStencil(){
+      stencilPixel = -1;
+    }
+  }
 
 
   private class RotateAtFiveDegrees extends ModelAction{
