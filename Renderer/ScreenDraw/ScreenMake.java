@@ -4,6 +4,7 @@ import java.util.*;
 import Maths.LinearAlgebra.*;
 import Renderer.Objects.SceneEntities.*;
 public class ScreenMake{
+    public static final int MIN_TRANSPARENCY = 0;
     //Set up for the stencil test
     private static byte stencilComp = 0;
     private static char testType = 'e';
@@ -402,7 +403,7 @@ public class ScreenMake{
         }
 
       
-        if(isInClipSpace && tempModel.returnModelTint() > 0){
+        if(isInClipSpace && tempModel.returnModelTint() > MIN_TRANSPARENCY*Colour.INV_255){
 
           for(int j = 0; j < tempModel.returnPolygonCount(); j++){
             float[] triCentre = {0, 0, 0, 0};
@@ -529,173 +530,175 @@ public class ScreenMake{
               //Returns if the current triangle is exempt from backface culling
               int[] colour = {tempModel.returnColours()[j][0], tempModel.returnColours()[j][1]}; //Holds the colours that get sent to the triangle rasterizer
               short[] alpha = {(short)((colour[0] >>> 24)*tempModel.returnModelTint()), (short)((colour[1] >>> 24)*tempModel.returnModelTint())};
-              //Adding triangles to the list with near-plane clipping (WHOOP WHOOP!!!)
-              float[] intersect1 = {0, 0, 0, 0}; //Coordinates for the first point of intersection between the triangle and the near plane
-              float[] intersect2 = {0, 0, 0, 0}; //Coordinates for the second point of intersection between the triangle and the near plane
-              float t1 = 0; //How far up side AB is the intersection
-              float t2 = 0; //How far up side AC is the intersection
-              //Code for handling triangles which clip the near plane
-              switch(numOfInside){
-                  //When 1 point is inside the frustum
-                  case 1:
-                    //Calculating how far up each side the intersection occurs
-                    byte otherPoint1 = (byte)((insidePoints[0]+1)%3);
-                    byte otherPoint2 = (byte)((insidePoints[0]+2)%3);
+              if(alpha[1] > MIN_TRANSPARENCY){
+                //Adding triangles to the list with near-plane clipping (WHOOP WHOOP!!!)
+                float[] intersect1 = {0, 0, 0, 0}; //Coordinates for the first point of intersection between the triangle and the near plane
+                float[] intersect2 = {0, 0, 0, 0}; //Coordinates for the second point of intersection between the triangle and the near plane
+                float t1 = 0; //How far up side AB is the intersection
+                float t2 = 0; //How far up side AC is the intersection
+                //Code for handling triangles which clip the near plane
+                switch(numOfInside){
+                    //When 1 point is inside the frustum
+                    case 1:
+                      //Calculating how far up each side the intersection occurs
+                      byte otherPoint1 = (byte)((insidePoints[0]+1)%3);
+                      byte otherPoint2 = (byte)((insidePoints[0]+2)%3);
+                      t1 = (1 - points[insidePoints[0]][2]);
+                      if(Math.abs(points[otherPoint1][2] - points[insidePoints[0]][2]) > 0) 
+                        t1/=(points[otherPoint1][2]-points[insidePoints[0]][2]);
+                      t2 = (1 - points[insidePoints[0]][2]);
+                      if(Math.abs(points[otherPoint2][2] - points[insidePoints[0]][2]) > 0) 
+                        t2/=(points[otherPoint2][2]-points[insidePoints[0]][2]);
+                            
+                      //Computing the location of the point of intersection for each intersecting side
+                      intersect1[0] = points[insidePoints[0]][0] + t1*(points[otherPoint1][0]-points[insidePoints[0]][0]);
+                      intersect1[1] = points[insidePoints[0]][1] + t1*(points[otherPoint1][1]-points[insidePoints[0]][1]);
+                      intersect1[2] = points[insidePoints[0]][2] + t1*(points[otherPoint1][2]-points[insidePoints[0]][2]);
+                      intersect1[3] = points[insidePoints[0]][3] + t1*(points[otherPoint1][3]-points[insidePoints[0]][3]);
+
+                      intersect2[0] = points[insidePoints[0]][0] + t2*(points[otherPoint2][0]-points[insidePoints[0]][0]);
+                      intersect2[1] = points[insidePoints[0]][1] + t2*(points[otherPoint2][1]-points[insidePoints[0]][1]);
+                      intersect2[2] = points[insidePoints[0]][2] + t2*(points[otherPoint2][2]-points[insidePoints[0]][2]);
+                      intersect2[3] = points[insidePoints[0]][3] + t2*(points[otherPoint2][3]-points[insidePoints[0]][3]);
+                      float[] vertexBrightness1 = {vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[otherPoint1][0]-vertexBrightness[insidePoints[0]][0]),
+                                                    vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[otherPoint1][1]-vertexBrightness[insidePoints[0]][1]),
+                                                    vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[otherPoint1][2]-vertexBrightness[insidePoints[0]][2]),
+                                                    vertexBrightness[insidePoints[0]][3] + t1*(vertexBrightness[otherPoint1][3]-vertexBrightness[insidePoints[0]][3])};
+                      float[] vertexBrightness2 = {vertexBrightness[insidePoints[0]][0] + t2*(vertexBrightness[otherPoint2][0]-vertexBrightness[insidePoints[0]][0]),
+                                                    vertexBrightness[insidePoints[0]][1] + t2*(vertexBrightness[otherPoint2][1]-vertexBrightness[insidePoints[0]][1]),
+                                                    vertexBrightness[insidePoints[0]][2] + t2*(vertexBrightness[otherPoint2][2]-vertexBrightness[insidePoints[0]][2]),
+                                                    vertexBrightness[insidePoints[0]][3] + t2*(vertexBrightness[otherPoint2][3]-vertexBrightness[insidePoints[0]][3])};
+                      //Moving the points that are behind the near plane to be at the points of intersection
+                      points[otherPoint1][0] = intersect1[0];
+                      points[otherPoint1][1] = intersect1[1];
+                      points[otherPoint1][2] = intersect1[2];
+                      points[otherPoint1][3] = intersect1[3];
+                            
+                      points[otherPoint2][0] = intersect2[0];
+                      points[otherPoint2][1] = intersect2[1];
+                      points[otherPoint2][2] = intersect2[2];
+                      points[otherPoint2][3] = intersect2[3];
+
+                      vertexBrightness[otherPoint1][0] = vertexBrightness1[0];
+                      vertexBrightness[otherPoint1][1] = vertexBrightness1[1];
+                      vertexBrightness[otherPoint1][2] = vertexBrightness1[2];
+                      vertexBrightness[otherPoint1][3] = vertexBrightness1[3];
+                      vertexBrightness[otherPoint2][0] = vertexBrightness2[0];
+                      vertexBrightness[otherPoint2][1] = vertexBrightness2[1];
+                      vertexBrightness[otherPoint2][2] = vertexBrightness2[2];
+                      vertexBrightness[otherPoint2][3] = vertexBrightness2[3];
+                      break;
+                  //When 2 points are inside the frustum
+                  case 2:
+                    //Calculating how far up each side the points of intersection are
                     t1 = (1 - points[insidePoints[0]][2]);
-                    if(Math.abs(points[otherPoint1][2] - points[insidePoints[0]][2]) > 0) 
-                      t1/=(points[otherPoint1][2]-points[insidePoints[0]][2]);
-                    t2 = (1 - points[insidePoints[0]][2]);
-                    if(Math.abs(points[otherPoint2][2] - points[insidePoints[0]][2]) > 0) 
-                      t2/=(points[otherPoint2][2]-points[insidePoints[0]][2]);
-                          
-                    //Computing the location of the point of intersection for each intersecting side
-                    intersect1[0] = points[insidePoints[0]][0] + t1*(points[otherPoint1][0]-points[insidePoints[0]][0]);
-                    intersect1[1] = points[insidePoints[0]][1] + t1*(points[otherPoint1][1]-points[insidePoints[0]][1]);
-                    intersect1[2] = points[insidePoints[0]][2] + t1*(points[otherPoint1][2]-points[insidePoints[0]][2]);
-                    intersect1[3] = points[insidePoints[0]][3] + t1*(points[otherPoint1][3]-points[insidePoints[0]][3]);
+                    if(Math.abs(points[insidePoints[2]][2] - points[insidePoints[0]][2]) > 0) 
+                      t1/=(points[insidePoints[2]][2]-points[insidePoints[0]][2]);
+                    t2 = (1 - points[insidePoints[1]][2]);
+                    if(Math.abs(points[insidePoints[2]][2] - points[insidePoints[1]][2]) > 0) 
+                      t2/=(points[insidePoints[2]][2]-points[insidePoints[1]][2]);
+                        
+                    float[][] finalBrightness = new float[3][4];
+                    //Calculating where each point of intersection is
+                    intersect1[0] = points[insidePoints[0]][0] + t1*(points[insidePoints[2]][0]-points[insidePoints[0]][0]);
+                    intersect1[1] = points[insidePoints[0]][1] + t1*(points[insidePoints[2]][1]-points[insidePoints[0]][1]);
+                    intersect1[2] = points[insidePoints[0]][2] + t1*(points[insidePoints[2]][2]-points[insidePoints[0]][2]);
+                    intersect1[3] = points[insidePoints[0]][3] + t1*(points[insidePoints[2]][3]-points[insidePoints[0]][3]);
+                    finalBrightness[insidePoints[0]][0] = vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[0]][0]);
+                    finalBrightness[insidePoints[0]][1] = vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[0]][1]);
+                    finalBrightness[insidePoints[0]][2] = vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[0]][2]);
+                    finalBrightness[insidePoints[0]][3] = vertexBrightness[insidePoints[0]][3] + t1*(vertexBrightness[insidePoints[2]][3]-vertexBrightness[insidePoints[0]][3]);
 
-                    intersect2[0] = points[insidePoints[0]][0] + t2*(points[otherPoint2][0]-points[insidePoints[0]][0]);
-                    intersect2[1] = points[insidePoints[0]][1] + t2*(points[otherPoint2][1]-points[insidePoints[0]][1]);
-                    intersect2[2] = points[insidePoints[0]][2] + t2*(points[otherPoint2][2]-points[insidePoints[0]][2]);
-                    intersect2[3] = points[insidePoints[0]][3] + t2*(points[otherPoint2][3]-points[insidePoints[0]][3]);
-                    float[] vertexBrightness1 = {vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[otherPoint1][0]-vertexBrightness[insidePoints[0]][0]),
-                                                  vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[otherPoint1][1]-vertexBrightness[insidePoints[0]][1]),
-                                                  vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[otherPoint1][2]-vertexBrightness[insidePoints[0]][2]),
-                                                  vertexBrightness[insidePoints[0]][3] + t1*(vertexBrightness[otherPoint1][3]-vertexBrightness[insidePoints[0]][3])};
-                    float[] vertexBrightness2 = {vertexBrightness[insidePoints[0]][0] + t2*(vertexBrightness[otherPoint2][0]-vertexBrightness[insidePoints[0]][0]),
-                                                  vertexBrightness[insidePoints[0]][1] + t2*(vertexBrightness[otherPoint2][1]-vertexBrightness[insidePoints[0]][1]),
-                                                  vertexBrightness[insidePoints[0]][2] + t2*(vertexBrightness[otherPoint2][2]-vertexBrightness[insidePoints[0]][2]),
-                                                  vertexBrightness[insidePoints[0]][3] + t2*(vertexBrightness[otherPoint2][3]-vertexBrightness[insidePoints[0]][3])};
-                    //Moving the points that are behind the near plane to be at the points of intersection
-                    points[otherPoint1][0] = intersect1[0];
-                    points[otherPoint1][1] = intersect1[1];
-                    points[otherPoint1][2] = intersect1[2];
-                    points[otherPoint1][3] = intersect1[3];
-                          
-                    points[otherPoint2][0] = intersect2[0];
-                    points[otherPoint2][1] = intersect2[1];
-                    points[otherPoint2][2] = intersect2[2];
-                    points[otherPoint2][3] = intersect2[3];
-
-                    vertexBrightness[otherPoint1][0] = vertexBrightness1[0];
-                    vertexBrightness[otherPoint1][1] = vertexBrightness1[1];
-                    vertexBrightness[otherPoint1][2] = vertexBrightness1[2];
-                    vertexBrightness[otherPoint1][3] = vertexBrightness1[3];
-                    vertexBrightness[otherPoint2][0] = vertexBrightness2[0];
-                    vertexBrightness[otherPoint2][1] = vertexBrightness2[1];
-                    vertexBrightness[otherPoint2][2] = vertexBrightness2[2];
-                    vertexBrightness[otherPoint2][3] = vertexBrightness2[3];
-                    break;
-                //When 2 points are inside the frustum
-                case 2:
-                  //Calculating how far up each side the points of intersection are
-                  t1 = (1 - points[insidePoints[0]][2]);
-                  if(Math.abs(points[insidePoints[2]][2] - points[insidePoints[0]][2]) > 0) 
-                    t1/=(points[insidePoints[2]][2]-points[insidePoints[0]][2]);
-                  t2 = (1 - points[insidePoints[1]][2]);
-                  if(Math.abs(points[insidePoints[2]][2] - points[insidePoints[1]][2]) > 0) 
-                    t2/=(points[insidePoints[2]][2]-points[insidePoints[1]][2]);
-                      
-                  float[][] finalBrightness = new float[3][4];
-                  //Calculating where each point of intersection is
-                  intersect1[0] = points[insidePoints[0]][0] + t1*(points[insidePoints[2]][0]-points[insidePoints[0]][0]);
-                  intersect1[1] = points[insidePoints[0]][1] + t1*(points[insidePoints[2]][1]-points[insidePoints[0]][1]);
-                  intersect1[2] = points[insidePoints[0]][2] + t1*(points[insidePoints[2]][2]-points[insidePoints[0]][2]);
-                  intersect1[3] = points[insidePoints[0]][3] + t1*(points[insidePoints[2]][3]-points[insidePoints[0]][3]);
-                  finalBrightness[insidePoints[0]][0] = vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[0]][0]);
-                  finalBrightness[insidePoints[0]][1] = vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[0]][1]);
-                  finalBrightness[insidePoints[0]][2] = vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[0]][2]);
-                  finalBrightness[insidePoints[0]][3] = vertexBrightness[insidePoints[0]][3] + t1*(vertexBrightness[insidePoints[2]][3]-vertexBrightness[insidePoints[0]][3]);
-
-                  intersect2[0] = points[insidePoints[1]][0] + t2*(points[insidePoints[2]][0]-points[insidePoints[1]][0]);
-                  intersect2[1] = points[insidePoints[1]][1] + t2*(points[insidePoints[2]][1]-points[insidePoints[1]][1]);
-                  intersect2[2] = points[insidePoints[1]][2] + t2*(points[insidePoints[2]][2]-points[insidePoints[1]][2]);
-                  intersect2[3] = points[insidePoints[1]][3] + t2*(points[insidePoints[2]][3]-points[insidePoints[1]][3]);
-                  finalBrightness[insidePoints[2]][0] = vertexBrightness[insidePoints[1]][0] + t2*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[1]][0]);
-                  finalBrightness[insidePoints[2]][1] = vertexBrightness[insidePoints[1]][1] + t2*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[1]][1]);
-                  finalBrightness[insidePoints[2]][2] = vertexBrightness[insidePoints[1]][2] + t2*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[1]][2]);
-                  finalBrightness[insidePoints[2]][3] = vertexBrightness[insidePoints[1]][3] + t2*(vertexBrightness[insidePoints[2]][3]-vertexBrightness[insidePoints[1]][3]);
-                  float[][] secondPoints = new float[3][4];
-                  //Constructing a triangle B'C'C
-                  //C
-                  secondPoints[insidePoints[1]][0] = points[insidePoints[1]][0];
-                  secondPoints[insidePoints[1]][1] = points[insidePoints[1]][1];
-                  secondPoints[insidePoints[1]][2] = points[insidePoints[1]][2];
-                  secondPoints[insidePoints[1]][3] = points[insidePoints[1]][3];
-                  finalBrightness[insidePoints[1]][0] = vertexBrightness[insidePoints[1]][0];
-                  finalBrightness[insidePoints[1]][1] = vertexBrightness[insidePoints[1]][1];
-                  finalBrightness[insidePoints[1]][2] = vertexBrightness[insidePoints[1]][2];
-                  finalBrightness[insidePoints[1]][3] = vertexBrightness[insidePoints[1]][3];
-                  //B'
-                  secondPoints[insidePoints[0]][0] = intersect1[0];
-                  secondPoints[insidePoints[0]][1] = intersect1[1];
-                  secondPoints[insidePoints[0]][2] = intersect1[2];
-                  secondPoints[insidePoints[0]][3] = intersect1[3];
-                  //C'
-                  secondPoints[insidePoints[2]][0] = intersect2[0];
-                  secondPoints[insidePoints[2]][1] = intersect2[1];
-                  secondPoints[insidePoints[2]][2] = intersect2[2];
-                  secondPoints[insidePoints[2]][3] = intersect2[3];
-                  //Modifiying the original triangle to be BCB'
-                  points[insidePoints[2]][0] = intersect1[0];
-                  points[insidePoints[2]][1] = intersect1[1];
-                  points[insidePoints[2]][2] = intersect1[2];
-                  points[insidePoints[2]][3] = intersect1[3];
-                  vertexBrightness[insidePoints[2]][0] = finalBrightness[insidePoints[0]][0];
-                  vertexBrightness[insidePoints[2]][1] = finalBrightness[insidePoints[0]][1];
-                  vertexBrightness[insidePoints[2]][2] = finalBrightness[insidePoints[0]][2];
-                  vertexBrightness[insidePoints[2]][3] = finalBrightness[insidePoints[0]][3];
-                  //Adding the new triangle to the list to account for the clipped triangle being a quad
-                  edgeDir = returnEdgeDir(tempModel, secondPoints, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
-                  if(edgeDir > 0){
-                    if((alpha[1] & 0xFF) < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1){
-                      triListTranslucent.add(new Triangle(secondPoints, colour[0] , colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
-                      triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
-                      triListTranslucent.getLast().setVertexBrightness(finalBrightness);
-                      triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
-                      triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
-                      triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
-                      triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
-                      translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
-                      translusentCount++;
-                      translucentCounter++;
+                    intersect2[0] = points[insidePoints[1]][0] + t2*(points[insidePoints[2]][0]-points[insidePoints[1]][0]);
+                    intersect2[1] = points[insidePoints[1]][1] + t2*(points[insidePoints[2]][1]-points[insidePoints[1]][1]);
+                    intersect2[2] = points[insidePoints[1]][2] + t2*(points[insidePoints[2]][2]-points[insidePoints[1]][2]);
+                    intersect2[3] = points[insidePoints[1]][3] + t2*(points[insidePoints[2]][3]-points[insidePoints[1]][3]);
+                    finalBrightness[insidePoints[2]][0] = vertexBrightness[insidePoints[1]][0] + t2*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[1]][0]);
+                    finalBrightness[insidePoints[2]][1] = vertexBrightness[insidePoints[1]][1] + t2*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[1]][1]);
+                    finalBrightness[insidePoints[2]][2] = vertexBrightness[insidePoints[1]][2] + t2*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[1]][2]);
+                    finalBrightness[insidePoints[2]][3] = vertexBrightness[insidePoints[1]][3] + t2*(vertexBrightness[insidePoints[2]][3]-vertexBrightness[insidePoints[1]][3]);
+                    float[][] secondPoints = new float[3][4];
+                    //Constructing a triangle B'C'C
+                    //C
+                    secondPoints[insidePoints[1]][0] = points[insidePoints[1]][0];
+                    secondPoints[insidePoints[1]][1] = points[insidePoints[1]][1];
+                    secondPoints[insidePoints[1]][2] = points[insidePoints[1]][2];
+                    secondPoints[insidePoints[1]][3] = points[insidePoints[1]][3];
+                    finalBrightness[insidePoints[1]][0] = vertexBrightness[insidePoints[1]][0];
+                    finalBrightness[insidePoints[1]][1] = vertexBrightness[insidePoints[1]][1];
+                    finalBrightness[insidePoints[1]][2] = vertexBrightness[insidePoints[1]][2];
+                    finalBrightness[insidePoints[1]][3] = vertexBrightness[insidePoints[1]][3];
+                    //B'
+                    secondPoints[insidePoints[0]][0] = intersect1[0];
+                    secondPoints[insidePoints[0]][1] = intersect1[1];
+                    secondPoints[insidePoints[0]][2] = intersect1[2];
+                    secondPoints[insidePoints[0]][3] = intersect1[3];
+                    //C'
+                    secondPoints[insidePoints[2]][0] = intersect2[0];
+                    secondPoints[insidePoints[2]][1] = intersect2[1];
+                    secondPoints[insidePoints[2]][2] = intersect2[2];
+                    secondPoints[insidePoints[2]][3] = intersect2[3];
+                    //Modifiying the original triangle to be BCB'
+                    points[insidePoints[2]][0] = intersect1[0];
+                    points[insidePoints[2]][1] = intersect1[1];
+                    points[insidePoints[2]][2] = intersect1[2];
+                    points[insidePoints[2]][3] = intersect1[3];
+                    vertexBrightness[insidePoints[2]][0] = finalBrightness[insidePoints[0]][0];
+                    vertexBrightness[insidePoints[2]][1] = finalBrightness[insidePoints[0]][1];
+                    vertexBrightness[insidePoints[2]][2] = finalBrightness[insidePoints[0]][2];
+                    vertexBrightness[insidePoints[2]][3] = finalBrightness[insidePoints[0]][3];
+                    //Adding the new triangle to the list to account for the clipped triangle being a quad
+                    edgeDir = returnEdgeDir(tempModel, secondPoints, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
+                    if(edgeDir > 0){
+                      if((alpha[1] & 0xFF) < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1){
+                        triListTranslucent.add(new Triangle(secondPoints, colour[0] , colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
+                        triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
+                        triListTranslucent.getLast().setVertexBrightness(finalBrightness);
+                        triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
+                        triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
+                        triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
+                        triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
+                        translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
+                        translusentCount++;
+                        translucentCounter++;
+                      }
+                      else{
+                        triListOpaque.add(new Triangle(secondPoints, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
+                        triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
+                        triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
+                        triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
+                        triListOpaque.getLast().setVertexBrightness(finalBrightness);
+                        triListOpaque.getLast().setStencilAction(tempModel.returnStencilActionPtr());
+                        triListOpaque.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
+                      }
                     }
-                    else{
-                      triListOpaque.add(new Triangle(secondPoints, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
-                      triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
-                      triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
-                      triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
-                      triListOpaque.getLast().setVertexBrightness(finalBrightness);
-                      triListOpaque.getLast().setStencilAction(tempModel.returnStencilActionPtr());
-                      triListOpaque.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
-                    }
-                  }
-                break;
-              }
-                
-              //Adding the triangle to the list
-              edgeDir = returnEdgeDir(tempModel, points, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
-              if(edgeDir > 0){
-                if((alpha[1] & 0xFF) < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1){
-                  triListTranslucent.add(new Triangle(points, colour[0] , colour[1] , tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
-                  triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
-                  triListTranslucent.getLast().setVertexBrightness(vertexBrightness);
-                  triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
-                  triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
-                  triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
-                  triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
-                  translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
-                  translusentCount++;
-                  translucentCounter++;
+                  break;
                 }
-                else{
-                  triListOpaque.add(new Triangle(points, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
-                  triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
-                  triListOpaque.getLast().setVertexBrightness(vertexBrightness);
-                  triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
-                  triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
-                  triListOpaque.getLast().setStencilAction(tempModel.returnStencilActionPtr());
-                  triListOpaque.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
+                  
+                //Adding the triangle to the list
+                edgeDir = returnEdgeDir(tempModel, points, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
+                if(edgeDir > 0){
+                  if((alpha[1] & 0xFF) < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1){
+                    triListTranslucent.add(new Triangle(points, colour[0] , colour[1] , tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
+                    triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
+                    triListTranslucent.getLast().setVertexBrightness(vertexBrightness);
+                    triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
+                    triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
+                    triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
+                    triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
+                    translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
+                    translusentCount++;
+                    translucentCounter++;
+                  }
+                  else{
+                    triListOpaque.add(new Triangle(points, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
+                    triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
+                    triListOpaque.getLast().setVertexBrightness(vertexBrightness);
+                    triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
+                    triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
+                    triListOpaque.getLast().setStencilAction(tempModel.returnStencilActionPtr());
+                    triListOpaque.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
+                  }
                 }
               }
             }
@@ -718,7 +721,7 @@ public class ScreenMake{
         if(tempBillboard.returnAttachedToCamera())
           attachObjectToCamera(tempBillboard.returnPosition(), eye);
         tempBillboard.setModelMatrix();
-        if(distCamToBillboard <= eye.getDrawDistance() && tempBillboard.returnModelTint() > 0){
+        if(distCamToBillboard <= eye.getDrawDistance() && tempBillboard.returnModelTint() > MIN_TRANSPARENCY*Colour.INV_255){
           
 
 
@@ -763,37 +766,39 @@ public class ScreenMake{
             int fill = tempBillboard.returnFill();
             short[] alpha = {(short)((tempBillboard.returnStroke() >>> 24)*tempBillboard.returnModelTint()), 
                              (short)((tempBillboard.returnFill() >>> 24)*tempBillboard.returnModelTint())};
-            if((fill & 0xFFFFFF) != 0){
-              float[] lightBrightness = computeLighting(lights, lightPos, lightAngle, lightColour, from3DVecTo4DVec(tempBillboard.returnPosition()), (float[])null, tempBillboard.returnShininess(), tempBillboard.returnBrightness()*generalObjectBrightness, model, (Model)null, 0, false);
-              int[] tempFill = {(int)(Math.min(255, ((fill >>> 16) & 0xFF)*lightBrightness[0])) << 16,
-                                (int)(Math.min(255, ((fill >>> 8) & 0xFF)*lightBrightness[1])) << 8,
-                                (int)(Math.min(255, (fill & 0xFF)*lightBrightness[2]))};
-              fill = (fill & 0xFF000000)|tempFill[0]|tempFill[1]|tempFill[2];
-            }
-            float sizeX = points[2][0]-points[0][0];
-            float sizeY = points[2][1]-points[0][1];
-            if((alpha[1] & 0xFF) == 255){
-              billboardDisplayOpaque.add(new Billboard());
-              billboardDisplayOpaque.getLast().copy(tempBillboard);
-              billboardDisplayOpaque.getLast().setScale(sizeX, sizeY);
-              billboardDisplayOpaque.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
-              billboardDisplayOpaque.getLast().setHasStroke(tempBillboard.returnHasStroke() || (flags & 12) != 8);
-              billboardDisplayOpaque.getLast().setHasFill(tempBillboard.hasImage() && (flags & 8) == 8);
-              billboardDisplayOpaque.getLast().fill(fill, alpha[1]);
-              billboardDisplayOpaque.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
-            }
-            else{
-              billboardDisplayTranslucent.add(new Billboard());
-              billboardDisplayTranslucent.getLast().copy(tempBillboard);
-              billboardDisplayTranslucent.getLast().setScale(sizeX, sizeY);
-              billboardDisplayTranslucent.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
-              billboardDisplayTranslucent.getLast().setHasStroke(tempBillboard.returnHasStroke() || (flags & 12) != 8);
-              billboardDisplayTranslucent.getLast().setHasFill(tempBillboard.hasImage() && (flags & 8) == 8);
-              billboardDisplayTranslucent.getLast().fill(fill, alpha[1]);
-              billboardDisplayTranslucent.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
-              translucentData.add(new TranslucentData((byte)2, points[0][2], tempBillboard.returnDepthWrite(), billBoardCountTranslucent));
-              translucentCounter++;
-              billBoardCountTranslucent++;
+            if(alpha[1] > MIN_TRANSPARENCY){
+              if((fill & 0xFFFFFF) != 0){
+                float[] lightBrightness = computeLighting(lights, lightPos, lightAngle, lightColour, from3DVecTo4DVec(tempBillboard.returnPosition()), (float[])null, tempBillboard.returnShininess(), tempBillboard.returnBrightness()*generalObjectBrightness, model, (Model)null, 0, false);
+                int[] tempFill = {(int)(Math.min(255, ((fill >>> 16) & 0xFF)*lightBrightness[0])) << 16,
+                                  (int)(Math.min(255, ((fill >>> 8) & 0xFF)*lightBrightness[1])) << 8,
+                                  (int)(Math.min(255, (fill & 0xFF)*lightBrightness[2]))};
+                fill = (fill & 0xFF000000)|tempFill[0]|tempFill[1]|tempFill[2];
+              }
+              float sizeX = points[2][0]-points[0][0];
+              float sizeY = points[2][1]-points[0][1];
+              if((alpha[1] & 0xFF) == 255){
+                billboardDisplayOpaque.add(new Billboard());
+                billboardDisplayOpaque.getLast().copy(tempBillboard);
+                billboardDisplayOpaque.getLast().setScale(sizeX, sizeY);
+                billboardDisplayOpaque.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
+                billboardDisplayOpaque.getLast().setHasStroke(tempBillboard.returnHasStroke() || (flags & 12) != 8);
+                billboardDisplayOpaque.getLast().setHasFill(tempBillboard.hasImage() && (flags & 8) == 8);
+                billboardDisplayOpaque.getLast().fill(fill, alpha[1]);
+                billboardDisplayOpaque.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
+              }
+              else{
+                billboardDisplayTranslucent.add(new Billboard());
+                billboardDisplayTranslucent.getLast().copy(tempBillboard);
+                billboardDisplayTranslucent.getLast().setScale(sizeX, sizeY);
+                billboardDisplayTranslucent.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
+                billboardDisplayTranslucent.getLast().setHasStroke(tempBillboard.returnHasStroke() || (flags & 12) != 8);
+                billboardDisplayTranslucent.getLast().setHasFill(tempBillboard.hasImage() && (flags & 8) == 8);
+                billboardDisplayTranslucent.getLast().fill(fill, alpha[1]);
+                billboardDisplayTranslucent.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
+                translucentData.add(new TranslucentData((byte)2, points[0][2], tempBillboard.returnDepthWrite(), billBoardCountTranslucent));
+                translucentCounter++;
+                billBoardCountTranslucent++;
+              }
             }
           }
         }
@@ -1093,7 +1098,7 @@ public class ScreenMake{
           faceDirection = (byte)((~faceDirection)+1);
       }
       
-      if(isInClipSpace && tempModel.returnModelTint() > 0){
+      if(isInClipSpace && tempModel.returnModelTint() > MIN_TRANSPARENCY*Colour.INV_255){
         for(int j = 0; j < tempModel.returnPolygonCount(); j++){
           float edgeDir = 0; //The direction of the triangle
           float[][] points = new float[3][4]; //Triangle vertices
@@ -1193,173 +1198,175 @@ public class ScreenMake{
             int backIndex = tempModel.returnPalletPtr().returnBackTri(j);
             int[] colour = {tempModel.returnColours()[j][0], tempModel.returnColours()[j][1]}; //Holds the colours that get sent to the triangle rasterizer
             short[] alpha = {(short)((colour[0] >>> 24)*tempModel.returnModelTint()), (short)((colour[1] >>> 24)*tempModel.returnModelTint())};
-            //Adding triangles to the list with near-plane clipping (WHOOP WHOOP!!!)
-            float[] intersect1 = {0, 0, 0, 0}; //Coordinates for the first point of intersection between the triangle and the near plane
-            float[] intersect2 = {0, 0, 0, 0}; //Coordinates for the second point of intersection between the triangle and the near plane
-            float t1 = 0; //How far up side AB is the intersection
-            float t2 = 0; //How far up side AC is the intersection
-            //Code for handling triangles which clip the near plane
-            switch(numOfInside){
-              //When 1 point is inside the frustum
-              case 1:
-                //Calculating how far up each side the intersection occurs
-                byte otherPoint1 = (byte)((insidePoints[0]+1)%3);
-                byte otherPoint2 = (byte)((insidePoints[0]+2)%3);
+            if(alpha[1] > MIN_TRANSPARENCY){
+              //Adding triangles to the list with near-plane clipping (WHOOP WHOOP!!!)
+              float[] intersect1 = {0, 0, 0, 0}; //Coordinates for the first point of intersection between the triangle and the near plane
+              float[] intersect2 = {0, 0, 0, 0}; //Coordinates for the second point of intersection between the triangle and the near plane
+              float t1 = 0; //How far up side AB is the intersection
+              float t2 = 0; //How far up side AC is the intersection
+              //Code for handling triangles which clip the near plane
+              switch(numOfInside){
+                //When 1 point is inside the frustum
+                case 1:
+                  //Calculating how far up each side the intersection occurs
+                  byte otherPoint1 = (byte)((insidePoints[0]+1)%3);
+                  byte otherPoint2 = (byte)((insidePoints[0]+2)%3);
+                  t1 = (1 - points[insidePoints[0]][2]);
+                  if(Math.abs(points[otherPoint1][2] - points[insidePoints[0]][2]) > 0) 
+                    t1/=(points[otherPoint1][2]-points[insidePoints[0]][2]);
+                  t2 = (1 - points[insidePoints[0]][2]);
+                  if(Math.abs(points[otherPoint2][2] - points[insidePoints[0]][2]) > 0) 
+                    t2/=(points[otherPoint2][2]-points[insidePoints[0]][2]);
+                        
+                  //Computing the location of the point of intersection for each intersecting side
+                  intersect1[0] = points[insidePoints[0]][0] + t1*(points[otherPoint1][0]-points[insidePoints[0]][0]);
+                  intersect1[1] = points[insidePoints[0]][1] + t1*(points[otherPoint1][1]-points[insidePoints[0]][1]);
+                  intersect1[2] = points[insidePoints[0]][2] + t1*(points[otherPoint1][2]-points[insidePoints[0]][2]);
+                  intersect1[3] = points[insidePoints[0]][3] + t1*(points[otherPoint1][3]-points[insidePoints[0]][3]);
+
+                  intersect2[0] = points[insidePoints[0]][0] + t2*(points[otherPoint2][0]-points[insidePoints[0]][0]);
+                  intersect2[1] = points[insidePoints[0]][1] + t2*(points[otherPoint2][1]-points[insidePoints[0]][1]);
+                  intersect2[2] = points[insidePoints[0]][2] + t2*(points[otherPoint2][2]-points[insidePoints[0]][2]);
+                  intersect2[3] = points[insidePoints[0]][3] + t2*(points[otherPoint2][3]-points[insidePoints[0]][3]);
+                  float[] vertexBrightness1 = {vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[otherPoint1][0]-vertexBrightness[insidePoints[0]][0]),
+                                                vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[otherPoint1][1]-vertexBrightness[insidePoints[0]][1]),
+                                                vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[otherPoint1][2]-vertexBrightness[insidePoints[0]][2]),
+                                                vertexBrightness[insidePoints[0]][3] + t1*(vertexBrightness[otherPoint1][3]-vertexBrightness[insidePoints[0]][3])};
+                  float[] vertexBrightness2 = {vertexBrightness[insidePoints[0]][0] + t2*(vertexBrightness[otherPoint2][0]-vertexBrightness[insidePoints[0]][0]),
+                                                vertexBrightness[insidePoints[0]][1] + t2*(vertexBrightness[otherPoint2][1]-vertexBrightness[insidePoints[0]][1]),
+                                                vertexBrightness[insidePoints[0]][2] + t2*(vertexBrightness[otherPoint2][2]-vertexBrightness[insidePoints[0]][2]),
+                                                vertexBrightness[insidePoints[0]][3] + t2*(vertexBrightness[otherPoint2][3]-vertexBrightness[insidePoints[0]][3])};
+                  //Moving the points that are behind the near plane to be at the points of intersection
+                  points[otherPoint1][0] = intersect1[0];
+                  points[otherPoint1][1] = intersect1[1];
+                  points[otherPoint1][2] = intersect1[2];
+                  points[otherPoint1][3] = intersect1[3];
+                        
+                  points[otherPoint2][0] = intersect2[0];
+                  points[otherPoint2][1] = intersect2[1];
+                  points[otherPoint2][2] = intersect2[2];
+                  points[otherPoint2][3] = intersect2[3];
+
+                  vertexBrightness[otherPoint1][0] = vertexBrightness1[0];
+                  vertexBrightness[otherPoint1][1] = vertexBrightness1[1];
+                  vertexBrightness[otherPoint1][2] = vertexBrightness1[2];
+                  vertexBrightness[otherPoint1][3] = vertexBrightness1[3];
+                  vertexBrightness[otherPoint2][0] = vertexBrightness2[0];
+                  vertexBrightness[otherPoint2][1] = vertexBrightness2[1];
+                  vertexBrightness[otherPoint2][2] = vertexBrightness2[2];
+                  vertexBrightness[otherPoint2][3] = vertexBrightness2[3];
+                  break;
+              //When 2 points are inside the frustum
+              case 2:
+                //Calculating how far up each side the points of intersection are
                 t1 = (1 - points[insidePoints[0]][2]);
-                if(Math.abs(points[otherPoint1][2] - points[insidePoints[0]][2]) > 0) 
-                  t1/=(points[otherPoint1][2]-points[insidePoints[0]][2]);
-                t2 = (1 - points[insidePoints[0]][2]);
-                if(Math.abs(points[otherPoint2][2] - points[insidePoints[0]][2]) > 0) 
-                  t2/=(points[otherPoint2][2]-points[insidePoints[0]][2]);
-                      
-                //Computing the location of the point of intersection for each intersecting side
-                intersect1[0] = points[insidePoints[0]][0] + t1*(points[otherPoint1][0]-points[insidePoints[0]][0]);
-                intersect1[1] = points[insidePoints[0]][1] + t1*(points[otherPoint1][1]-points[insidePoints[0]][1]);
-                intersect1[2] = points[insidePoints[0]][2] + t1*(points[otherPoint1][2]-points[insidePoints[0]][2]);
-                intersect1[3] = points[insidePoints[0]][3] + t1*(points[otherPoint1][3]-points[insidePoints[0]][3]);
+                if(Math.abs(points[insidePoints[2]][2] - points[insidePoints[0]][2]) > 0) 
+                  t1/=(points[insidePoints[2]][2]-points[insidePoints[0]][2]);
+                t2 = (1 - points[insidePoints[1]][2]);
+                if(Math.abs(points[insidePoints[2]][2] - points[insidePoints[1]][2]) > 0) 
+                  t2/=(points[insidePoints[2]][2]-points[insidePoints[1]][2]);
+                    
+                float[][] finalBrightness = new float[3][4];
+                //Calculating where each point of intersection is
+                intersect1[0] = points[insidePoints[0]][0] + t1*(points[insidePoints[2]][0]-points[insidePoints[0]][0]);
+                intersect1[1] = points[insidePoints[0]][1] + t1*(points[insidePoints[2]][1]-points[insidePoints[0]][1]);
+                intersect1[2] = points[insidePoints[0]][2] + t1*(points[insidePoints[2]][2]-points[insidePoints[0]][2]);
+                intersect1[3] = points[insidePoints[0]][3] + t1*(points[insidePoints[2]][3]-points[insidePoints[0]][3]);
+                finalBrightness[insidePoints[0]][0] = vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[0]][0]);
+                finalBrightness[insidePoints[0]][1] = vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[0]][1]);
+                finalBrightness[insidePoints[0]][2] = vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[0]][2]);
+                finalBrightness[insidePoints[0]][3] = vertexBrightness[insidePoints[0]][3] + t1*(vertexBrightness[insidePoints[2]][3]-vertexBrightness[insidePoints[0]][3]);
 
-                intersect2[0] = points[insidePoints[0]][0] + t2*(points[otherPoint2][0]-points[insidePoints[0]][0]);
-                intersect2[1] = points[insidePoints[0]][1] + t2*(points[otherPoint2][1]-points[insidePoints[0]][1]);
-                intersect2[2] = points[insidePoints[0]][2] + t2*(points[otherPoint2][2]-points[insidePoints[0]][2]);
-                intersect2[3] = points[insidePoints[0]][3] + t2*(points[otherPoint2][3]-points[insidePoints[0]][3]);
-                float[] vertexBrightness1 = {vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[otherPoint1][0]-vertexBrightness[insidePoints[0]][0]),
-                                              vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[otherPoint1][1]-vertexBrightness[insidePoints[0]][1]),
-                                              vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[otherPoint1][2]-vertexBrightness[insidePoints[0]][2]),
-                                              vertexBrightness[insidePoints[0]][3] + t1*(vertexBrightness[otherPoint1][3]-vertexBrightness[insidePoints[0]][3])};
-                float[] vertexBrightness2 = {vertexBrightness[insidePoints[0]][0] + t2*(vertexBrightness[otherPoint2][0]-vertexBrightness[insidePoints[0]][0]),
-                                              vertexBrightness[insidePoints[0]][1] + t2*(vertexBrightness[otherPoint2][1]-vertexBrightness[insidePoints[0]][1]),
-                                              vertexBrightness[insidePoints[0]][2] + t2*(vertexBrightness[otherPoint2][2]-vertexBrightness[insidePoints[0]][2]),
-                                              vertexBrightness[insidePoints[0]][3] + t2*(vertexBrightness[otherPoint2][3]-vertexBrightness[insidePoints[0]][3])};
-                //Moving the points that are behind the near plane to be at the points of intersection
-                points[otherPoint1][0] = intersect1[0];
-                points[otherPoint1][1] = intersect1[1];
-                points[otherPoint1][2] = intersect1[2];
-                points[otherPoint1][3] = intersect1[3];
-                      
-                points[otherPoint2][0] = intersect2[0];
-                points[otherPoint2][1] = intersect2[1];
-                points[otherPoint2][2] = intersect2[2];
-                points[otherPoint2][3] = intersect2[3];
-
-                vertexBrightness[otherPoint1][0] = vertexBrightness1[0];
-                vertexBrightness[otherPoint1][1] = vertexBrightness1[1];
-                vertexBrightness[otherPoint1][2] = vertexBrightness1[2];
-                vertexBrightness[otherPoint1][3] = vertexBrightness1[3];
-                vertexBrightness[otherPoint2][0] = vertexBrightness2[0];
-                vertexBrightness[otherPoint2][1] = vertexBrightness2[1];
-                vertexBrightness[otherPoint2][2] = vertexBrightness2[2];
-                vertexBrightness[otherPoint2][3] = vertexBrightness2[3];
+                intersect2[0] = points[insidePoints[1]][0] + t2*(points[insidePoints[2]][0]-points[insidePoints[1]][0]);
+                intersect2[1] = points[insidePoints[1]][1] + t2*(points[insidePoints[2]][1]-points[insidePoints[1]][1]);
+                intersect2[2] = points[insidePoints[1]][2] + t2*(points[insidePoints[2]][2]-points[insidePoints[1]][2]);
+                intersect2[3] = points[insidePoints[1]][3] + t2*(points[insidePoints[2]][3]-points[insidePoints[1]][3]);
+                finalBrightness[insidePoints[2]][0] = vertexBrightness[insidePoints[1]][0] + t2*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[1]][0]);
+                finalBrightness[insidePoints[2]][1] = vertexBrightness[insidePoints[1]][1] + t2*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[1]][1]);
+                finalBrightness[insidePoints[2]][2] = vertexBrightness[insidePoints[1]][2] + t2*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[1]][2]);
+                finalBrightness[insidePoints[2]][3] = vertexBrightness[insidePoints[1]][3] + t2*(vertexBrightness[insidePoints[2]][3]-vertexBrightness[insidePoints[1]][3]);
+                float[][] secondPoints = new float[3][4];
+                //Constructing a triangle B'C'C
+                //C
+                secondPoints[insidePoints[1]][0] = points[insidePoints[1]][0];
+                secondPoints[insidePoints[1]][1] = points[insidePoints[1]][1];
+                secondPoints[insidePoints[1]][2] = points[insidePoints[1]][2];
+                secondPoints[insidePoints[1]][3] = points[insidePoints[1]][3];
+                finalBrightness[insidePoints[1]][0] = vertexBrightness[insidePoints[1]][0];
+                finalBrightness[insidePoints[1]][1] = vertexBrightness[insidePoints[1]][1];
+                finalBrightness[insidePoints[1]][2] = vertexBrightness[insidePoints[1]][2];
+                finalBrightness[insidePoints[1]][3] = vertexBrightness[insidePoints[1]][3];
+                //B'
+                secondPoints[insidePoints[0]][0] = intersect1[0];
+                secondPoints[insidePoints[0]][1] = intersect1[1];
+                secondPoints[insidePoints[0]][2] = intersect1[2];
+                secondPoints[insidePoints[0]][3] = intersect1[3];
+                //C'
+                secondPoints[insidePoints[2]][0] = intersect2[0];
+                secondPoints[insidePoints[2]][1] = intersect2[1];
+                secondPoints[insidePoints[2]][2] = intersect2[2];
+                secondPoints[insidePoints[2]][3] = intersect2[3];
+                //Modifiying the original triangle to be BCB'
+                points[insidePoints[2]][0] = intersect1[0];
+                points[insidePoints[2]][1] = intersect1[1];
+                points[insidePoints[2]][2] = intersect1[2];
+                points[insidePoints[2]][3] = intersect1[3];
+                vertexBrightness[insidePoints[2]][0] = finalBrightness[insidePoints[0]][0];
+                vertexBrightness[insidePoints[2]][1] = finalBrightness[insidePoints[0]][1];
+                vertexBrightness[insidePoints[2]][2] = finalBrightness[insidePoints[0]][2];
+                vertexBrightness[insidePoints[2]][3] = finalBrightness[insidePoints[0]][3];
+                //Adding the new triangle to the list to account for the clipped triangle being a quad
+                edgeDir = returnEdgeDir(tempModel, secondPoints, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
+                if(edgeDir > 0){
+                  if((alpha[1] & 0xFF) < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1){
+                    triListTranslucent.add(new Triangle(secondPoints, colour[0] , colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
+                    triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
+                    triListTranslucent.getLast().setVertexBrightness(finalBrightness);
+                    triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
+                    triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
+                    triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
+                    triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
+                    translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
+                    translusentCount++;
+                    translucentCounter++;
+                  }
+                  else{
+                    triListOpaque.add(new Triangle(secondPoints, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
+                    triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
+                    triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
+                    triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
+                    triListOpaque.getLast().setVertexBrightness(finalBrightness);
+                    triListOpaque.getLast().setStencilAction(tempModel.returnStencilActionPtr());
+                    triListOpaque.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
+                  }
+                }
                 break;
-            //When 2 points are inside the frustum
-            case 2:
-              //Calculating how far up each side the points of intersection are
-              t1 = (1 - points[insidePoints[0]][2]);
-              if(Math.abs(points[insidePoints[2]][2] - points[insidePoints[0]][2]) > 0) 
-                t1/=(points[insidePoints[2]][2]-points[insidePoints[0]][2]);
-              t2 = (1 - points[insidePoints[1]][2]);
-              if(Math.abs(points[insidePoints[2]][2] - points[insidePoints[1]][2]) > 0) 
-                t2/=(points[insidePoints[2]][2]-points[insidePoints[1]][2]);
-                   
-              float[][] finalBrightness = new float[3][4];
-              //Calculating where each point of intersection is
-              intersect1[0] = points[insidePoints[0]][0] + t1*(points[insidePoints[2]][0]-points[insidePoints[0]][0]);
-              intersect1[1] = points[insidePoints[0]][1] + t1*(points[insidePoints[2]][1]-points[insidePoints[0]][1]);
-              intersect1[2] = points[insidePoints[0]][2] + t1*(points[insidePoints[2]][2]-points[insidePoints[0]][2]);
-              intersect1[3] = points[insidePoints[0]][3] + t1*(points[insidePoints[2]][3]-points[insidePoints[0]][3]);
-              finalBrightness[insidePoints[0]][0] = vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[0]][0]);
-              finalBrightness[insidePoints[0]][1] = vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[0]][1]);
-              finalBrightness[insidePoints[0]][2] = vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[0]][2]);
-              finalBrightness[insidePoints[0]][3] = vertexBrightness[insidePoints[0]][3] + t1*(vertexBrightness[insidePoints[2]][3]-vertexBrightness[insidePoints[0]][3]);
-
-              intersect2[0] = points[insidePoints[1]][0] + t2*(points[insidePoints[2]][0]-points[insidePoints[1]][0]);
-              intersect2[1] = points[insidePoints[1]][1] + t2*(points[insidePoints[2]][1]-points[insidePoints[1]][1]);
-              intersect2[2] = points[insidePoints[1]][2] + t2*(points[insidePoints[2]][2]-points[insidePoints[1]][2]);
-              intersect2[3] = points[insidePoints[1]][3] + t2*(points[insidePoints[2]][3]-points[insidePoints[1]][3]);
-              finalBrightness[insidePoints[2]][0] = vertexBrightness[insidePoints[1]][0] + t2*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[1]][0]);
-              finalBrightness[insidePoints[2]][1] = vertexBrightness[insidePoints[1]][1] + t2*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[1]][1]);
-              finalBrightness[insidePoints[2]][2] = vertexBrightness[insidePoints[1]][2] + t2*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[1]][2]);
-              finalBrightness[insidePoints[2]][3] = vertexBrightness[insidePoints[1]][3] + t2*(vertexBrightness[insidePoints[2]][3]-vertexBrightness[insidePoints[1]][3]);
-              float[][] secondPoints = new float[3][4];
-              //Constructing a triangle B'C'C
-              //C
-              secondPoints[insidePoints[1]][0] = points[insidePoints[1]][0];
-              secondPoints[insidePoints[1]][1] = points[insidePoints[1]][1];
-              secondPoints[insidePoints[1]][2] = points[insidePoints[1]][2];
-              secondPoints[insidePoints[1]][3] = points[insidePoints[1]][3];
-              finalBrightness[insidePoints[1]][0] = vertexBrightness[insidePoints[1]][0];
-              finalBrightness[insidePoints[1]][1] = vertexBrightness[insidePoints[1]][1];
-              finalBrightness[insidePoints[1]][2] = vertexBrightness[insidePoints[1]][2];
-              finalBrightness[insidePoints[1]][3] = vertexBrightness[insidePoints[1]][3];
-              //B'
-              secondPoints[insidePoints[0]][0] = intersect1[0];
-              secondPoints[insidePoints[0]][1] = intersect1[1];
-              secondPoints[insidePoints[0]][2] = intersect1[2];
-              secondPoints[insidePoints[0]][3] = intersect1[3];
-              //C'
-              secondPoints[insidePoints[2]][0] = intersect2[0];
-              secondPoints[insidePoints[2]][1] = intersect2[1];
-              secondPoints[insidePoints[2]][2] = intersect2[2];
-              secondPoints[insidePoints[2]][3] = intersect2[3];
-              //Modifiying the original triangle to be BCB'
-              points[insidePoints[2]][0] = intersect1[0];
-              points[insidePoints[2]][1] = intersect1[1];
-              points[insidePoints[2]][2] = intersect1[2];
-              points[insidePoints[2]][3] = intersect1[3];
-              vertexBrightness[insidePoints[2]][0] = finalBrightness[insidePoints[0]][0];
-              vertexBrightness[insidePoints[2]][1] = finalBrightness[insidePoints[0]][1];
-              vertexBrightness[insidePoints[2]][2] = finalBrightness[insidePoints[0]][2];
-              vertexBrightness[insidePoints[2]][3] = finalBrightness[insidePoints[0]][3];
-              //Adding the new triangle to the list to account for the clipped triangle being a quad
-              edgeDir = returnEdgeDir(tempModel, secondPoints, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
+              }
+              
+              //Adding the triangle to the list
+              edgeDir = returnEdgeDir(tempModel, points, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
               if(edgeDir > 0){
                 if((alpha[1] & 0xFF) < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1){
-                  triListTranslucent.add(new Triangle(secondPoints, colour[0] , colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
+                  triListTranslucent.add(new Triangle(points, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                   triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
-                  triListTranslucent.getLast().setVertexBrightness(finalBrightness);
+                  triListTranslucent.getLast().setVertexBrightness(vertexBrightness);
+                  triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
                   triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
                   triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
                   triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
-                  triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
-                  translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
+                  translucentData.add(new TranslucentData((byte)1, triListTranslucent.peekLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
                   translusentCount++;
                   translucentCounter++;
                 }
                 else{
-                  triListOpaque.add(new Triangle(secondPoints, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
-                  triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
+                  triListOpaque.add(new Triangle(points, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                   triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
                   triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
-                  triListOpaque.getLast().setVertexBrightness(finalBrightness);
+                  triListOpaque.getLast().setVertexBrightness(vertexBrightness);
+                  triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                   triListOpaque.getLast().setStencilAction(tempModel.returnStencilActionPtr());
                   triListOpaque.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
                 }
-              }
-              break;
-            }
-            
-            //Adding the triangle to the list
-            edgeDir = returnEdgeDir(tempModel, points, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
-            if(edgeDir > 0){
-              if((alpha[1] & 0xFF) < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1){
-                triListTranslucent.add(new Triangle(points, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
-                triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
-                triListTranslucent.getLast().setVertexBrightness(vertexBrightness);
-                triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
-                triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
-                triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
-                triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
-                translucentData.add(new TranslucentData((byte)1, triListTranslucent.peekLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
-                translusentCount++;
-                translucentCounter++;
-              }
-              else{
-                triListOpaque.add(new Triangle(points, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
-                triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
-                triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
-                triListOpaque.getLast().setVertexBrightness(vertexBrightness);
-                triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
-                triListOpaque.getLast().setStencilAction(tempModel.returnStencilActionPtr());
-                triListOpaque.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
               }
             }
           }
@@ -1385,7 +1392,7 @@ public class ScreenMake{
       if(tempBillboard.returnAttachedToCamera())
         attachObjectToCamera(tempBillboard.returnPosition(), eye);
       tempBillboard.setModelMatrix();
-      if(distCamToBillboard <= drawDist && tempBillboard.returnModelTint() > 0){
+      if(distCamToBillboard <= drawDist && tempBillboard.returnModelTint() > MIN_TRANSPARENCY*Colour.INV_255){
         //Constructs the transformation matrix for the point
         mvpFull.copy(MatrixOperations.matrixMultiply(mvp, MVP.returnTranslation(tempBillboard.returnPosition())));
         mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, billBoard));
@@ -1425,30 +1432,32 @@ public class ScreenMake{
           int fill = tempBillboard.returnFill();
           short[] alpha = {(short)((tempBillboard.returnStroke() >>> 24)*tempBillboard.returnModelTint()), 
                            (short)((tempBillboard.returnFill() >>> 24)*tempBillboard.returnModelTint())};
-          float sizeX = points[2][0]-points[0][0];
-          float sizeY = points[2][1]-points[0][1];
-          if((alpha[1] & 0xFF) == 255){
-            billboardDisplayOpaque.add(new Billboard());
-            billboardDisplayOpaque.getLast().copy(tempBillboard);
-            billboardDisplayOpaque.getLast().setScale(sizeX, sizeY);
-            billboardDisplayOpaque.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
-            billboardDisplayOpaque.getLast().fill(fill, alpha[1]);
-            billboardDisplayOpaque.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
-            billboardDisplayOpaque.getLast().setHasStroke(tempBillboard.returnHasStroke() || (flags & 12) != 8);
-            billboardDisplayOpaque.getLast().setHasFill(tempBillboard.hasImage() && (flags & 8) == 8);
-          }
-          else{
-            billboardDisplayTranslucent.add(new Billboard());
-            billboardDisplayTranslucent.getLast().copy(tempBillboard);
-            billboardDisplayTranslucent.getLast().setScale(sizeX, sizeY);
-            billboardDisplayTranslucent.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
-            billboardDisplayTranslucent.getLast().fill(fill, alpha[1]);
-            billboardDisplayTranslucent.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
-            billboardDisplayTranslucent.getLast().setHasStroke(tempBillboard.returnHasStroke() || (flags & 12) != 8);
-            billboardDisplayTranslucent.getLast().setHasFill(tempBillboard.hasImage() && (flags & 8) == 8);
-            translucentData.add(new TranslucentData((byte)2, points[0][2], tempBillboard.returnDepthWrite(), billBoardCountTranslucent));
-            translucentCounter++;
-            billBoardCountTranslucent++;
+          if(alpha[1] > MIN_TRANSPARENCY){
+            float sizeX = points[2][0]-points[0][0];
+            float sizeY = points[2][1]-points[0][1];
+            if((alpha[1] & 0xFF) == 255){
+              billboardDisplayOpaque.add(new Billboard());
+              billboardDisplayOpaque.getLast().copy(tempBillboard);
+              billboardDisplayOpaque.getLast().setScale(sizeX, sizeY);
+              billboardDisplayOpaque.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
+              billboardDisplayOpaque.getLast().fill(fill, alpha[1]);
+              billboardDisplayOpaque.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
+              billboardDisplayOpaque.getLast().setHasStroke(tempBillboard.returnHasStroke() || (flags & 12) != 8);
+              billboardDisplayOpaque.getLast().setHasFill(tempBillboard.hasImage() && (flags & 8) == 8);
+            }
+            else{
+              billboardDisplayTranslucent.add(new Billboard());
+              billboardDisplayTranslucent.getLast().copy(tempBillboard);
+              billboardDisplayTranslucent.getLast().setScale(sizeX, sizeY);
+              billboardDisplayTranslucent.getLast().stroke(tempBillboard.returnStroke(), alpha[0]);
+              billboardDisplayTranslucent.getLast().fill(fill, alpha[1]);
+              billboardDisplayTranslucent.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
+              billboardDisplayTranslucent.getLast().setHasStroke(tempBillboard.returnHasStroke() || (flags & 12) != 8);
+              billboardDisplayTranslucent.getLast().setHasFill(tempBillboard.hasImage() && (flags & 8) == 8);
+              translucentData.add(new TranslucentData((byte)2, points[0][2], tempBillboard.returnDepthWrite(), billBoardCountTranslucent));
+              translucentCounter++;
+              billBoardCountTranslucent++;
+            }
           }
         }
       }
@@ -1486,7 +1495,7 @@ public class ScreenMake{
       //Checking if the model is in clipspace and adjusting the face direction to account for negative scales
       isInClipSpace = ((flags & 64) == 64) || (((isInClipSpace(mvp, tempLineObj.returnPosition()) || isInClipSpace(mvpFull, tempLineObj.returnBoundingBox())) && distCamToModel <= drawDist));
       float[][] pointPair = tempLineObj.returnLineModelPtr().returnVertices();
-      if(isInClipSpace && tempLineObj.returnModelTint() > 0){
+      if(isInClipSpace && tempLineObj.returnModelTint() > MIN_TRANSPARENCY*Colour.INV_255){
         for(int j = 0; j < tempLineObj.returnLineCount(); j++){
 
           int[] endPoints = {tempLineObj.returnLineModelPtr().returnPoints()[j][0], 
@@ -1545,27 +1554,29 @@ public class ScreenMake{
           if(isInside){
             int colour = tempLineObj.returnStroke(j); 
             short alpha = (short)((tempLineObj.returnStroke(j) >>> 24)*tempLineObj.returnModelTint());
-            if(insideCount == 1){
-              float denominator = (points[insidePoint][2] - points[insidePoint^1][2]);
-              float t = 0;
-              if(Math.abs(denominator) > 0.0001f)
-                t = (1f - points[insidePoint][2])/denominator;
-              points[insidePoint^1][0] = points[insidePoint][0] + t*(points[insidePoint][0]-points[insidePoint^1][0]);
-              points[insidePoint^1][1] = points[insidePoint][1] + t*(points[insidePoint][1]-points[insidePoint^1][1]);
-              points[insidePoint^1][2] = points[insidePoint][2] + t*(points[insidePoint][2]-points[insidePoint^1][2]);
-            }
-            if((alpha & 0xFF) == 255){
-              lineDisplayOpaque.add(new LineDisp(points, colour));
-              lineDisplayOpaque.getLast().setAlpha(alpha);
-              lineDisplayOpaque.getLast().setDepthWrite(tempLineObj.returnDepthWrite());
-            }
-            else{
-              lineDisplayTranslucent.add(new LineDisp(points, colour));
-              lineDisplayTranslucent.getLast().setAlpha(alpha);
-              lineDisplayTranslucent.getLast().setDepthWrite(tempLineObj.returnDepthWrite());
-              translucentData.add(new TranslucentData((byte)3, (points[1][2]+points[0][2])*0.5f, tempLineObj.returnDepthWrite(), lineCountTranslucent));
-              translucentCounter++;
-              lineCountTranslucent++;
+            if(alpha > MIN_TRANSPARENCY){
+              if(insideCount == 1){
+                float denominator = (points[insidePoint][2] - points[insidePoint^1][2]);
+                float t = 0;
+                if(Math.abs(denominator) > 0.0001f)
+                  t = (1f - points[insidePoint][2])/denominator;
+                points[insidePoint^1][0] = points[insidePoint][0] + t*(points[insidePoint][0]-points[insidePoint^1][0]);
+                points[insidePoint^1][1] = points[insidePoint][1] + t*(points[insidePoint][1]-points[insidePoint^1][1]);
+                points[insidePoint^1][2] = points[insidePoint][2] + t*(points[insidePoint][2]-points[insidePoint^1][2]);
+              }
+              if((alpha & 0xFF) == 255){
+                lineDisplayOpaque.add(new LineDisp(points, colour));
+                lineDisplayOpaque.getLast().setAlpha(alpha);
+                lineDisplayOpaque.getLast().setDepthWrite(tempLineObj.returnDepthWrite());
+              }
+              else{
+                lineDisplayTranslucent.add(new LineDisp(points, colour));
+                lineDisplayTranslucent.getLast().setAlpha(alpha);
+                lineDisplayTranslucent.getLast().setDepthWrite(tempLineObj.returnDepthWrite());
+                translucentData.add(new TranslucentData((byte)3, (points[1][2]+points[0][2])*0.5f, tempLineObj.returnDepthWrite(), lineCountTranslucent));
+                translucentCounter++;
+                lineCountTranslucent++;
+              }
             }
           }
         }
@@ -1605,21 +1616,23 @@ public class ScreenMake{
       point[0] = (Rasterizer.halfWidth()*(point[0]+1)-0.5001f);
       point[1] = (Rasterizer.halfHeight()*(point[1]+1)-0.5001f);
       isInside = (isInside || (point[3] > 0 && clipCheck.returnData(2, 0) >= -1 && clipCheck.returnData(2,0) <= drawDist)) && (point[0] >= 0 && point[0] <= Rasterizer.returnWidth() && point[1] >= 0 && point[1] <= Rasterizer.returnHeight());
-      if(isInside && tempDot.returnModelTint() > 0){
+      if(isInside && tempDot.returnModelTint() > MIN_TRANSPARENCY*Colour.INV_255){
         int colour = tempDot.returnStroke(); 
         short alpha = (short)((tempDot.returnStroke() >>> 24)*tempDot.returnModelTint());
-        if((alpha & 0xFF) == 255){
-          dotDisplayOpaque.add(new Dot(point, colour));
-          dotDisplayOpaque.getLast().setAlpha(alpha);
-          dotDisplayOpaque.getLast().setDepthWrite(tempDot.returnDepthWrite());
-        }
-        else{
-          dotDisplayTranslucent.add(new Dot(point, colour));
-          dotDisplayTranslucent.getLast().setDepthWrite(tempDot.returnDepthWrite());
-          dotDisplayTranslucent.getLast().setAlpha(alpha);
-          translucentData.add(new TranslucentData((byte)4, point[2], tempDot.returnDepthWrite(), dotCountTranslucent));
-          translucentCounter++;
-          dotCountTranslucent++;
+        if(alpha > MIN_TRANSPARENCY){
+          if((alpha & 0xFF) == 255){
+            dotDisplayOpaque.add(new Dot(point, colour));
+            dotDisplayOpaque.getLast().setAlpha(alpha);
+            dotDisplayOpaque.getLast().setDepthWrite(tempDot.returnDepthWrite());
+          }
+          else{
+            dotDisplayTranslucent.add(new Dot(point, colour));
+            dotDisplayTranslucent.getLast().setDepthWrite(tempDot.returnDepthWrite());
+            dotDisplayTranslucent.getLast().setAlpha(alpha);
+            translucentData.add(new TranslucentData((byte)4, point[2], tempDot.returnDepthWrite(), dotCountTranslucent));
+            translucentCounter++;
+            dotCountTranslucent++;
+          }
         }
       }
     }
