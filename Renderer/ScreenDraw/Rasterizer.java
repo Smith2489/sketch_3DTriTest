@@ -4,7 +4,7 @@ import Renderer.Objects.SceneEntities.*;
 import Actions.BufferActions.StencilAction;
 //Draws triangles to a frame buffer
 public class Rasterizer{
-  public static final int MIN_TRANSPARENCY = 0;
+  private static int minTransparency = 0;
   private static int halfWidth = 50;
   private static int halfHeight = 50;
   private static int[] frame = new int[10000];
@@ -359,6 +359,14 @@ public class Rasterizer{
       stencil[i] = newStencil[i];
   }
   
+  public static void setMinTransparency(int transparency){
+    minTransparency = Math.max(0, Math.min(transparency, 255));
+  }
+
+  public static int getMinTransparency(){
+    return minTransparency;
+  }
+
   //Modifies the stencil mask
   public static void setStencilMask(byte newMask){
     stencilMask = newMask;
@@ -405,7 +413,7 @@ public class Rasterizer{
             //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
             if(brokenUpColour[0] < 0xFF){
               Colour.interpolateColours(brokenUpFill, brokenUpFrame, alphaNorm);
-              if(brokenUpFill[0] > MIN_TRANSPARENCY)
+              if(brokenUpFill[0] > minTransparency)
                 frame[pixelPos] = (brokenUpFill[0] << 24)|(brokenUpFill[1] << 16)|(brokenUpFill[2] << 8)|(brokenUpFill[3]);
             }
             else
@@ -502,7 +510,7 @@ public class Rasterizer{
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
                 Colour.interpolateColours(brokenUpColour, brokenUpFrame);
-              if(brokenUpColour[0] > MIN_TRANSPARENCY){
+              if(brokenUpColour[0] > minTransparency){
                 frame[pixelPos] = (brokenUpColour[0] << 24)|(brokenUpColour[1] << 16)|(brokenUpColour[2] << 8)|brokenUpColour[3];
                 zBuff[pixelPos] = z;
               }
@@ -511,7 +519,7 @@ public class Rasterizer{
             else if(brokenUpFrame[0] < 0xFF){
                 computeLighting(tempZ, invZ, vertexBrightness);
                 Colour.interpolateColours(brokenUpFrame, brokenUpColour);
-                if(brokenUpFrame[0] > MIN_TRANSPARENCY)
+                if(brokenUpFrame[0] > minTransparency)
                   frame[pixelPos] = (brokenUpFrame[0] << 24)|(brokenUpFrame[1] << 16)|(brokenUpFrame[2] << 8)|brokenUpFrame[3];
             }
           }
@@ -617,7 +625,7 @@ public class Rasterizer{
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
                 Colour.interpolateColours(brokenUpColour, brokenUpFrame);
-              if(brokenUpColour[0] > MIN_TRANSPARENCY){
+              if(brokenUpColour[0] > minTransparency){
                 frame[pixelPos] = (brokenUpColour[0] << 24)|(brokenUpColour[1] << 16)|(brokenUpColour[2] << 8)|brokenUpColour[3];
                 zBuff[pixelPos] = z;
               }
@@ -626,7 +634,7 @@ public class Rasterizer{
             else if(brokenUpFrame[0] < 0xFF){
               computeLighting(tempZ, invZ, vertexBrightness);
               Colour.interpolateColours(brokenUpFrame, brokenUpColour);
-              if(brokenUpFrame[0] > MIN_TRANSPARENCY)
+              if(brokenUpFrame[0] > minTransparency)
                 frame[pixelPos] = (brokenUpFrame[0] << 24)|(brokenUpFrame[1] << 16)|(brokenUpFrame[2] << 8)|brokenUpFrame[3];
             }
           }
@@ -718,7 +726,7 @@ public class Rasterizer{
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
                 Colour.interpolateColours(brokenUpColour, brokenUpFrame);
-              if(brokenUpColour[0] > MIN_TRANSPARENCY){
+              if(brokenUpColour[0] > minTransparency){
                 frame[pixelPos] = performStencilAction(brokenUpColour, j, i, compVal, pixelPos);
                 zBuff[pixelPos] = z;
               }
@@ -727,7 +735,7 @@ public class Rasterizer{
             else if(brokenUpFrame[0] < 0xFF){
               computeLighting(tempZ, invZ, vertexBrightness);
               Colour.interpolateColours(brokenUpFrame, brokenUpColour);
-              if(brokenUpFrame[0] > MIN_TRANSPARENCY)
+              if(brokenUpFrame[0] > minTransparency)
                 frame[pixelPos] = performStencilAction(brokenUpFrame, j, i, compVal, pixelPos);
             }
           }
@@ -835,7 +843,7 @@ public class Rasterizer{
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
                 Colour.interpolateColours(brokenUpColour, brokenUpFrame);
-              if(brokenUpColour[0] > MIN_TRANSPARENCY){
+              if(brokenUpColour[0] > minTransparency){
                 frame[pixelPos] = performStencilAction(brokenUpColour, j, i, compVal, pixelPos);
                 zBuff[pixelPos] = z;
               }
@@ -844,7 +852,7 @@ public class Rasterizer{
             else if((frame[pixelPos] >>> 24) < 0xFF){
               computeLighting(tempZ, invZ, vertexBrightness);
               Colour.interpolateColours(brokenUpFrame, brokenUpColour);
-              if(brokenUpFrame[0] > MIN_TRANSPARENCY)
+              if(brokenUpFrame[0] > minTransparency)
                 frame[pixelPos] = performStencilAction(brokenUpFrame, j, i, compVal, pixelPos);
             }
           }

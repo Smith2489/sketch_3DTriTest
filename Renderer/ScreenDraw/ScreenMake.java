@@ -402,7 +402,7 @@ public class ScreenMake{
         }
 
       
-        if(isInClipSpace && tempModel.returnModelTint() > Rasterizer.MIN_TRANSPARENCY*Colour.INV_255){
+        if(isInClipSpace && tempModel.returnModelTint() > Rasterizer.getMinTransparency()*Colour.INV_255){
 
           for(int j = 0; j < tempModel.returnPolygonCount(); j++){
             float[] triCentre = {0, 0, 0, 0};
@@ -529,7 +529,7 @@ public class ScreenMake{
               //Returns if the current triangle is exempt from backface culling
               int[] colour = {tempModel.returnColours()[j][0], tempModel.returnColours()[j][1]}; //Holds the colours that get sent to the triangle rasterizer
               short[] alpha = {(short)((colour[0] >>> 24)*tempModel.returnModelTint()), (short)((colour[1] >>> 24)*tempModel.returnModelTint())};
-              if(alpha[1] > Rasterizer.MIN_TRANSPARENCY){
+              if(alpha[1] > Rasterizer.getMinTransparency()){
                 //Adding triangles to the list with near-plane clipping (WHOOP WHOOP!!!)
                 float[] intersect1 = {0, 0, 0, 0}; //Coordinates for the first point of intersection between the triangle and the near plane
                 float[] intersect2 = {0, 0, 0, 0}; //Coordinates for the second point of intersection between the triangle and the near plane
@@ -720,7 +720,7 @@ public class ScreenMake{
         if(tempBillboard.returnAttachedToCamera())
           attachObjectToCamera(tempBillboard.returnPosition(), eye);
         tempBillboard.setModelMatrix();
-        if(distCamToBillboard <= eye.getDrawDistance() && tempBillboard.returnModelTint() > Rasterizer.MIN_TRANSPARENCY*Colour.INV_255){
+        if(distCamToBillboard <= eye.getDrawDistance() && tempBillboard.returnModelTint() > Rasterizer.getMinTransparency()*Colour.INV_255){
           
 
 
@@ -765,7 +765,7 @@ public class ScreenMake{
             int fill = tempBillboard.returnFill();
             short[] alpha = {(short)((tempBillboard.returnStroke() >>> 24)*tempBillboard.returnModelTint()), 
                              (short)((tempBillboard.returnFill() >>> 24)*tempBillboard.returnModelTint())};
-            if(alpha[1] > Rasterizer.MIN_TRANSPARENCY){
+            if(alpha[1] > Rasterizer.getMinTransparency()){
               if((fill & 0xFFFFFF) != 0){
                 float[] lightBrightness = computeLighting(lights, lightPos, lightAngle, lightColour, from3DVecTo4DVec(tempBillboard.returnPosition()), (float[])null, tempBillboard.returnShininess(), tempBillboard.returnBrightness()*generalObjectBrightness, model, (Model)null, 0, false);
                 int[] tempFill = {(int)(Math.min(255, ((fill >>> 16) & 0xFF)*lightBrightness[0])) << 16,
@@ -1097,7 +1097,7 @@ public class ScreenMake{
           faceDirection = (byte)((~faceDirection)+1);
       }
       
-      if(isInClipSpace && tempModel.returnModelTint() > Rasterizer.MIN_TRANSPARENCY*Colour.INV_255){
+      if(isInClipSpace && tempModel.returnModelTint() > Rasterizer.getMinTransparency()*Colour.INV_255){
         for(int j = 0; j < tempModel.returnPolygonCount(); j++){
           float edgeDir = 0; //The direction of the triangle
           float[][] points = new float[3][4]; //Triangle vertices
@@ -1197,7 +1197,7 @@ public class ScreenMake{
             int backIndex = tempModel.returnPalletPtr().returnBackTri(j);
             int[] colour = {tempModel.returnColours()[j][0], tempModel.returnColours()[j][1]}; //Holds the colours that get sent to the triangle rasterizer
             short[] alpha = {(short)((colour[0] >>> 24)*tempModel.returnModelTint()), (short)((colour[1] >>> 24)*tempModel.returnModelTint())};
-            if(alpha[1] > Rasterizer.MIN_TRANSPARENCY){
+            if(alpha[1] > Rasterizer.getMinTransparency()){
               //Adding triangles to the list with near-plane clipping (WHOOP WHOOP!!!)
               float[] intersect1 = {0, 0, 0, 0}; //Coordinates for the first point of intersection between the triangle and the near plane
               float[] intersect2 = {0, 0, 0, 0}; //Coordinates for the second point of intersection between the triangle and the near plane
@@ -1391,7 +1391,7 @@ public class ScreenMake{
       if(tempBillboard.returnAttachedToCamera())
         attachObjectToCamera(tempBillboard.returnPosition(), eye);
       tempBillboard.setModelMatrix();
-      if(distCamToBillboard <= drawDist && tempBillboard.returnModelTint() > Rasterizer.MIN_TRANSPARENCY*Colour.INV_255){
+      if(distCamToBillboard <= drawDist && tempBillboard.returnModelTint() > Rasterizer.getMinTransparency()*Colour.INV_255){
         //Constructs the transformation matrix for the point
         mvpFull.copy(MatrixOperations.matrixMultiply(mvp, MVP.returnTranslation(tempBillboard.returnPosition())));
         mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, billBoard));
@@ -1431,7 +1431,7 @@ public class ScreenMake{
           int fill = tempBillboard.returnFill();
           short[] alpha = {(short)((tempBillboard.returnStroke() >>> 24)*tempBillboard.returnModelTint()), 
                            (short)((tempBillboard.returnFill() >>> 24)*tempBillboard.returnModelTint())};
-          if(alpha[1] > Rasterizer.MIN_TRANSPARENCY){
+          if(alpha[1] > Rasterizer.getMinTransparency()){
             float sizeX = points[2][0]-points[0][0];
             float sizeY = points[2][1]-points[0][1];
             if((alpha[1] & 0xFF) == 255){
@@ -1494,7 +1494,7 @@ public class ScreenMake{
       //Checking if the model is in clipspace and adjusting the face direction to account for negative scales
       isInClipSpace = ((flags & 64) == 64) || (((isInClipSpace(mvp, tempLineObj.returnPosition()) || isInClipSpace(mvpFull, tempLineObj.returnBoundingBox())) && distCamToModel <= drawDist));
       float[][] pointPair = tempLineObj.returnLineModelPtr().returnVertices();
-      if(isInClipSpace && tempLineObj.returnModelTint() > Rasterizer.MIN_TRANSPARENCY*Colour.INV_255){
+      if(isInClipSpace && tempLineObj.returnModelTint() > Rasterizer.getMinTransparency()*Colour.INV_255){
         for(int j = 0; j < tempLineObj.returnLineCount(); j++){
 
           int[] endPoints = {tempLineObj.returnLineModelPtr().returnPoints()[j][0], 
@@ -1553,7 +1553,7 @@ public class ScreenMake{
           if(isInside){
             int colour = tempLineObj.returnStroke(j); 
             short alpha = (short)((tempLineObj.returnStroke(j) >>> 24)*tempLineObj.returnModelTint());
-            if(alpha > Rasterizer.MIN_TRANSPARENCY){
+            if(alpha > Rasterizer.getMinTransparency()){
               if(insideCount == 1){
                 float denominator = (points[insidePoint][2] - points[insidePoint^1][2]);
                 float t = 0;
@@ -1615,10 +1615,10 @@ public class ScreenMake{
       point[0] = (Rasterizer.halfWidth()*(point[0]+1)-0.5001f);
       point[1] = (Rasterizer.halfHeight()*(point[1]+1)-0.5001f);
       isInside = (isInside || (point[3] > 0 && clipCheck.returnData(2, 0) >= -1 && clipCheck.returnData(2,0) <= drawDist)) && (point[0] >= 0 && point[0] <= Rasterizer.returnWidth() && point[1] >= 0 && point[1] <= Rasterizer.returnHeight());
-      if(isInside && tempDot.returnModelTint() > Rasterizer.MIN_TRANSPARENCY*Colour.INV_255){
+      if(isInside && tempDot.returnModelTint() > Rasterizer.getMinTransparency()*Colour.INV_255){
         int colour = tempDot.returnStroke(); 
         short alpha = (short)((tempDot.returnStroke() >>> 24)*tempDot.returnModelTint());
-        if(alpha > Rasterizer.MIN_TRANSPARENCY){
+        if(alpha > Rasterizer.getMinTransparency()){
           if((alpha & 0xFF) == 255){
             dotDisplayOpaque.add(new Dot(point, colour));
             dotDisplayOpaque.getLast().setAlpha(alpha);
