@@ -141,7 +141,7 @@ public class SceneEntity{
     //Returns a transformation matrix for the parent objects
     public Matrix transform(boolean isBillboard, boolean position){
         //Checks if the parent isn't null and returns an I4 matrix if it is
-        if(parent != null){
+        if(parent != null && parent != this){
             //Clear the list of already visited parents and go through each parent's transformations
             alreadyVisited.clear();
             return transformRecursive(parent, isBillboard, position);
@@ -153,7 +153,7 @@ public class SceneEntity{
     //Returns a transformation matrix for the parent objects
     public Matrix transform(){
         //Checks if the parent isn't null and returns an I4 matrix if it is
-        if(parent != null){
+        if(parent != null && parent != this){
             //Clear the list of already visited parents and go through each parent's transformations
             alreadyVisited.clear();
             return transformRecursive(parent);

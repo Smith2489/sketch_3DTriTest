@@ -269,6 +269,7 @@ public class sketch_3DTriTest extends PApplet{;
     testModels[10].setPosition(0, 0, -0.5f);
     //testModels[10].setBrightness(0.1);
     testModels[10].setShininess(0.001f);
+    testModels[10].setParentTransform(testModels[10]);
     //testModels[10].setGauroud(false);
     
     //Long rectangular prism inverted hull
