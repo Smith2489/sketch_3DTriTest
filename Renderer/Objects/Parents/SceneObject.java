@@ -3,8 +3,8 @@ import Wrapper.*;
 import Actions.ObjectActions.*;
 //Superclass for objects that are drawn in a scene
 public class SceneObject extends ScalableEntity{
-    protected byte flags = 0; //0 = noDepth, 1 = isAttachedToCamera, 2 = always perform
-    private FloatWrapper uniTint = new FloatWrapper();
+    //1 = isAttachedToCamera, 2 = noDepth
+    private FloatWrapper uniTint = new FloatWrapper(); //The overall transparency of the object
 
     public SceneObject(){
         super();
@@ -37,36 +37,29 @@ public class SceneObject extends ScalableEntity{
         uniTint.val = 1;
     }
 
+    //Adds an action and initializes it
     public void addAction(ModelAction newAction){
         if(newAction != null){
             newAction.setModelTint(uniTint);
-            super.addAction(newAction);
+            super.appendAction(newAction);
             actionList.add(newAction);
           }
           else
             System.out.println("ERROR: ACTION CANNOT BE NULL");
     }
 
-    public void alwaysPerform(boolean perform){
-        if(perform)
+    //Sets the object to be drawn on the same layer or the layer above
+    public void setDepthWrite(boolean reversed){
+        if(reversed)
             flags|=4;
         else
             flags&=-5;
     }
-    public boolean alwaysPerform(){
+    public boolean returnDepthWrite(){
         return (flags & 4) == 4;
     }
 
-    public void setDepthWrite(boolean reversed){
-        if(reversed)
-            flags|=1;
-        else
-            flags&=-2;
-    }
-    public boolean returnDepthWrite(){
-        return (flags & 1) == 1;
-    }
-
+    //Attaches the object to the camera
     public void setAttachedToCamera(boolean attachedToCamera){
         if(attachedToCamera)
             flags|=2;
@@ -77,6 +70,7 @@ public class SceneObject extends ScalableEntity{
         return (flags & 2) == 2;
     }
 
+    //Sets the overall transparency of the object
     public void setModelTint(float newTint){
         uniTint.val = Math.max(0, Math.min(newTint, 1));
     }

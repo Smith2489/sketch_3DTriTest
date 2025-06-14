@@ -5,6 +5,7 @@ import Renderer.ScreenDraw.MVP;
 import Actions.ObjectActions.*;
 //Super class for scalable entities (cameras, scene objects)
 public class ScalableEntity extends SceneEntity{
+    protected byte flags = 0; //0 = always peform
     protected float[] scale = {1, 1, 1};
     protected float[][] shear = {{0, 0}, {0, 0}, {0, 0}};
     protected Matrix modelMatrix = new Matrix();
@@ -93,14 +94,32 @@ public class ScalableEntity extends SceneEntity{
         scale[2] = scaleZ;
     }
 
-    
-    protected void addAction(ObjectAction newAction){
+    //Initialises an action without adding it to the list
+    protected void appendAction(ObjectAction newAction){
         newAction.setScale(scale);
         newAction.setShear(shear);
         newAction.setMatrix(modelMatrix);
         super.addAction(newAction);
     }
 
+    //Initialises an action and adds it to the list
+    public void addAction(ObjectAction newAction){
+        newAction.setScale(scale);
+        newAction.setShear(shear);
+        newAction.setMatrix(modelMatrix);
+        super.addAction(newAction);
+        actionList.add(newAction);
+    }
+    //Forces actions to always be performed
+    public void alwaysPerform(boolean perform){
+        if(perform)
+            flags|=1;
+        else
+            flags&=-2;
+    }
+    public boolean alwaysPerform(){
+        return (flags & 1) == 1;
+    }
     //Methods for setting the shear in all three axes
     public void setShear(float[][] shr){
         shear[0][0] = shr[0][0];
@@ -165,6 +184,8 @@ public class ScalableEntity extends SceneEntity{
     public float[][] returnShear(){
         return shear;
     }
+
+    //Returns the reference to the current model matrix
     public Matrix returnModelMatrix(){
         return modelMatrix;
     }

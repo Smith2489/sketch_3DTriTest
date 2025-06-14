@@ -3,6 +3,7 @@ import Wrapper.*;
 import java.util.*;
 import Maths.LinearAlgebra.*;
 import Renderer.Objects.SceneEntities.*;
+import Renderer.Objects.Parents.ScalableEntity;
 public class ScreenMake{
     //Set up for the stencil test
     private static byte stencilComp = 0;
@@ -33,6 +34,7 @@ public class ScreenMake{
     private static LinkedList<LineDisp> lineDisplayTranslucent = new LinkedList<LineDisp>();
     private static LinkedList<Dot> dotDisplayOpaque = new LinkedList<Dot>();
     private static LinkedList<Dot> dotDisplayTranslucent = new LinkedList<Dot>();
+    private static LinkedList<ScalableEntity> noDraw = new LinkedList<ScalableEntity>();
     private static LinkedList<Model> modelList = new LinkedList<Model>(); //List of models
     private static LinkedList<Billboard> billboardList = new LinkedList<Billboard>(); //List of billboards
     private static LinkedList<LineObj> lineList = new LinkedList<LineObj>();
@@ -41,6 +43,7 @@ public class ScreenMake{
     private static LinkedList<Billboard> refListB = billboardList;
     private static LinkedList<LineObj> refListL = lineList;
     private static LinkedList<Dot> refListD = dotList;
+    private static LinkedList<ScalableEntity> refListNoDraw = noDraw;
     private static Matrix billBoard;
     private static Matrix view;
     private static Model tempModel;
@@ -49,6 +52,7 @@ public class ScreenMake{
     private static Billboard tempBillboard = new Billboard();
     private static LineDisp tempLine = new LineDisp();
     private static Dot tempDot = new Dot();
+    private static ScalableEntity tempInvis = new ScalableEntity();
     //Contains data pertaining to translucent objects
     //IDs (1 for triangle, 2 for billboarded sprite, 3 for line, 4 for dot)
     //Lighting will only interact with triangles and billboarded sprites
@@ -90,7 +94,15 @@ public class ScreenMake{
     }
     public static void disableModelList(){
       modelList = refListM;
-      flags&=-17;
+      if(billboardList.size() <= 0)
+        flags&=-17;
+    }
+
+    public static void setInvisibleObjectsList(LinkedList<ScalableEntity> newList){
+      noDraw = newList;
+    }
+    public static void disableInvisibleObjects(){
+      noDraw = refListNoDraw;
     }
 
     //Changes the billboard list's pointer to a different array's location and sets the sizes of the display lists
@@ -169,27 +181,17 @@ public class ScreenMake{
     public static void isNotInteractive(){
       flags&=127;
     }
-    public static void setViewMatrix(Matrix newView){
-      view = newView;
-    }
 
-    public static void setViewMatrix(Camera eye){
-      MVP.setEyeAngles(eye.returnRotation());
-      MVP.setEyePos(eye.returnPosition());
-      MVP.setEyeScale(eye.returnScale());
-      MVP.setEyeShear(eye.returnShear());
-      view = MVP.viewMatrix();
-    }
 
-    public static void setViewMatrix(Camera eye, float[] newCamForward){
-      MVP.setEyeAngles(eye.returnRotation());
-      MVP.setEyePos(eye.returnPosition());
-      MVP.setEyeScale(eye.returnScale());
-      MVP.setEyeShear(eye.returnShear());
-      view = MVP.viewMatrix();
-    }
+
+
     //Takes in a frame buffer, near-z, far-z, and camera and draws a 3D scene using that data plus the model and billboard lists
     public static void drawScene(int[] screen, Camera eye){
+      MVP.setEyeAngles(eye.returnRotation());
+      MVP.setEyePos(eye.returnPosition());
+      MVP.setEyeScale(eye.returnScale());
+      MVP.setEyeShear(eye.returnShear());
+      view = MatrixOperations.matrixMultiply(eye.transform(), MVP.viewMatrix());
       eye.setModelMatrix();
       if((flags & -128) == -128 || eye.alwaysPerform())
         eye.executeActions();
@@ -232,6 +234,11 @@ public class ScreenMake{
     }
 
     public static void drawScene(int[] screen, Camera eye, int lightColour, float screenBrightness){
+      MVP.setEyeAngles(eye.returnRotation());
+      MVP.setEyePos(eye.returnPosition());
+      MVP.setEyeScale(eye.returnScale());
+      MVP.setEyeShear(eye.returnShear());
+      view = MatrixOperations.matrixMultiply(eye.transform(), MVP.viewMatrix());
       eye.setModelMatrix();
       if((flags & -128) == -128 || eye.alwaysPerform())
         eye.executeActions();
@@ -276,6 +283,11 @@ public class ScreenMake{
     }
     //The version for Blinn-Phong reflection and flat shading (1 normal per polygon)
     public static void drawScene(int[] screen, Camera eye, LinkedList<Light> lights, float generalObjectBrightness){
+      MVP.setEyeAngles(eye.returnRotation());
+      MVP.setEyePos(eye.returnPosition());
+      MVP.setEyeScale(eye.returnScale());
+      MVP.setEyeShear(eye.returnShear());
+      view = MatrixOperations.matrixMultiply(eye.transform(), MVP.viewMatrix());
       eye.setModelMatrix();
       if((flags & -128) == -128 || eye.alwaysPerform())
         eye.executeActions();
@@ -329,13 +341,15 @@ public class ScreenMake{
         lights.add(light);
         //Calcluating where the light and the camera should be relative to everything else
         light.computeDirection();
-        if(light.returnType() == 'p')
-          lightMatrix = MatrixOperations.matrixMultiply(view, from3DVecTo4DVec(light.returnPosition()));
+        Matrix uniTransform = light.transform();
+        if(light.returnType() == 'p'){
+          lightMatrix = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnPosition())));
+        }
         else if(light.returnType() == 'd')
-          lightAngleMatrix = MatrixOperations.matrixMultiply(view, from3DVecTo4DVec(light.returnLightDirection(), 0));
+          lightAngleMatrix = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnLightDirection(), 0)));
         else{
-          lightMatrix = MatrixOperations.matrixMultiply(view, from3DVecTo4DVec(light.returnPosition()));
-          lightAngleMatrix = MatrixOperations.matrixMultiply(view, from3DVecTo4DVec(light.returnLightDirection(), 0));
+          lightMatrix = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnPosition())));
+          lightAngleMatrix = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnLightDirection(), 0)));
         }
         lightColour[i] = light.returnLightColour();
         for(int j = 0; j < 3; j++){
@@ -374,18 +388,21 @@ public class ScreenMake{
           attachObjectToCamera(tempModel.returnPosition(), eye);
         tempModel.setModelMatrix();
         Matrix model;
+        Matrix transform = tempModel.transform(tempModel.returnIsBillBoard(), true);
         //For if the model is not a billboard
         if(!tempModel.returnIsBillBoard())
-          model = MatrixOperations.matrixMultiply(view, tempModel.returnModelMatrix());
+          model = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(transform, tempModel.returnModelMatrix()));
         //For if the model is a billboard
         else{
           //Constructs the transformation matrix for the point
-          model = MatrixOperations.matrixMultiply(view, MVP.returnTranslation(tempModel.returnPosition()));    
+          model = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(transform, MVP.returnTranslation(tempModel.returnPosition())));    
           model.copy(MatrixOperations.matrixMultiply(model, billBoard));       
           //Enables rotation about the z-axis and scaling along the x and y axis
           Matrix modelMatrix = MatrixOperations.matrixMultiply(MVP.returnRotation(0, 0, tempModel.returnRotation()[2]), MVP.returnScale(tempModel.returnScale()[0], tempModel.returnScale()[1], 1));
-          model = MatrixOperations.matrixMultiply(model, modelMatrix);
+          model = MatrixOperations.matrixMultiply(model, MatrixOperations.matrixMultiply(tempModel.transform(true, false), modelMatrix));
         }
+       // model.copy(MatrixOperations.matrixMultiply(tempModel.transform(), model));
+
         mvpFull = MatrixOperations.matrixMultiply(proj, model); 
 
         //Checking if the model is in clipspace and adjusting the face direction to account for negative scales
@@ -410,7 +427,7 @@ public class ScreenMake{
             float edgeDir = 0; //The direction of the triangle
             float[][] points = new float[3][4]; //Triangle vertices
             boolean isInside = ((flags & 64) == 64); //If the triangle is inside the overal scene
-            boolean inFrustum = false; //If the triangle's point is in front of the near plane
+            boolean inFrustum = isInside; //If the triangle's point is in front of the near plane
             byte numOfInside = 0; //Number of points in the near plane
             byte[] insidePoints = {-1, -1, -1}; //Tracking the indices of the points in the near plane
             float[][] vertexBrightness = {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}};
@@ -450,7 +467,16 @@ public class ScreenMake{
                 primativeVertices[vertexIndex][1] = points[s][1];
                 primativeVertices[vertexIndex][2] = points[s][2];
                 primativeVertices[vertexIndex][3] = points[s][3];
-                inFrustum = (points[s][2] >= -points[s][3] && points[s][2] <= points[s][3]) || ((flags & 64) == 64);
+                inFrustum = (points[s][2] >= -points[s][3] && points[s][2] <= points[s][3]);
+                //Tracks which points are in front of the near plane or behind the near plane
+                if(inFrustum || (flags & 64) == 64){
+                  insidePoints[numOfInside] = s;
+                  numOfInside++;
+                }
+                else
+                  insidePoints[2] = s;
+                
+                //inFrustum&=(points[s][0] >= -points[s][3] && points[s][0] <= points[s][3] && points[s][1] >= -points[s][3] && points[s][1] <= points[s][3]);
                 //Homogeneous division
                 if(Math.abs(points[s][3]) > 0){
                   points[s][0] = (points[s][0]/points[s][3]);
@@ -462,13 +488,7 @@ public class ScreenMake{
                 points[s][0] = (Rasterizer.halfWidth()*(points[s][0]+1)-0.5001f);
                 points[s][1] = (Rasterizer.halfHeight()*(points[s][1]+1)-0.5001f);
                   
-                //Tracks which points are in front of the near plane or behind the near plane
-                if(inFrustum){
-                  insidePoints[numOfInside] = s;
-                  numOfInside++;
-                }
-                else
-                  insidePoints[2] = s;
+
                 isInside|=inFrustum;
                 vertices[vertexIndex] = new float[4];
                 vertices[vertexIndex][0] = points[s][0];
@@ -725,10 +745,11 @@ public class ScreenMake{
 
 
           //Constructs the transformation matrix for the point
-          Matrix model = MatrixOperations.matrixMultiply(view, MVP.returnTranslation(tempBillboard.returnPosition()));
+          Matrix model = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(tempBillboard.transform(true, true), MVP.returnTranslation(tempBillboard.returnPosition())));
           model.copy(MatrixOperations.matrixMultiply(model, billBoard));
           //Multiplying the transformed matrices by the scale of the model
-          model.copy(MatrixOperations.matrixMultiply(model, MVP.returnScale(tempBillboard.returnScale()[0], tempBillboard.returnScale()[1], 1)));
+          model.copy(MatrixOperations.matrixMultiply(model, MatrixOperations.matrixMultiply(tempBillboard.transform(true, false), MVP.returnScale(tempBillboard.returnScale()[0], tempBillboard.returnScale()[1], 1))));
+
           mvpFull = MatrixOperations.matrixMultiply(proj, model);
           tempBillboard.setPosition(position);
 
@@ -813,6 +834,16 @@ public class ScreenMake{
     }
 
     private static void drawObjects(int[] screen){
+      size = noDraw.size();
+      for(int i = 0; i < size; i++){
+        tempInvis = noDraw.removeFirst();
+        noDraw.add(tempInvis);
+        if((flags & -128) == -128 || tempInvis.alwaysPerform()){
+          tempInvis.setModelMatrix();
+          tempInvis.executeActions();
+        }
+      }
+
       while(!dotDisplayOpaque.isEmpty()){
         tempDot = dotDisplayOpaque.removeFirst();
         Rasterizer.setPixel(tempDot.returnStroke(), (int)tempDot.returnPosition()[0], (int)tempDot.returnPosition()[1], tempDot.returnPosition()[2], tempDot.returnDepthWrite());
@@ -1071,18 +1102,23 @@ public class ScreenMake{
       if(tempModel.returnAttachedToCamera())
         attachObjectToCamera(tempModel.returnPosition(), eye);
       tempModel.setModelMatrix();
+      Matrix transform = tempModel.transform(tempModel.returnIsBillBoard(), true);
+      Matrix model = MatrixOperations.matrixMultiply(transform, tempModel.returnModelMatrix());
+
       //For if the model is not a billboard
       if(!tempModel.returnIsBillBoard())
-        mvpFull.copy(MatrixOperations.matrixMultiply(mvp, tempModel.returnModelMatrix()));
+        mvpFull.copy(MatrixOperations.matrixMultiply(mvp, model));
       //For if the model is a billboard
       else{
+        Matrix modelPosMat = MatrixOperations.matrixMultiply(transform, from3DVecTo4DVec(tempModel.returnPosition()));
+        float[] modelPos = {modelPosMat.returnData(0, 0), modelPosMat.returnData(0, 1), modelPosMat.returnData(0, 2)};
         //Constructs the transformation matrix for the point
-        mvpFull.copy(MatrixOperations.matrixMultiply(mvp, MVP.returnTranslation(tempModel.returnPosition())));
+        mvpFull.copy(MatrixOperations.matrixMultiply(mvp, MVP.returnTranslation(modelPos)));
         mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, billBoard));
         
         //Enables rotation about the z-axis and scaling along the x and y axis
         Matrix modelMatrix = MatrixOperations.matrixMultiply(MVP.returnRotation(0, 0, tempModel.returnRotation()[2]), MVP.returnScale(tempModel.returnScale()[0], tempModel.returnScale()[1], 1));
-        mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, modelMatrix));
+        mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, MatrixOperations.matrixMultiply(tempModel.transform(true, false), modelMatrix)));
       }
 
       //Checking if the model is in clipspace and adjusting the face direction to account for negative scales
@@ -1393,10 +1429,10 @@ public class ScreenMake{
       tempBillboard.setModelMatrix();
       if(distCamToBillboard <= drawDist && tempBillboard.returnModelTint() > Rasterizer.getMinTransparency()*Colour.INV_255){
         //Constructs the transformation matrix for the point
-        mvpFull.copy(MatrixOperations.matrixMultiply(mvp, MVP.returnTranslation(tempBillboard.returnPosition())));
+        mvpFull.copy(MatrixOperations.matrixMultiply(mvp, MatrixOperations.matrixMultiply(tempBillboard.transform(true, true), MVP.returnTranslation(tempBillboard.returnPosition()))));
         mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, billBoard));
         //Multiplying the transformed matrices by the scale of the model
-        mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, MVP.returnScale(tempBillboard.returnScale()[0], tempBillboard.returnScale()[1], 1)));
+        mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, MatrixOperations.matrixMultiply(tempBillboard.transform(true, false), MVP.returnScale(tempBillboard.returnScale()[0], tempBillboard.returnScale()[1], 1))));
         tempBillboard.setPosition(position);
         float[][] points = {{-(tempBillboard.returnWidth() >>> 1), -(tempBillboard.returnHeight() >>> 1), 0, 1}, 
                             {(tempBillboard.returnWidth() >>> 1), -(tempBillboard.returnHeight() >>> 1), 0, 1},
@@ -1487,7 +1523,7 @@ public class ScreenMake{
         attachObjectToCamera(tempLineObj.returnPosition(), eye);
       tempLineObj.setModelMatrix();
       //Constructs the transformation matrix for the point
-      mvpFull.copy(MatrixOperations.matrixMultiply(mvp, tempLineObj.returnModelMatrix()));
+      mvpFull.copy(MatrixOperations.matrixMultiply(mvp, MatrixOperations.matrixMultiply(tempLineObj.transform(), tempLineObj.returnModelMatrix())));
       tempLineObj.setPosition(position);
       if((flags & -128) == -128 || tempLineObj.alwaysPerform())
         tempLineObj.executeActions();
@@ -1601,7 +1637,7 @@ public class ScreenMake{
       float[] point = from3DVecTo4DVec(tempDot.returnPosition());
       boolean isInside = ((flags & 64) == 64);
       //Projects the point from 3D to 2D
-      Matrix clipCheck = MatrixOperations.matrixMultiply(view, point); 
+      Matrix clipCheck = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(tempDot.transform(), point)); 
       Matrix projection = MatrixOperations.matrixMultiply(mvp, point);
       point[0] = projection.returnData(0, 0) - 0.0001f;
       point[1] = projection.returnData(1, 0) - 0.0001f;

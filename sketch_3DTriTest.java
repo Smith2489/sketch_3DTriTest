@@ -247,6 +247,7 @@ public class sketch_3DTriTest extends PApplet{;
     testModels[7].setScale(0.5f, 0.5f, 1);
     testModels[7].addAction(new RotateBillboard());
     testModels[7].setShininess(0.25f);
+
     //testModels[7].setBrightness(0.25);
     
     //Pyramid
@@ -256,13 +257,13 @@ public class sketch_3DTriTest extends PApplet{;
     testModels[8].setScale(2.5f, 2.5f, 2.5f);
     testModels[8].addAction(new RotateAtFiveDegrees(true));
 
-    
     //Rhombohedron
     testModels[9] = new Model(testGeometry[3], testPallets[4]);
     testModels[9].setPosition(6, 0, 15);
     testModels[9].setScale(1.5f, 1.5f, 1.5f);
     testModels[9].addAction(new RotateRhombohedron());
-    
+    testModels[9].setParentTransform(testModels[5]);
+    testModels[7].setParentTransform(testModels[9]);
     //Flag
     testModels[10] = new Model(testGeometry[7], testPallets[8]);
     testModels[10].setPosition(0, 0, -0.5f);
@@ -485,7 +486,7 @@ public class sketch_3DTriTest extends PApplet{;
     //ScreenMake.solidBack();
 
     //eye.lookAt(point, (byte)2);
-    ScreenMake.setViewMatrix(eye);
+    //ScreenMake.setViewMatrix(eye);
 
     if((outlineControl & 1) == 1)
       ScreenMake.fill();
@@ -532,7 +533,7 @@ public class sketch_3DTriTest extends PApplet{;
     }
     x = positionX;
     y = positionY;
-    ScreenMake.setViewMatrix(eye2);
+    //ScreenMake.setViewMatrix(eye2);
     ScreenMake.setModelList(linkedSmallerSet);
     ScreenMake.disableBillboardList();
     ScreenMake.drawScene(screen2, eye2, lightsSecondary, 1.5f);

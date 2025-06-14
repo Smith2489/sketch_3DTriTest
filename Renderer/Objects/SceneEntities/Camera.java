@@ -4,14 +4,12 @@ import Actions.ObjectActions.*;
 import Renderer.Objects.Parents.*;
 //Class for abstracting away camera object data
 public class Camera extends ScalableEntity{
-  private boolean alwaysPerform = true;
   private IntWrapper colour = new IntWrapper();
   private float[] invColour = {1, 1, 1}; 
   private BooleanWrapper alwaysMultiply = new BooleanWrapper();
   private FloatWrapper drawDistance = new FloatWrapper();
   public Camera(){
     super();
-    alwaysPerform = true;
     colour.val = 0xFFFFFFFF;
     invColour[0] = 1;
     invColour[1] = 1;
@@ -21,7 +19,6 @@ public class Camera extends ScalableEntity{
   }
   public Camera(float[] position, float[] rotation, float[] scl, float[][] shr){
     super(position, rotation, scl, shr);
-    alwaysPerform = true;
     colour.val = 0xFFFFFFFF;
     invColour[0] = 1;
     invColour[1] = 1;
@@ -31,7 +28,6 @@ public class Camera extends ScalableEntity{
   }
   public Camera(float posX, float posY, float posZ, float rotX, float rotY, float rotZ, float scaleX, float scaleY, float scaleZ, float[] shearX, float[] shearY, float[] shearZ){
     super(posX, posY, posZ, rotX, rotY, rotZ, scaleX, scaleY, scaleZ, shearX, shearY, shearZ);
-    alwaysPerform = true;
     colour.val = 0xFFFFFFFF;
     invColour[0] = 1;
     invColour[1] = 1;
@@ -44,17 +40,11 @@ public class Camera extends ScalableEntity{
       newAction.setColour(colour, invColour);
       newAction.setDrawDistance(drawDistance);
       newAction.setAlwaysMultiply(alwaysMultiply);
-      super.addAction(newAction);
+      super.appendAction(newAction);
       actionList.add(newAction);
     }
     else
       System.out.println("ERROR: CANNOT BE NULL OR AN OBJECT ACTION");
-  }
-  public void alwaysPerform(boolean perform){
-    alwaysPerform = perform;
-  }
-  public boolean alwaysPerform(){
-    return alwaysPerform;
   }
 
   //A pair of functions which set the camera colour
@@ -146,7 +136,6 @@ public class Camera extends ScalableEntity{
       Camera c = (Camera)o;
       super.copy(c);
       colour.val = c.colour.val;
-      alwaysPerform = c.alwaysPerform;
       drawDistance.val = c.drawDistance.val;
       alwaysMultiply.val = c.alwaysMultiply.val;
       invColour[0] = c.invColour[0];
@@ -157,7 +146,6 @@ public class Camera extends ScalableEntity{
   public void copy(Camera c){
     super.copy(c);
     colour.val = c.colour.val;
-    alwaysPerform = c.alwaysPerform;
     drawDistance.val = c.drawDistance.val;
     alwaysMultiply.val = c.alwaysMultiply.val;
     invColour[0] = c.invColour[0];
@@ -168,7 +156,6 @@ public class Camera extends ScalableEntity{
     if(o instanceof Camera){
       Camera c = (Camera)o;
       boolean isEqual = super.equals(c);
-      isEqual&=(alwaysPerform == c.alwaysPerform);
       isEqual&=(colour.val == c.colour.val);
       isEqual&=(Math.abs(drawDistance.val - c.drawDistance.val) <= EPSILON);
       isEqual&=(alwaysMultiply.val == c.alwaysMultiply.val);
@@ -180,7 +167,6 @@ public class Camera extends ScalableEntity{
   }
   public boolean equals(Camera c){
     boolean isEqual = super.equals(c);
-    isEqual&=(alwaysPerform == c.alwaysPerform);
     isEqual&=(colour.val == c.colour.val);
     isEqual&=(Math.abs(drawDistance.val - c.drawDistance.val) <= EPSILON);
     isEqual&=(alwaysMultiply.val == c.alwaysMultiply.val);
