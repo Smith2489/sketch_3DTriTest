@@ -97,7 +97,7 @@ public class SceneEntity{
                 transformMatrix = MVP.returnTranslation(newParent.returnPosition());
             }
             else{
-                transformMatrix = MVP.returnRotation(newParent.returnRotation());
+                transformMatrix = MVP.returnRotation(0, 0, newParent.returnRotation()[2]);
             }
         }
         //Check if we've already seen this this object before. If we have, add it to a list, otherwise skip

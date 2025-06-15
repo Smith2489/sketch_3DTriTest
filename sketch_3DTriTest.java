@@ -92,6 +92,7 @@ public class sketch_3DTriTest extends PApplet{;
     eye.colour(0x55AAFF);
     eye2.setDrawDistance(1800);
     eye2.addAction(new ManageSecondCamera(eye));
+    eye2.alwaysPerform(true);
     light[0] = new Light(0, -50, -25);
     light[0].setLightColour(0x55AAFF, (byte)0);
     light[0].setLightColour(0x55, (byte)1);
