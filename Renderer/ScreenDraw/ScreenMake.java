@@ -3,7 +3,7 @@ import Wrapper.*;
 import java.util.*;
 import Maths.LinearAlgebra.*;
 import Renderer.Objects.SceneEntities.*;
-import Renderer.Objects.Parents.ScalableEntity;
+import Renderer.Objects.Parents.SceneEntity;
 public class ScreenMake{
     //Set up for the stencil test
     private static byte stencilComp = 0;
@@ -34,7 +34,7 @@ public class ScreenMake{
     private static LinkedList<LineDisp> lineDisplayTranslucent = new LinkedList<LineDisp>();
     private static LinkedList<Dot> dotDisplayOpaque = new LinkedList<Dot>();
     private static LinkedList<Dot> dotDisplayTranslucent = new LinkedList<Dot>();
-    private static LinkedList<ScalableEntity> noDraw = new LinkedList<ScalableEntity>();
+    private static LinkedList<SceneEntity> noDraw = new LinkedList<SceneEntity>();
     private static LinkedList<Model> modelList = new LinkedList<Model>(); //List of models
     private static LinkedList<Billboard> billboardList = new LinkedList<Billboard>(); //List of billboards
     private static LinkedList<LineObj> lineList = new LinkedList<LineObj>();
@@ -43,7 +43,7 @@ public class ScreenMake{
     private static LinkedList<Billboard> refListB = billboardList;
     private static LinkedList<LineObj> refListL = lineList;
     private static LinkedList<Dot> refListD = dotList;
-    private static LinkedList<ScalableEntity> refListNoDraw = noDraw;
+    private static LinkedList<SceneEntity> refListNoDraw = noDraw;
     private static Matrix billBoard;
     private static Matrix view;
     private static Model tempModel;
@@ -52,7 +52,7 @@ public class ScreenMake{
     private static Billboard tempBillboard = new Billboard();
     private static LineDisp tempLine = new LineDisp();
     private static Dot tempDot = new Dot();
-    private static ScalableEntity tempInvis = new ScalableEntity();
+    private static SceneEntity tempInvis = new SceneEntity();
     //Contains data pertaining to translucent objects
     //IDs (1 for triangle, 2 for billboarded sprite, 3 for line, 4 for dot)
     //Lighting will only interact with triangles and billboarded sprites
@@ -98,7 +98,7 @@ public class ScreenMake{
         flags&=-17;
     }
 
-    public static void setInvisibleObjectsList(LinkedList<ScalableEntity> newList){
+    public static void setInvisibleObjectsList(LinkedList<SceneEntity> newList){
       noDraw = newList;
     }
     public static void disableInvisibleObjects(){
@@ -364,8 +364,10 @@ public class ScreenMake{
         lightAngle[i][1] = lightAngleMatrix.returnData(1, 0);
         lightAngle[i][2] = lightAngleMatrix.returnData(2, 0);
         lightAngle[i] = VectorOperations.vectorNormalization3D(lightAngle[i]);
-        if((flags & -128) == -128 || light.alwaysPerform())
+        if((flags & -128) == -128 || light.alwaysPerform()){
+          light.setModelMatrix();
           light.executeActions();
+        }
       }
 
       size = modelList.size();

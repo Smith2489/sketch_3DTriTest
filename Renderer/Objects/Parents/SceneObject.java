@@ -82,13 +82,11 @@ public class SceneObject extends ScalableEntity{
         if(o instanceof SceneObject){
             SceneObject s = (SceneObject)o;
             super.copy(s);
-            flags = s.flags;
             uniTint.val = s.uniTint.val;
         }
     }
     public void copy(SceneObject s){
         super.copy(s);
-        flags = s.flags;
         uniTint.val = s.uniTint.val;
     }
 
@@ -96,7 +94,6 @@ public class SceneObject extends ScalableEntity{
         if(o instanceof SceneObject){
             SceneObject s = (SceneObject)o;
             boolean isEquals = super.equals(s);
-            isEquals&=(flags == s.flags);
             isEquals&=(Math.abs(uniTint.val - s.uniTint.val) <= EPSILON);
             return isEquals;
         }
@@ -105,7 +102,6 @@ public class SceneObject extends ScalableEntity{
     }
     public boolean equals(SceneObject s){
         boolean isEquals = super.equals(s);
-        isEquals&=(flags == s.flags);
         isEquals&=(Math.abs(uniTint.val - s.uniTint.val) <= EPSILON);
         return isEquals;
     }

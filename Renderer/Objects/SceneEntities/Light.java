@@ -22,7 +22,6 @@ public class Light extends SceneEntity{
     //0 = inner spread, 1 = outer spread
     private float[] spotlightSpread = {0, -1};
     private float[] lightDir = {0, 0, 0};
-    private boolean alwaysPerform = false;
     public Light(){
         super();
         intensities[0] = 1;
@@ -77,12 +76,6 @@ public class Light extends SceneEntity{
         }
         else
             System.out.println("ERROR: ACTION CANNOT BE NULL");
-    }
-    public void alwaysPerform(boolean perform){
-        alwaysPerform = perform;
-    }
-    public boolean alwaysPerform(){
-        return alwaysPerform;
     }
     public void setAmbientIntensity(float ambientIntensity){
         intensities[0] = Math.max(0, ambientIntensity);
@@ -239,7 +232,6 @@ public class Light extends SceneEntity{
             intensities[0] = l.intensities[0];
             intensities[1] = l.intensities[1];
             intensities[2] = l.intensities[2];
-            alwaysPerform = l.alwaysPerform;
         }
     }
     public void copy(Light l){
@@ -255,7 +247,6 @@ public class Light extends SceneEntity{
         intensities[0] = l.intensities[0];
         intensities[1] = l.intensities[1];
         intensities[2] = l.intensities[2];
-        alwaysPerform = l.alwaysPerform;
     }
 
     public boolean equals(Object o){
@@ -273,7 +264,6 @@ public class Light extends SceneEntity{
             isEquals&=(Math.abs(spotlightSpread[0] - l.spotlightSpread[0]) <= EPSILON);
             isEquals&=(Math.abs(spotlightSpread[1] - l.spotlightSpread[1]) <= EPSILON);
             isEquals&=(lightType == l.lightType);
-            isEquals&=(alwaysPerform == l.alwaysPerform);
             return isEquals;
         }
         else
@@ -293,7 +283,6 @@ public class Light extends SceneEntity{
         isEquals&=(Math.abs(spotlightSpread[0] - l.spotlightSpread[0]) <= EPSILON);
         isEquals&=(Math.abs(spotlightSpread[1] - l.spotlightSpread[1]) <= EPSILON);
         isEquals&=(lightType == l.lightType);
-        isEquals&=(alwaysPerform == l.alwaysPerform);
         return isEquals;
     }
 }

@@ -1,5 +1,6 @@
 package Renderer.Objects.Parents;
 import java.util.LinkedList;
+import java.util.Objects;
 import Renderer.Objects.Physics.*;
 import Actions.ObjectActions.Action;
 import Maths.LinearAlgebra.*;
@@ -9,14 +10,16 @@ public class SceneEntity{
     //A list of parent objects that have already been transformed
     //The idea is to prevent infinite recursion in the event that one parent object links to another
     //in such a way that they form a loop
-    private static LinkedList <ScalableEntity> alreadyVisited = new LinkedList<ScalableEntity>();
+    private static LinkedList <SceneEntity> alreadyVisited = new LinkedList<SceneEntity>();
     protected final float EPSILON = 0.0001f; //For equality checking with floats
+    protected byte flags = 0; //0 = always peform
     protected float[] pos = {0, 0, 0}; //Object's position
     protected float[] rot = {0, 0, 0}; //Object's rotation
     private Physics physics = new Physics(pos, rot); //Physics attached to object
     protected LinkedList<Action> actionList = new LinkedList<Action>(); //Actions associated with object
     private static Action tempAction; //A temporary action used when iterating over multiple actions
-    private ScalableEntity parent = null; //A parent transformation for this object
+    private SceneEntity parent = null; //A parent transformation for this object
+    protected Matrix modelMatrix = new Matrix();
     public SceneEntity(){
         pos[0] = 0;
         pos[1] = 0;
@@ -74,33 +77,27 @@ public class SceneEntity{
     }
 
     //Sets the reference to the parent transformation for this object
-    public void setParentTransform(ScalableEntity newParent){
+    public void setParentTransform(SceneEntity newParent){
         parent = newParent;
     }
 
     //Returns the reference to the parent transformation for this object
-    public ScalableEntity getParentTransformation(){
+    public SceneEntity getParentTransformation(){
         return parent;
     }
 
     //Goes through each object's parents and multiplies their transformations together using
-    private Matrix transformRecursive(ScalableEntity newParent, boolean isBillboard, boolean beforeBillboard){
+    private Matrix transformRecursive(SceneEntity newParent, boolean isBillboard, boolean beforeBillboard){
         //Create this object's transformation matrix
         Matrix transformMatrix;
         if(!isBillboard)
-            transformMatrix = MVP.inverseViewMatrix(newParent.returnPosition(), newParent.returnRotation(), newParent.returnScale(), newParent.returnShear());
+            transformMatrix = MatrixOperations.matrixMultiply(MVP.returnTranslation(newParent.returnPosition()), MVP.returnRotation(newParent.returnRotation()));
         else{
-            float[][] shear = {{0, 0}, {0, 0}, {0, 0}};
             if(beforeBillboard){
-                float[] rot = {0, 0, 0};
-                float[] scale = {1, 1, 1};
-                transformMatrix = MVP.inverseViewMatrix(newParent.returnPosition(), rot, scale, shear);
+                transformMatrix = MVP.returnTranslation(newParent.returnPosition());
             }
             else{
-                float[] rot = {0, 0, newParent.returnRotation()[2]};
-                float[] scale = {newParent.returnScale()[0], newParent.returnScale()[1], 1};
-                float[] pos = {0, 0, 0};
-                transformMatrix = MVP.inverseViewMatrix(pos, rot, scale, shear);
+                transformMatrix = MVP.returnRotation(newParent.returnRotation());
             }
         }
         //Check if we've already seen this this object before. If we have, add it to a list, otherwise skip
@@ -119,9 +116,9 @@ public class SceneEntity{
     }
 
     //Goes through each object's parents and multiplies their transformations together using
-    private Matrix transformRecursive(ScalableEntity newParent){
+    private Matrix transformRecursive(SceneEntity newParent){
         //Create this object's transformation matrix
-        Matrix transformMatrix = MVP.inverseViewMatrix(newParent.returnPosition(), newParent.returnRotation(), newParent.returnScale(), newParent.returnShear());
+        Matrix transformMatrix = MatrixOperations.matrixMultiply(MVP.returnTranslation(newParent.returnPosition()), MVP.returnRotation(newParent.returnRotation()));
 
         //Check if we've already seen this this object before. If we have, add it to a list, otherwise skip
         if(!alreadyVisited.contains(newParent)){
@@ -162,13 +159,26 @@ public class SceneEntity{
             return new Matrix(4, 4);
     }
 
-    //Initializes a new action
+    //Initializes a new action without adding it to the list
+    protected void appendAction(Action newAction){
+        newAction.setPos(pos);
+        newAction.setRot(rot);
+        newAction.setPhysics(physics);
+        newAction.setMatrix(modelMatrix);
+        newAction.init();
+    }
+
+    //Initializes a new action and adds it to the list
     protected void addAction(Action newAction){
         newAction.setPos(pos);
         newAction.setRot(rot);
         newAction.setPhysics(physics);
+        newAction.setMatrix(modelMatrix);
         newAction.init();
+        actionList.add(newAction);
     }
+
+
 
     //Deletes the action that is at the head of the list and returns it
     public Action removeFirstAction(){
@@ -210,9 +220,39 @@ public class SceneEntity{
         }
     }
 
+    //Forces actions to always be performed
+    public void alwaysPerform(boolean perform){
+        if(perform)
+            flags|=1;
+        else
+            flags&=-2;
+    }
+    public boolean alwaysPerform(){
+        return (flags & 1) == 1;
+    }
+
     //Returns the reference to this object's physics
     public Physics returnPhysicsPtr(){
         return physics;
+    }
+
+
+    //Sets the the model matrix for the object to an existing matrix
+    public void setModelMatrix(Matrix newModel){
+        if(Objects.nonNull(newModel) && newModel.returnWidth() == 4 && newModel.returnHeight() == 4)
+            modelMatrix.copy(newModel);
+        else
+            System.out.println("ERROR: MATRIX MUST BE A VALID 4x4 MATRIX");
+    }
+
+    //Sets the model matrix for the object to a new matrix
+    public void setModelMatrix(){
+        modelMatrix.copy(MatrixOperations.matrixMultiply(MVP.returnTranslation(pos), MVP.returnRotation(rot)));
+    }
+
+    //Returns the reference to the current model matrix
+    public Matrix returnModelMatrix(){
+        return modelMatrix;
     }
 
     //Sets an object's position
@@ -269,42 +309,46 @@ public class SceneEntity{
     public void copy(Object o){
         if(o instanceof SceneEntity){
             SceneEntity e = (SceneEntity)o;
+            modelMatrix.copy(e.modelMatrix);
             pos[0] = e.pos[0];
             pos[1] = e.pos[1];
             pos[2] = e.pos[2];
             rot[0] = e.rot[0];
             rot[1] = e.rot[1];
             rot[2] = e.rot[2];
+            flags = e.flags;
         }
     }
     public void copy(SceneEntity e){
+        modelMatrix.copy(e.modelMatrix);
         pos[0] = e.pos[0];
         pos[1] = e.pos[1];
         pos[2] = e.pos[2];
         rot[0] = e.rot[0];
         rot[1] = e.rot[1];
         rot[2] = e.rot[2];
+        flags = e.flags;
     }
     public boolean equals(Object o){
         if(o instanceof SceneEntity){
             SceneEntity e = (SceneEntity)o;
-            boolean isEquals = false;
+            boolean isEquals = modelMatrix.equals(e.modelMatrix);
             for(byte i = 0; i < 3; i++){
                 isEquals&=(Math.abs(pos[i] - e.pos[i]) <= EPSILON);
                 isEquals&=(Math.abs(rot[i] - e.rot[i]) <= EPSILON);
             }
-            return isEquals;
+            return isEquals && (flags == e.flags);
         }
         else
             return false;
     }
     public boolean equals(SceneEntity e){
-        boolean isEquals = false;
+        boolean isEquals = modelMatrix.equals(e.modelMatrix);
         for(byte i = 0; i < 3; i++){
             isEquals&=(Math.abs(pos[i] - e.pos[i]) <= EPSILON);
             isEquals&=(Math.abs(rot[i] - e.rot[i]) <= EPSILON);
         }
-        return isEquals;
+        return isEquals && (flags == e.flags);
 
     }
 }
