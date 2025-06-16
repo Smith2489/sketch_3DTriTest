@@ -1,9 +1,7 @@
 package Actions.ObjectActions;
-import Maths.LinearAlgebra.*;
 public class LightAction extends Action {
     protected float[] intensities = {1, 1, 1};
     private float[][] colour = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
-    private float[] lightDir = {0, 0, -1};
     public void perform(){
         System.out.println("NO LIGHT ACTION ATTACHED. PLEASE OVERIDE METHOD perform() IN CLASS (OR CLASSES) WHICH EXTEND(S) THIS CLASS");
     }
@@ -13,49 +11,7 @@ public class LightAction extends Action {
     public void setColour(float[][] newColour){
         colour = newColour;
     }
-    public void setDirection(float[] newDir){
-        lightDir = newDir;
-    }
-    protected float[] getBackward(){
-        return VectorOperations.vectorNormalization(lightDir);
-    }
-    protected float[] getForward(){
-        float[] tempVec = VectorOperations.vectorNormalization(lightDir);
-        tempVec[0]*=-1;
-        tempVec[1]*=-1;
-        tempVec[2]*=-1;
-        return tempVec;
-    }
-    protected float[] getLeft(){
-        float[] tempVec = VectorOperations.vectorNormalization(lightDir);
-        float tempDir = -tempVec[0];
-        tempVec[0] = tempVec[2];
-        tempVec[2] = tempDir;
-        return tempVec;
-    }
-    protected float[] getRight(){
-        float[] tempVec = VectorOperations.vectorNormalization(lightDir);
-        float tempDir = tempVec[0];
-        tempVec[0] = -tempVec[2];
-        tempVec[2] = tempDir;
-        tempVec[1]*=-1;
-        return tempVec;
-    }
-    protected float[] getUp(){
-        float[] tempVec = VectorOperations.vectorNormalization(lightDir);
-        float tempDir = -tempVec[1];
-        tempVec[1] = tempVec[2];
-        tempVec[2] = tempDir;
-        return tempVec;
-    }
-    protected float[] getDown(){
-        float[] tempVec = VectorOperations.vectorNormalization(lightDir);
-        float tempDir = tempVec[1];
-        tempVec[1] = -tempVec[2];
-        tempVec[2] = tempDir;
-        tempVec[0]*=-1;
-        return tempVec;
-    }
+   
     protected void setColour(int newColour, int index){
         newColour&=0xFFFFFF;
         if(newColour <= 0xFF)

@@ -12,8 +12,7 @@ public class SceneObject extends ScalableEntity{
         uniTint.val = 1;
     }
     protected SceneObject(byte defaultFlags){
-        super();
-        flags = defaultFlags;
+        super(defaultFlags);
         uniTint.val = 1;
     }
     public SceneObject(float[] newPos){
@@ -27,13 +26,11 @@ public class SceneObject extends ScalableEntity{
         uniTint.val = 1;
     }
     protected SceneObject(float[] newPos, byte defaultFlags){
-        super(newPos);
-        flags = defaultFlags;
+        super(newPos, defaultFlags);
         uniTint.val = 1;
     }
     protected SceneObject(float x, float y, float z, byte defaultFlags){
-        super(x, y, z);
-        flags = defaultFlags;
+        super(x, y, z, defaultFlags);
         uniTint.val = 1;
     }
 
@@ -45,7 +42,7 @@ public class SceneObject extends ScalableEntity{
             actionList.add(newAction);
           }
           else
-            System.out.println("ERROR: ACTION CANNOT BE NULL");
+            System.out.println(NULL_ACTION);
     }
 
     //Sets the object to be drawn on the same layer or the layer above

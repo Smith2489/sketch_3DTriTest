@@ -2,11 +2,10 @@ package Renderer.Objects.SceneEntities;
 import Actions.ObjectActions.*;
 import Maths.Extensions.*;
 import Maths.LinearAlgebra.*;
-import Renderer.ScreenDraw.MVP;
+//import Renderer.ScreenDraw.MVP;
 import Renderer.Objects.Parents.*;
 //Class for abstracting away light object data
 public class Light extends SceneEntity{
-    private static final float[] ONE = {0, 0, -1, 0};
     //Position if point light, rotation for directional light, both for spot light
     private static final char[] VALID_TYPES = {'p', 'd', 's'};
 
@@ -21,7 +20,6 @@ public class Light extends SceneEntity{
     private float[][] lightColour = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
     //0 = inner spread, 1 = outer spread
     private float[] spotlightSpread = {0, -1};
-    private float[] lightDir = {0, 0, 0};
     public Light(){
         super();
         intensities[0] = 1;
@@ -70,12 +68,11 @@ public class Light extends SceneEntity{
         if(newAction != null){
             newAction.setIntensities(intensities);
             newAction.setColour(lightColour);
-            newAction.setDirection(lightDir);
-            super.addAction(newAction);
+            super.appendAction(newAction);
             actionList.add(newAction);
         }
         else
-            System.out.println("ERROR: ACTION CANNOT BE NULL");
+            System.out.println(NULL_ACTION);
     }
     public void setAmbientIntensity(float ambientIntensity){
         intensities[0] = Math.max(0, ambientIntensity);
@@ -178,19 +175,13 @@ public class Light extends SceneEntity{
         lightColour[2][2] = lightColour[0][2];
     }
 
-
-    public void computeDirection(){
-        Matrix lightDirMatrix = MatrixOperations.matrixMultiply(MVP.returnRotation(rot), ONE);
-        lightDir[0] = lightDirMatrix.returnData(0, 0);
-        lightDir[1] = lightDirMatrix.returnData(1, 0);
-        lightDir[2] = lightDirMatrix.returnData(2, 0);
-        float[] tempDir = VectorOperations.vectorNormalization(lightDir);
-        lightDir[0] = tempDir[0];
-        lightDir[1] = tempDir[1];
-        lightDir[2] = tempDir[2];
-    }
     public float[] returnLightDirection(){
-        return lightDir;
+        float[] forward = {-modelMatrix.returnData(0, 2), -modelMatrix.returnData(1, 2), -modelMatrix.returnData(2, 2)};
+        forward = VectorOperations.vectorNormalization(forward);
+        forward[0]-=EPSILON;
+        forward[1]-=EPSILON;
+        forward[2]-=EPSILON;
+        return forward;
     }
     //Returns a specific colour of the light in an integer RGB format
     public int returnLightColour(byte index){
@@ -209,7 +200,7 @@ public class Light extends SceneEntity{
         if(dot >= spotlightSpread[0])
             return 1;
         float spreadDiff = spotlightSpread[1] - spotlightSpread[0];
-        if(Math.abs(spreadDiff) <= 0.0001){
+        if(Math.abs(spreadDiff) <= EPSILON){
             if(dot < spotlightSpread[0])
                 return 0;
             return 1;

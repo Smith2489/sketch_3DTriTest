@@ -109,7 +109,7 @@ public class sketch_3DTriTest extends PApplet{;
     light[1].setLightColour(0x00BBBB);
     light[1].setInnerSpread(45);
     light[1].setOuterSpread(90);
-    light[1].setType('s');
+    light[1].setType('d');
     light[1].addAction(new RotateLight());
     light[1].addAction(new ColonThree());
     secondLight = new Light();

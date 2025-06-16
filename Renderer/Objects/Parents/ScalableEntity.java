@@ -20,6 +20,18 @@ public class ScalableEntity extends SceneEntity{
         shear[2][0] = 0;
         shear[2][1] = 0;
     }
+    protected ScalableEntity(byte defaultFlags){
+        super(defaultFlags);
+        scale[0] = 1;
+        scale[1] = 1;
+        scale[2] = 1;
+        shear[0][0] = 0;
+        shear[0][1] = 0;
+        shear[1][0] = 0;
+        shear[1][1] = 0;
+        shear[2][0] = 0;
+        shear[2][1] = 0;
+    }
     public ScalableEntity(float[] newPos){
         super(newPos);
         scale[0] = 1;
@@ -32,8 +44,32 @@ public class ScalableEntity extends SceneEntity{
         shear[2][0] = 0;
         shear[2][1] = 0;
     }
+    protected ScalableEntity(float[] newPos, byte defaultFlags){
+        super(newPos, defaultFlags);
+        scale[0] = 1;
+        scale[1] = 1;
+        scale[2] = 1;
+        shear[0][0] = 0;
+        shear[0][1] = 0;
+        shear[1][0] = 0;
+        shear[1][1] = 0;
+        shear[2][0] = 0;
+        shear[2][1] = 0;
+    }
     public ScalableEntity(float x, float y, float z){
         super(x, y, z);
+        scale[0] = 1;
+        scale[1] = 1;
+        scale[2] = 1;
+        shear[0][0] = 0;
+        shear[0][1] = 0;
+        shear[1][0] = 0;
+        shear[1][1] = 0;
+        shear[2][0] = 0;
+        shear[2][1] = 0;
+    }
+    protected ScalableEntity(float x, float y, float z, byte defaultFlags){
+        super(x, y, z, defaultFlags);
         scale[0] = 1;
         scale[1] = 1;
         scale[2] = 1;
@@ -101,10 +137,14 @@ public class ScalableEntity extends SceneEntity{
 
     //Initialises an action and adds it to the list
     public void addAction(ObjectAction newAction){
-        newAction.setScale(scale);
-        newAction.setShear(shear);
-        super.appendAction(newAction);
-        actionList.add(newAction);
+        if(newAction != null){
+            newAction.setScale(scale);
+            newAction.setShear(shear);
+            super.appendAction(newAction);
+            actionList.add(newAction);
+        }
+        else
+            System.out.println(NULL_ACTION);
     }
 
     //Methods for setting the shear in all three axes

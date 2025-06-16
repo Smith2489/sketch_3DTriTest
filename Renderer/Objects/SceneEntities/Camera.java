@@ -44,7 +44,7 @@ public class Camera extends ScalableEntity{
       actionList.add(newAction);
     }
     else
-      System.out.println("ERROR: CANNOT BE NULL OR AN OBJECT ACTION");
+      System.out.println(NULL_ACTION);
   }
 
   //A pair of functions which set the camera colour

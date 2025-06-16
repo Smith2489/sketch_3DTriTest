@@ -340,7 +340,7 @@ public class ScreenMake{
         Light light = lights.removeFirst();
         lights.add(light);
         //Calcluating where the light and the camera should be relative to everything else
-        light.computeDirection();
+        light.setModelMatrix();
         Matrix uniTransform = light.transform();
         if(light.returnType() == 'p'){
           lightMatrix = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnPosition())));
@@ -365,7 +365,6 @@ public class ScreenMake{
         lightAngle[i][2] = lightAngleMatrix.returnData(2, 0);
         lightAngle[i] = VectorOperations.vectorNormalization3D(lightAngle[i]);
         if((flags & -128) == -128 || light.alwaysPerform()){
-          light.setModelMatrix();
           light.executeActions();
         }
       }
@@ -1757,7 +1756,9 @@ public class ScreenMake{
       Light light = lights.removeFirst();
       lights.add(light);
       float[] lightToTriVec = new float[3];
-      float r2 = 1;
+      float r2 = 100000000;
+
+      float[] halfVec = {0, 0, 0};
 
       if(light.returnType() != 'd'){
         lightToTriVec[0] = lightPos[i][0]-points[0];
@@ -1765,14 +1766,16 @@ public class ScreenMake{
         lightToTriVec[2] = lightPos[i][2]-points[2];
 
         r2 = vectorDotProduct(lightToTriVec, lightToTriVec);
+        if(Math.abs(r2) > 0.00000001)
+          r2 = 1/r2;
+        else
+          r2 = 100000000;
+        lightToTriVec = VectorOperations.vectorNormalization3D(lightToTriVec);
+        halfVec = VectorOperations.vectorNormalization3D(VectorOperations.vectorAddition(camToTriVec, lightToTriVec));
       }
-      if(Math.abs(r2) > 0.00000001)
-        r2 = 1/r2;
       else
-        r2 = 0;
-      lightToTriVec = VectorOperations.vectorNormalization3D(lightToTriVec);
-
-      float[] halfVec = VectorOperations.vectorNormalization3D(VectorOperations.vectorAddition(camToTriVec, lightToTriVec));
+        halfVec = VectorOperations.vectorNormalization3D(VectorOperations.vectorAddition(camToTriVec, lightAngle[i]));
+      
       if(tempModel != null && vectorDotProduct(halfVec, normalizedVec) > 0 && tempModel.returnPalletPtr().returnBackVisible(polygonIndex)){
         normalizedVec[0]*=-1;
         normalizedVec[1]*=-1;

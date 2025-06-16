@@ -10,6 +10,7 @@ public class SceneEntity{
     //A list of parent objects that have already been transformed
     //The idea is to prevent infinite recursion in the event that one parent object links to another
     //in such a way that they form a loop
+    protected static final String NULL_ACTION = "ERROR: ACTION CANNOT BE NULL";
     private static LinkedList <SceneEntity> alreadyVisited = new LinkedList<SceneEntity>();
     protected final float EPSILON = 0.0001f; //For equality checking with floats
     protected byte flags = 0; //0 = always peform
@@ -27,6 +28,19 @@ public class SceneEntity{
         rot[0] = 0;
         rot[1] = 0;
         rot[2] = 0;
+        flags = 0;
+        physics = new Physics(pos, rot);
+        actionList = new LinkedList<Action>();
+        parent = null;
+    }
+    protected SceneEntity(byte defaultFlags){
+        pos[0] = 0;
+        pos[1] = 0;
+        pos[2] = 0;
+        rot[0] = 0;
+        rot[1] = 0;
+        rot[2] = 0;
+        flags = defaultFlags;
         physics = new Physics(pos, rot);
         actionList = new LinkedList<Action>();
         parent = null;
@@ -38,6 +52,19 @@ public class SceneEntity{
         rot[0] = 0;
         rot[1] = 0;
         rot[2] = 0;
+        flags = 0;
+        physics = new Physics(pos, rot);
+        actionList = new LinkedList<Action>();
+        parent = null;
+    }
+    protected SceneEntity(float[] newPosition, byte defaultFlags){
+        pos[0] = newPosition[0];
+        pos[1] = newPosition[1];
+        pos[2] = newPosition[2];
+        rot[0] = 0;
+        rot[1] = 0;
+        rot[2] = 0;
+        flags = defaultFlags;
         physics = new Physics(pos, rot);
         actionList = new LinkedList<Action>();
         parent = null;
@@ -49,6 +76,19 @@ public class SceneEntity{
         rot[0] = 0;
         rot[1] = 0;
         rot[2] = 0;
+        flags = 0;
+        physics = new Physics(pos, rot);
+        actionList = new LinkedList<Action>();
+        parent = null;
+    }
+    protected SceneEntity(float x, float y, float z, byte defaultFlags){
+        pos[0] = x;
+        pos[1] = y;
+        pos[2] = z;
+        rot[0] = 0;
+        rot[1] = 0;
+        rot[2] = 0;
+        flags = defaultFlags;
         physics = new Physics(pos, rot);
         actionList = new LinkedList<Action>();
         parent = null;
@@ -60,6 +100,7 @@ public class SceneEntity{
         rot[0] = newRotation[0];
         rot[1] = newRotation[1];
         rot[2] = newRotation[2];
+        flags = 0;
         physics = new Physics(pos, rot);
         actionList = new LinkedList<Action>();
         parent = null;
@@ -71,6 +112,7 @@ public class SceneEntity{
         rot[0] = alpha;
         rot[1] = beta;
         rot[2] = gamma;
+        flags = 0;
         physics = new Physics(pos, rot);
         actionList = new LinkedList<Action>();
         parent = null;
@@ -78,7 +120,10 @@ public class SceneEntity{
 
     //Sets the reference to the parent transformation for this object
     public void setParentTransform(SceneEntity newParent){
-        parent = newParent;
+        if(newParent != null && newParent != this)
+            parent = newParent;
+        else
+            parent = null;
     }
 
     //Returns the reference to the parent transformation for this object
@@ -138,7 +183,7 @@ public class SceneEntity{
     //Returns a transformation matrix for the parent objects
     public Matrix transform(boolean isBillboard, boolean position){
         //Checks if the parent isn't null and returns an I4 matrix if it is
-        if(parent != null && parent != this){
+        if(parent != null){
             //Clear the list of already visited parents and go through each parent's transformations
             alreadyVisited.clear();
             return transformRecursive(parent, isBillboard, position);
@@ -150,7 +195,7 @@ public class SceneEntity{
     //Returns a transformation matrix for the parent objects
     public Matrix transform(){
         //Checks if the parent isn't null and returns an I4 matrix if it is
-        if(parent != null && parent != this){
+        if(parent != null){
             //Clear the list of already visited parents and go through each parent's transformations
             alreadyVisited.clear();
             return transformRecursive(parent);
@@ -170,12 +215,16 @@ public class SceneEntity{
 
     //Initializes a new action and adds it to the list
     protected void addAction(Action newAction){
-        newAction.setPos(pos);
-        newAction.setRot(rot);
-        newAction.setPhysics(physics);
-        newAction.setMatrix(modelMatrix);
-        newAction.init();
-        actionList.add(newAction);
+        if(newAction != null){
+            newAction.setPos(pos);
+            newAction.setRot(rot);
+            newAction.setPhysics(physics);
+            newAction.setMatrix(modelMatrix);
+            newAction.init();
+            actionList.add(newAction);
+        }
+        else
+            System.out.println(NULL_ACTION);
     }
 
 
