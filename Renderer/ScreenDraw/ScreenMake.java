@@ -193,8 +193,7 @@ public class ScreenMake{
       MVP.setEyeShear(eye.returnShear());
       view = MatrixOperations.matrixMultiply(eye.transform(), MVP.viewMatrix());
       eye.setModelMatrix();
-      if((flags & -128) == -128 || eye.alwaysPerform())
-        eye.executeActions();
+
       //Initializing translucent data
       translucentData.clear();
       translucentCounter = 0;
@@ -229,6 +228,8 @@ public class ScreenMake{
       setupLines(mvp, mvpFull, eye, eye.getDrawDistance());
       setupDots(mvp, mvpFull, eye, eye.getDrawDistance());
       drawObjects(screen);
+      if((flags & -128) == -128 || eye.alwaysPerform())
+        eye.executeActions();
       for(int i = 0; i < Rasterizer.returnWidth()*Rasterizer.returnHeight(); i++)
         screen[i]|=0xFF000000;
     }
@@ -240,8 +241,7 @@ public class ScreenMake{
       MVP.setEyeShear(eye.returnShear());
       view = MatrixOperations.matrixMultiply(eye.transform(), MVP.viewMatrix());
       eye.setModelMatrix();
-      if((flags & -128) == -128 || eye.alwaysPerform())
-        eye.executeActions();
+
       //Initializing translucent data
       translucentData.clear();
       translucentCounter = 0;
@@ -277,8 +277,10 @@ public class ScreenMake{
       /*TODO: ADD IN LINE HANDLING */
       setupLines(mvp, mvpFull, eye, eye.getDrawDistance());
       setupDots(mvp, mvpFull, eye, eye.getDrawDistance());
-    
       drawObjects(screen);
+
+      if((flags & -128) == -128 || eye.alwaysPerform())
+        eye.executeActions();
       setLightColour(screen, lightColour, screenBrightness, Rasterizer.returnWidth()*Rasterizer.returnHeight());
     }
     //The version for Blinn-Phong reflection and flat shading (1 normal per polygon)
@@ -289,8 +291,7 @@ public class ScreenMake{
       MVP.setEyeShear(eye.returnShear());
       view = MatrixOperations.matrixMultiply(eye.transform(), MVP.viewMatrix());
       eye.setModelMatrix();
-      if((flags & -128) == -128 || eye.alwaysPerform())
-        eye.executeActions();
+
       generalObjectBrightness = Math.max(0, generalObjectBrightness);
       //Initializing translucent data
       translucentData.clear();
@@ -335,8 +336,7 @@ public class ScreenMake{
       Matrix mvpFull = new Matrix();
       //Matrix mv = new Matrix(); //For checking if a model is within zNear and zFar (using the frustum does not work for some reason)
       boolean isInClipSpace = false; //Checks if a model is in the frustum
-      size = lights.size();
-      for(int i = 0; i < size; i++){
+      for(int i = 0; i < lights.size(); i++){
         Light light = lights.removeFirst();
         lights.add(light);
         //Calcluating where the light and the camera should be relative to everything else
@@ -364,13 +364,9 @@ public class ScreenMake{
         lightAngle[i][1] = lightAngleMatrix.returnData(1, 0);
         lightAngle[i][2] = lightAngleMatrix.returnData(2, 0);
         lightAngle[i] = VectorOperations.vectorNormalization3D(lightAngle[i]);
-        if((flags & -128) == -128 || light.alwaysPerform()){
-          light.executeActions();
-        }
       }
 
-      size = modelList.size();
-      for(int i = 0; i < size; i++){
+      for(int i = 0; i < modelList.size(); i++){
         tempModel = modelList.removeFirst();
         modelList.add(tempModel);
 
@@ -410,8 +406,6 @@ public class ScreenMake{
         isInClipSpace = ((flags & 64) == 64) || (((isInClipSpace(mvp, tempModel.returnPosition()) || isInClipSpace(mvpFull, tempModel.returnBoundingBox())) && distCamToModel <= eye.getDrawDistance()));
         tempModel.setPosition(position[0], position[1], position[2]);
         //System.out.println(i+" "+tempModel.alwaysPerform());
-        if((flags & -128) == -128 || tempModel.alwaysPerform())
-          tempModel.executeActions();
         for(byte j = 0; j < 3; j++){
           if(tempModel.returnScale()[j] < 0)
             faceDirection = (byte)((~faceDirection)+1);
@@ -727,8 +721,7 @@ public class ScreenMake{
       }
 
       billBoardCountTranslucent = 0;
-      size = billboardList.size();
-      for(int i = 0; i < size; i++){
+      for(int i = 0; i < billboardList.size(); i++){
         tempBillboard = billboardList.removeFirst();
         billboardList.add(tempBillboard);
 
@@ -823,14 +816,22 @@ public class ScreenMake{
             }
           }
         }
-        if((flags & -128) == -128 || tempBillboard.alwaysPerform())
-          tempBillboard.executeActions();
       }
 
       /*TODO: ADD IN LINE HANDLING */
       setupLines(mvp, mvpFull, eye, eye.getDrawDistance());
       setupDots(mvp, mvpFull, eye, eye.getDrawDistance());
       drawObjects(screen);
+      size = lights.size();
+      for(int i = 0; i < size; i++){
+        Light light = lights.removeFirst();
+        lights.add(light);
+        if((flags & -128) == -128 || light.alwaysPerform())
+          light.executeActions();
+      }
+
+      if((flags & -128) == -128 || eye.alwaysPerform())
+        eye.executeActions();
       setLightColour(screen, eye.returnColour(), 1, Rasterizer.returnWidth()*Rasterizer.returnHeight());
     }
 
@@ -844,6 +845,35 @@ public class ScreenMake{
           tempInvis.executeActions();
         }
       }
+      size = modelList.size();
+      for(int i = 0; i < size; i++){
+        tempModel = modelList.removeFirst();
+        modelList.add(tempModel);
+        if((flags & -128) == -128 || tempModel.alwaysPerform())
+          tempModel.executeActions();
+      }
+      size = billboardList.size();
+      for(int i = 0; i < size; i++){
+        tempBillboard = billboardList.removeFirst();
+        billboardList.add(tempBillboard);
+        if((flags & -128) == -128 || tempBillboard.alwaysPerform())
+          tempBillboard.executeActions();
+      }
+      size = lineList.size();
+      for(int i = 0; i < size; i++){
+        tempLineObj = lineList.removeFirst();
+        lineList.add(tempLineObj);
+        if((flags & -128) == -128 || tempLineObj.alwaysPerform())
+          tempLineObj.executeActions();
+      }
+      size = dotList.size();
+      for(int i = 0; i < size; i++){
+        tempDot = dotList.removeFirst();
+        dotList.add(tempDot);
+        if((flags & -128) == -128 || tempDot.alwaysPerform())
+          tempDot.executeActions();
+      }
+      
 
       while(!dotDisplayOpaque.isEmpty()){
         tempDot = dotDisplayOpaque.removeFirst();
@@ -1084,8 +1114,7 @@ public class ScreenMake{
     translusentCount = 0;
     byte faceDirection = 1;
     boolean isInClipSpace = false; //Checks if a model is in the frustum
-    size = modelList.size();
-    for(int i = 0; i < size; i++){
+    for(int i = 0; i < modelList.size(); i++){
       tempModel = modelList.removeFirst();
       modelList.add(tempModel);
 
@@ -1125,8 +1154,6 @@ public class ScreenMake{
       //Checking if the model is in clipspace and adjusting the face direction to account for negative scales
       isInClipSpace = ((flags & 64) == 64) || (((isInClipSpace(mvp, tempModel.returnPosition()) || isInClipSpace(mvpFull, tempModel.returnBoundingBox())) && distCamToModel <= drawDist));
       tempModel.setPosition(position[0], position[1], position[2]);
-      if((flags & -128) == -128 || tempModel.alwaysPerform())
-        tempModel.executeActions();
       for(byte j = 0; j < 3; j++){
         if(tempModel.returnScale()[j] < 0)
           faceDirection = (byte)((~faceDirection)+1);
@@ -1415,8 +1442,7 @@ public class ScreenMake{
     billboardDisplayOpaque.clear();
     billboardDisplayTranslucent.clear();
     billBoardCountTranslucent = 0;
-    size = billboardList.size();
-    for(int i = 0; i < size; i++){
+    for(int i = 0; i < billboardList.size(); i++){
       tempBillboard = billboardList.removeFirst();
       billboardList.add(tempBillboard);
       float[] fromCamToBillboard = {tempBillboard.returnPosition()[0]-eye.returnPosition()[0],
@@ -1497,8 +1523,6 @@ public class ScreenMake{
           }
         }
       }
-      if((flags & -128) == -128 || tempBillboard.alwaysPerform())
-        tempBillboard.executeActions();
     }
   }
   /*TODO: ADD IN LINE PROCESSING*/
@@ -1509,8 +1533,7 @@ public class ScreenMake{
     lineDisplayTranslucent.clear();
     primativeVertices = null;
     boolean isInClipSpace = false;
-    size = lineList.size();
-    for(int i = 0; i < size; i++){
+    for(int i = 0; i < lineList.size(); i++){
       tempLineObj = lineList.removeFirst();
       lineList.add(tempLineObj);
       vertices = new float[tempLineObj.returnLineModelPtr().returnVertices().length][];
@@ -1526,8 +1549,6 @@ public class ScreenMake{
       //Constructs the transformation matrix for the point
       mvpFull.copy(MatrixOperations.matrixMultiply(mvp, MatrixOperations.matrixMultiply(tempLineObj.transform(), tempLineObj.returnModelMatrix())));
       tempLineObj.setPosition(position);
-      if((flags & -128) == -128 || tempLineObj.alwaysPerform())
-        tempLineObj.executeActions();
       //Checking if the model is in clipspace and adjusting the face direction to account for negative scales
       isInClipSpace = ((flags & 64) == 64) || (((isInClipSpace(mvp, tempLineObj.returnPosition()) || isInClipSpace(mvpFull, tempLineObj.returnBoundingBox())) && distCamToModel <= drawDist));
       float[][] pointPair = tempLineObj.returnLineModelPtr().returnVertices();
@@ -1624,13 +1645,10 @@ public class ScreenMake{
     dotDisplayOpaque.clear();
     dotDisplayTranslucent.clear();
     dotCountTranslucent = 0;
-    size = dotList.size();
-    for(int i = 0; i < size; i++){
+    for(int i = 0; i < dotList.size(); i++){
       tempDot = dotList.removeFirst();
       dotList.add(tempDot);
       tempDot.setModelMatrix();
-      if((flags & -128) == -128 || tempDot.alwaysPerform())
-        tempDot.executeActions();
       float[] position = {tempDot.returnPosition()[0], tempDot.returnPosition()[1], tempDot.returnPosition()[2]};
       if(tempDot.returnAttachedToCamera())
         attachObjectToCamera(tempDot.returnPosition(), eye);

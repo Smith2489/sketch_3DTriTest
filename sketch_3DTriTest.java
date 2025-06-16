@@ -275,10 +275,9 @@ public class sketch_3DTriTest extends PApplet{;
     
     //Long rectangular prism inverted hull
     testModels[11] = new Model(testGeometry[0], testPallets[9]);
-    testModels[11].setPosition(0.5f, 3, 9);
     testModels[11].setScale(1.1f, 0.6f, 4.1f);
     testModels[11].setInverted(true);
-    testModels[11].addAction(new RotateLongInvertedHull(testModels[3]));
+    testModels[11].setParentTransform(testModels[3]);
     
     //Scale (1,1,1) cube inverted hull
     testModels[12] = new Model(testGeometry[0], testPallets[9]);
