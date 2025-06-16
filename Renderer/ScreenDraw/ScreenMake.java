@@ -1774,7 +1774,7 @@ public class ScreenMake{
       Light light = lights.removeFirst();
       lights.add(light);
       float[] lightToTriVec = new float[3];
-      float r2 = 100000000;
+      float r2 = 1;
 
       float[] halfVec = {0, 0, 0};
 

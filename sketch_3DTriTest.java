@@ -288,11 +288,10 @@ public class sketch_3DTriTest extends PApplet{;
     
     //Bowser platform
     testModels[13] = new Model(testGeometry[0], testPallets[9]);
-    testModels[13].setPosition(0.5f, 3, 12);
-    testModels[13].setScale(2.1f, 0.6f, 2.1f);
+    testModels[13].setScale(2.15f, 0.65f, 2.15f);
     testModels[13].setInverted(true);
     testModels[13].setShininess(0);
-    testModels[13].addAction(new RotateLongInvertedHull(testModels[6]));
+    testModels[13].setParentTransform(testModels[6]);
     
     //Mario 64 slab
     testModels[14] = new Model(testGeometry[8], testPallets[10]);
@@ -664,24 +663,6 @@ public class sketch_3DTriTest extends PApplet{;
         rot[0]+=360;
       else if(rot[0] >= 360)
         rot[0]-=360;
-    }
-  }
-
-  private class RotateLongInvertedHull extends ModelAction{
-    private Model model = null;
-    public RotateLongInvertedHull(Model newModel){
-      model = newModel;
-    }
-    public void init(){
-      
-    }
-    public void perform(){
-      pos[0] = model.returnPosition()[0];
-      pos[1] = model.returnPosition()[1];
-      pos[2] = model.returnPosition()[2];
-      rot[0] = model.returnRotation()[0];
-      rot[1] = model.returnRotation()[1];
-      rot[2] = model.returnRotation()[2];
     }
   }
 
