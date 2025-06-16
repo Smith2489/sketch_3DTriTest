@@ -11,14 +11,15 @@ public class SceneEntity{
     //The idea is to prevent infinite recursion in the event that one parent object links to another
     //in such a way that they form a loop
     protected static final String NULL_ACTION = "ERROR: ACTION CANNOT BE NULL";
+    protected static final float EPSILON = 0.0001f; //For equality checking with floats
     private static LinkedList <SceneEntity> alreadyVisited = new LinkedList<SceneEntity>();
-    protected final float EPSILON = 0.0001f; //For equality checking with floats
+    private static Action tempAction; //A temporary action used when iterating over multiple actions
+    
     protected byte flags = 0; //0 = always peform
     protected float[] pos = {0, 0, 0}; //Object's position
     protected float[] rot = {0, 0, 0}; //Object's rotation
     private Physics physics = new Physics(pos, rot); //Physics attached to object
     protected LinkedList<Action> actionList = new LinkedList<Action>(); //Actions associated with object
-    private static Action tempAction; //A temporary action used when iterating over multiple actions
     private SceneEntity parent = null; //A parent transformation for this object
     protected Matrix modelMatrix = new Matrix();
     public SceneEntity(){
