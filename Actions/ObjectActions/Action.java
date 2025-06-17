@@ -1,6 +1,7 @@
 package Actions.ObjectActions;
 import Maths.LinearAlgebra.*;
 import Renderer.Objects.Physics.*;
+import Renderer.ScreenDraw.MVP;
 public abstract class Action{
     protected static float speed = 0;
     private static int counter = 0;
@@ -155,10 +156,22 @@ public abstract class Action{
         float diffZ2 = (z-pos[2])*(z-pos[2]);
         return (float)Math.sqrt(diffX2+diffY2+diffZ2);
     }
+
+    protected void matrixTransform(){
+        model.copy(MatrixOperations.matrixMultiply(MVP.returnTranslation(oldPos), MVP.returnRotation(oldRot)));
+    }
+
     protected void addToPosition(float rate, float[] directional){
-        pos[0]+=(directional[0]*rate);
-        pos[1]+=(directional[1]*rate);
-        pos[2]+=(directional[2]*rate);
+        if(!posShakeStarted){
+            pos[0]+=(directional[0]*rate);
+            pos[1]+=(directional[1]*rate);
+            pos[2]+=(directional[2]*rate);
+        }
+        else{
+            oldPos[0]+=(directional[0]*rate);
+            oldPos[1]+=(directional[1]*rate);
+            oldPos[2]+=(directional[2]*rate);
+        }
     }
     protected void lookAt(float[] point, float maxDist, byte axis){
         if(point.length >= 3){

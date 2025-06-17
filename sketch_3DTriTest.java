@@ -628,6 +628,7 @@ public class sketch_3DTriTest extends PApplet{;
       shakeTime = 0;
     }
     public void perform(){
+      matrixTransform();
       float[] modelForward = getForward();
       if(keyPressed){
         switch(key){
