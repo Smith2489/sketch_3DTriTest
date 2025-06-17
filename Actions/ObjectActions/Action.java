@@ -158,7 +158,8 @@ public abstract class Action{
     }
 
     protected void matrixTransform(){
-        model.copy(MatrixOperations.matrixMultiply(MVP.returnTranslation(oldPos), MVP.returnRotation(oldRot)));
+        if(rotShakeStarted)
+            model.copy(MatrixOperations.matrixMultiply(MVP.returnTranslation(oldPos), MVP.returnRotation(oldRot)));
     }
 
     protected void addToPosition(float rate, float[] directional){
