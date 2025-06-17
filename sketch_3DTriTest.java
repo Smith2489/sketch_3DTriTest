@@ -383,12 +383,6 @@ public class sketch_3DTriTest extends PApplet{;
       anglesList[axis] = 0;
   }
 
-  private void addToPosition(float[] position, float speed, float[] directionVector){
-    position[0]+=speed*directionVector[0];
-    position[1]+=speed*directionVector[1];
-    position[2]+=speed*directionVector[2];
-  }
-
   private byte imageBack = 1; //first bit controls image, top bit controls keyboard locking
   private byte outlineControl = 1; //First bit controls fill, second controls outline, top controls keylock, third and fourth control the rotation in the small camera, sixth acts as a small camera key lock
   private float boxX = BOX_SIZE;
@@ -549,6 +543,7 @@ public class sketch_3DTriTest extends PApplet{;
 
     output.updatePixels();
     speed = 60.0f/frameRate;
+    Action.setRatePerFrame(speed);
     output.endDraw();
     image(output, 0, 0, width, height);
     System.out.println(Math.round(frameRate));
@@ -628,8 +623,9 @@ public class sketch_3DTriTest extends PApplet{;
   }
 
   private class RotateLongModel extends ModelAction{
+    int shakeTime = 0;
     public void init(){
-      
+      shakeTime = 0;
     }
     public void perform(){
       float[] modelForward = getForward();
@@ -653,8 +649,15 @@ public class sketch_3DTriTest extends PApplet{;
           case 'h':
             rot[0]-=0.5f*speed;
             break;
+          case '=':
+            shakeTime = (int)(20*speed);
+            break;
         }
       }
+      shakePosition(0.6f, shakeTime);
+      shakeRotation(15, shakeTime);
+      if(shakeTime > 0)
+        shakeTime--;
       if(rot[1] < 0)
         rot[1]+=360;
       else if(rot[1] >= 360)

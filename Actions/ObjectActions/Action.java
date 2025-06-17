@@ -2,6 +2,7 @@ package Actions.ObjectActions;
 import Maths.LinearAlgebra.*;
 import Renderer.Objects.Physics.*;
 public abstract class Action{
+    protected static float speed = 0;
     private static int counter = 0;
     protected float[] pos = {0, 0, 0};
     protected float[] rot = {0, 0, 0};
@@ -9,7 +10,65 @@ public abstract class Action{
     protected boolean reverseVertical = false;
     protected boolean reverseHorizontal = false;
     protected Matrix model = new Matrix();
+    private int timerPos = 0;
+    private int timerRot = 0;
+    private boolean posShakeStarted = false;
+    private boolean rotShakeStarted = false;
+    private float[] oldPos = {0, 0, 0};
+    private float[] oldRot = {0, 0, 0};
     public abstract void perform();
+    public static void setRatePerFrame(float newSpeed){
+        speed = newSpeed;
+    }
+    public boolean positionShakeStarted(){
+        return posShakeStarted;
+    }
+    public boolean rotationShakeStarted(){
+        return rotShakeStarted;
+    }
+    protected void shakePosition(float radius, int time){
+        if(!posShakeStarted){
+            oldPos[0] = pos[0];
+            oldPos[1] = pos[1];
+            oldPos[2] = pos[2];
+            timerPos = Math.max(0, time);
+            posShakeStarted = true;
+        }
+        if(timerPos > 0){
+            pos[0] = oldPos[0]+(float)(Math.random()*(radius*2) - radius);
+            pos[1] = oldPos[1]+(float)(Math.random()*(radius*2) - radius);
+            pos[2] = oldPos[2]+(float)(Math.random()*(radius*2) - radius);
+            timerPos--;
+        }
+        else{
+            pos[0] = oldPos[0];
+            pos[1] = oldPos[1];
+            pos[2] = oldPos[2];
+            posShakeStarted = false;
+        }
+    }
+    protected void shakeRotation(float radius, int time){
+        if(!rotShakeStarted){
+            oldRot[0] = rot[0];
+            oldRot[1] = rot[1];
+            oldRot[2] = rot[2];
+            timerRot = Math.max(0, time);
+            rotShakeStarted = true;
+        }
+        if(timerRot > 0){
+            rot[0] = oldRot[0]+(float)(Math.random()*(radius*2) - radius);
+            rot[1] = oldRot[1]+(float)(Math.random()*(radius*2) - radius);
+            rot[2] = oldRot[2]+(float)(Math.random()*(radius*2) - radius);
+            timerRot--;
+        }
+        else{
+            rot[0] = oldRot[0];
+            rot[1] = oldRot[1];
+            rot[2] = oldRot[2];
+            rotShakeStarted = false;
+        }
+    }
+
     protected float[] getForward(){
         float[] forward = {model.returnData(0, 2), model.returnData(1, 2), model.returnData(2, 2)};
         forward =  VectorOperations.vectorNormalization3D(forward);
