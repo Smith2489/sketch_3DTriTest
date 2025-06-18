@@ -377,12 +377,6 @@ public class sketch_3DTriTest extends PApplet{;
     return list;
   }
 
-  private void rotateModel(float[] anglesList, int axis, float angle, float speedRatio){
-    anglesList[axis]+=angle*speedRatio;
-    if(anglesList[axis] >= 360 || anglesList[axis] <= -360)
-      anglesList[axis] = 0;
-  }
-
   private byte imageBack = 1; //first bit controls image, top bit controls keyboard locking
   private byte outlineControl = 1; //First bit controls fill, second controls outline, top controls keylock, third and fourth control the rotation in the small camera, sixth acts as a small camera key lock
   private float boxX = BOX_SIZE;
@@ -574,12 +568,13 @@ public class sketch_3DTriTest extends PApplet{;
       
     }
     public void perform(){
-      rot[0]-=1.5f*speed;
-      rot[2]-=1.5f*speed;
-      if(rot[1] < 0)
-        rot[1]+=360;
-      if(rot[2] < 0)
-        rot[2]+=360;
+      addToRotation(-1.5f*speed, (byte)0);
+      addToRotation(-1.5f*speed, (byte)2);
+      float[] tempRot = getRot();
+      if(tempRot[0] < 0)
+        addToRotation(360, (byte)0);
+      if(tempRot[2] < 0)
+        addToRotation(360, (byte)2);
     }
   }
 
@@ -588,12 +583,13 @@ public class sketch_3DTriTest extends PApplet{;
       
     }
     public void perform(){
-      rot[0]-=1.5f*speed;
-      rot[1]+=3*speed;
-      if(rot[1] < 0)
-        rot[1]+=360;
-      if(rot[0] >= 360)
-        rot[0]-=360;
+      addToRotation(1.5f*speed, (byte)0);
+      addToRotation(-3*speed, (byte)1);
+      float[] tempRot = getRot();
+      if(tempRot[1] < 0)
+        addToRotation(360, (byte)1);
+      if(tempRot[0] >= 360)
+        addToRotation(-360, (byte)0);
     }
   }
 
@@ -605,11 +601,12 @@ public class sketch_3DTriTest extends PApplet{;
         direction = 1;
     }
     public void perform(){
-      rot[1]-=0.5f*direction*speed;
-      if(rot[1] < 0)
-        rot[1]+=360;
-      else if(rot[1] >= 360)
-        rot[1]-=360;
+      addToRotation(-0.5f*direction*speed, (byte)1);
+      float[] tempRot = getRot();
+      if(tempRot[1] < 0)
+        addToRotation(360, (byte)1);
+      else if(tempRot[1] >= 360)
+        addToRotation(-360, (byte)1);
     }
   }
 
@@ -623,9 +620,7 @@ public class sketch_3DTriTest extends PApplet{;
   }
 
   private class RotateLongModel extends ModelAction{
-    int shakeTime = 0;
     public void init(){
-      shakeTime = 0;
     }
     public void perform(){
       matrixTransform();
@@ -639,34 +634,34 @@ public class sketch_3DTriTest extends PApplet{;
             addToPosition(-0.5f*speed, modelForward);
             break;
           case 'd':
-            rot[1]+=0.5f*speed;
+            addToRotation(0.5f*speed, (byte)1);
             break;
           case 'a':
-            rot[1]-=0.5f*speed;
+            addToRotation(-0.5f*speed, (byte)1);
             break;
           case 'g':
-            rot[0]+=0.5f*speed;
+            addToRotation(0.5f*speed, (byte)0);
             break;
           case 'h':
-            rot[0]-=0.5f*speed;
+            addToRotation(-0.5f*speed, (byte)0);
             break;
           case '=':
-            shakeTime = (int)(20*speed);
+            initPositionShake(0.6f, 50);
+            initRotationShake(15, 50);
             break;
         }
       }
-      shakePosition(0.6f, shakeTime);
-      shakeRotation(15, shakeTime);
-      if(shakeTime > 0)
-        shakeTime--;
-      if(rot[1] < 0)
-        rot[1]+=360;
-      else if(rot[1] >= 360)
-        rot[1]-=360;
-      if(rot[0] < 0)
-        rot[0]+=360;
-      else if(rot[0] >= 360)
-        rot[0]-=360;
+      shakePosition();
+      shakeRotation();
+      float[] tempRot = getRot();
+      if(tempRot[1] < 0)
+        addToRotation(360, (byte)1);
+      else if(tempRot[1] >= 360)
+        addToRotation(-360, (byte)1);
+      if(tempRot[0] < 0)
+        addToRotation(360, (byte)0);
+      else if(tempRot[0] >= 360)
+        addToRotation(-360, (byte)0);
     }
   }
 
@@ -689,9 +684,12 @@ public class sketch_3DTriTest extends PApplet{;
       
     }
     public void perform(){
-      rot[1]+=(5*direction*speed);
-      if(rot[1] >= 360)
-        rot[1]-=360;
+      addToRotation(5*direction*speed, (byte)1);
+      float[] tempRot = getRot();
+      if(tempRot[1] < 0)
+        addToRotation(360, (byte)1);
+      else if(tempRot[1] >= 360)
+        addToRotation(-360, (byte)1);
     }
   }
 
@@ -700,9 +698,9 @@ public class sketch_3DTriTest extends PApplet{;
       
     }
     public void perform(){
-      rot[2]+=(0.25f*speed);
-      if(rot[2] >= 360)
-        rot[2]-=360;
+      addToRotation(0.25f*speed, (byte)2);
+      if(getRot()[2] >= 360)
+        addToRotation(-360, (byte)2);
     }
   }
   private class RotateDefaultModel extends ModelAction{
@@ -710,15 +708,16 @@ public class sketch_3DTriTest extends PApplet{;
       
     }
     public void perform(){
-      rot[0]+=(0.25f*speed);
-      rot[1]+=(0.25f*speed);
-      rot[2]+=(0.25f*speed);
-      if(rot[0] >= 360)
-        rot[0]-=360;
-      if(rot[1] >= 360)
-        rot[1]-=360;
-      if(rot[2] >= 360)
-        rot[2]-=360;
+      addToRotation(0.25f*speed, (byte)0);
+      addToRotation(0.25f*speed, (byte)1);
+      addToRotation(0.25f*speed, (byte)2);
+      float[] tempRot = getRot();
+      if(tempRot[0] >= 360)
+        addToRotation(-360, (byte)0);
+      if(tempRot[1] >= 360)
+        addToRotation(-360, (byte)1);
+      if(tempRot[2] >= 360)
+        addToRotation(-360, (byte)2);
     }
   }
   private class RotateRhombohedron extends ModelAction{
@@ -726,12 +725,13 @@ public class sketch_3DTriTest extends PApplet{;
       
     }
     public void perform(){
-      rot[0]+=2*speed;
-      rot[1]-=2*speed;
-      if(rot[0] >= 360)
-        rot[0]-=360;
-      if(rot[1] < 0)
-        rot[1]+=360;
+      addToRotation(-2*speed, (byte)0);
+      addToRotation(2*speed, (byte)1);
+      float[] tempRot = getRot();
+      if(tempRot[0] < 0)
+        addToRotation(360, (byte)0);
+      if(tempRot[1] >= 360)
+        addToRotation(-360, (byte)1);
     }
   }
 
@@ -741,29 +741,33 @@ public class sketch_3DTriTest extends PApplet{;
     }
     private float angularVelocity = 1f;
     public void perform(){
-      rot[1]+=angularVelocity;
-      if(rot[1] > 360){
-        rot[1]-=360;
+      addToRotation(angularVelocity, (byte)1);
+      float[] tempRot = getRot();
+      if(tempRot[1] > 360){
+        addToRotation(-360, (byte)1);
       }
-      else if(rot[1] < 0){
-          rot[1]+=360;
+      else if(tempRot[1] < 0){
+          addToRotation(360, (byte)1);
       }
     }
   }
 
   private class MoveLight extends LightAction{
     private float velocity = 0.05f;
+    private final float[] DIR = {0, 0, 1};
     public void init(){
+
       
     }
     public void perform(){
-        pos[2]+=velocity*speed;
-        if(pos[2] > 100){
-          pos[2] = 100;
+        addToPosition(velocity*speed, DIR);
+        float[] tempPos = getPos();
+        if(tempPos[2] > 100){
+          hardSetPosition(tempPos[0], tempPos[1], 100);
           velocity*=-1;
         }
-        else if(pos[2] < -100){
-          pos[2] = -100;
+        else if(tempPos[2] < -100){
+          hardSetPosition(tempPos[0], tempPos[1], 100);
           velocity*=-1;
         }
     }
@@ -773,22 +777,22 @@ public class sketch_3DTriTest extends PApplet{;
     private boolean keyLocked = false;
     private int spinSpeed = 2;
     private float[] startPosition = {0, 0, 0};
+    private float[] scale = new float[3];
     public void init(){
-      startPosition[0] = pos[0];
-      startPosition[1] = pos[1];
-      startPosition[2] = pos[2];
+      startPosition[0] = getPos()[0];
+      startPosition[1] = getPos()[1];
+      startPosition[2] = getPos()[2];
       Physics.fluidDensity = 0.25f;
       Physics.gravityAcceleration = 0.005f;
       physics.terminalVelocity = 0.5f;
       physics.setGravityVelocity();
+      scale = getScale();
     }
     public void perform(){
       physics.applyGravity();
       if(keyPressed){
         if(key == 'r'){
-          pos[0] = startPosition[0];
-          pos[1] = startPosition[1];
-          pos[2] = startPosition[2];
+          hardSetPosition(startPosition);
           physics.setGravityVelocity();
         }
         if(!keyLocked){
@@ -811,9 +815,10 @@ public class sketch_3DTriTest extends PApplet{;
       }
       else
         keyLocked = false;
+      float[] tempScale = getScale();
       if(keyPressed){
         if(key == '8'){
-          if(scale[0] < 10)
+          if(tempScale[0] < 10)
             scale[0]+=0.5;
         }
         else if(key == '3'){
@@ -822,17 +827,19 @@ public class sketch_3DTriTest extends PApplet{;
         }
         scale[1] = scale[0];
         scale[2] = scale[0];
+        hardSetScale(scale);
       }
-      rot[2]+=spinSpeed*speed;
-      rot[1]+=(spinSpeed+0.001)*speed;
-      if(rot[2] > 360)
-        rot[2]-=360;
-      if(rot[2] < 0)
-        rot[2]+=360;
-      if(rot[1] > 360)
-        rot[1]-=360;
-      if(rot[1] < 0)
-        rot[1]+=360;
+      addToRotation(spinSpeed*speed, (byte)2);
+      addToRotation(spinSpeed*speed+0.0001f, (byte)1);
+      float[] tempRot = getRot();
+      if(tempRot[2] > 360)
+        addToRotation(-360, (byte)2);
+      if(tempRot[2] < 0)
+        addToRotation(360, (byte)2);
+      if(tempRot[1] > 360)
+        addToRotation(-360, (byte)1);
+      if(tempRot[1] < 0)
+        addToRotation(360, (byte)1);
     }
   }
 
@@ -847,16 +854,16 @@ public class sketch_3DTriTest extends PApplet{;
       if(keyPressed){
         switch(key){
           case 'i':
-            rotateModel(rot, 0, 0.5f, speed);
+            addToRotation(0.5f*speed, (byte)0);
             break;
           case 'k':
-            rotateModel(rot, 0, -0.5f, speed);
+            addToRotation(-0.5f*speed, (byte)0);
             break;
           case 'j':
-            rotateModel(rot, 1, -0.5f, speed);
+            addToRotation(-0.5f*speed, (byte)1);
             break;
           case 'l':
-            rotateModel(rot, 1, 0.5f, speed);
+            addToRotation(0.5f*speed, (byte)1);
             break; 
           case '1':
             addToPosition(0.05f*speed, eyeForward);
@@ -886,15 +893,24 @@ public class sketch_3DTriTest extends PApplet{;
         }
         if(mouseButton == RIGHT){
           if(mouseX >= ((width >>> 1) + 50))
-            rotateModel(rot, 1, 0.5f, speed);
+            addToRotation(0.5f*speed, (byte)1);
           else if(mouseX <= ((width >>> 1) - 50))
-            rotateModel(rot, 1, -0.5f, speed);
+            addToRotation(-0.5f*speed, (byte)1);
           if(mouseY >= ((height >>> 1)+50))
-            rotateModel(rot, 0, -0.5f, speed);
+            addToRotation(-0.5f*speed, (byte)0);
           else if(mouseY <= ((height >>> 1)-50))
-            rotateModel(rot, 0, 0.5f, speed);
+            addToRotation(0.5f*speed, (byte)0);
         }
       }
+      float[] tempRot = getRot();
+      if(tempRot[0] >= 360)
+        addToRotation(-360, (byte)0);
+      else if(tempRot[0] < 0)
+        addToRotation(360, (byte)0);
+      if(tempRot[1] >= 360)
+        addToRotation(-360, (byte)1);
+      else if(tempRot[1] < 0)
+        addToRotation(360, (byte)1);
     }
   }
 
@@ -913,12 +929,8 @@ public class sketch_3DTriTest extends PApplet{;
         if(key == 'c' && !cPressed){
             if((outlineControl & 16) == 0){
               outlineControl = (byte)((outlineControl & -13) | ((outlineControl+4 & 12)));
-              pos[0] = 0;
-              pos[1] = 0;
-              pos[2] = 0;
-              rot[0] = 0;
-              rot[1] = 0;
-              rot[2] = 0;
+              hardSetPosition(0, 0, 0);
+              hardSetRotation(0, 0, 0);
               cPressed = true;
           }
         }
@@ -928,31 +940,26 @@ public class sketch_3DTriTest extends PApplet{;
         
     if((outlineControl & 12) == 0){
       model.copy(other.returnModelMatrix());
-      for(int i = 0; i < 3; i++){
-        pos[i] = other.returnPosition()[i];
-        rot[i] = other.returnRotation()[i];
-        scale[i] = other.returnScale()[i];
-        shr[i][0] = other.returnShear()[i][0];
-        shr[i][1] = other.returnShear()[i][1];
-      }
+      hardSetPosition(other.returnPosition());
+      hardSetRotation(other.returnRotation());
+      hardSetScale(other.returnScale());
+      hardSetShear(other.returnShear());
     }
     else{
         //Secondary camera
         switch(outlineControl & 12){
           case 4:
-            rotateModel(rot, 1, -1, speed);
+            addToRotation(-speed, (byte)1);
             break;
           case 8:
-            rotateModel(rot, 0, 0.5f, speed);
+            addToRotation(0.5f*speed, (byte)0);
             break;
           case 12:
-            rotateModel(rot, 2, -0.5f, speed);
+            addToRotation(-0.5f*speed, (byte)2);
             break;
         }
         float[] eye2Back = getBackward();
-        pos[0] = sceneMag*eye2Back[0]+sceneCentre[0];
-        pos[1] = sceneMag*eye2Back[1]+sceneCentre[1]; 
-        pos[2] = sceneMag*eye2Back[2]+sceneCentre[2];
+        hardSetPosition(sceneMag*eye2Back[0]+sceneCentre[0], sceneMag*eye2Back[1]+sceneCentre[1], sceneMag*eye2Back[2]+sceneCentre[2]);
       }
     }
   }
@@ -966,12 +973,8 @@ public class sketch_3DTriTest extends PApplet{;
       
     }
     public void perform(){
-      pos[0] = tempLight.returnPosition()[0];
-      pos[1] = tempLight.returnPosition()[1];
-      pos[2] = tempLight.returnPosition()[2];
-      rot[0] = tempLight.returnRotation()[0];
-      rot[1] = tempLight.returnRotation()[1];
-      rot[2] = tempLight.returnRotation()[2];
+      hardSetPosition(tempLight.returnPosition());
+      hardSetRotation(tempLight.returnRotation());
     }
   }
 

@@ -5,16 +5,18 @@ import Renderer.ScreenDraw.MVP;
 public abstract class Action{
     protected static float speed = 0;
     private static int counter = 0;
-    protected float[] pos = {0, 0, 0};
-    protected float[] rot = {0, 0, 0};
+    private float[] pos = {0, 0, 0};
+    private float[] rot = {0, 0, 0};
     protected Physics physics = new Physics(pos, rot);
     protected boolean reverseVertical = false;
     protected boolean reverseHorizontal = false;
     protected Matrix model = new Matrix();
     private int timerPos = 0;
     private int timerRot = 0;
-    private boolean posShakeStarted = false;
-    private boolean rotShakeStarted = false;
+    private float positionShakeRadius = 0;
+    private float rotationShakeRadius = 0;
+    private boolean positionShakeStarted = false;
+    private boolean rotationShakeStarted = false;
     private float[] oldPos = {0, 0, 0};
     private float[] oldRot = {0, 0, 0};
     public abstract void perform();
@@ -22,51 +24,64 @@ public abstract class Action{
         speed = newSpeed;
     }
     public boolean positionShakeStarted(){
-        return posShakeStarted;
+        return positionShakeStarted;
     }
     public boolean rotationShakeStarted(){
-        return rotShakeStarted;
+        return rotationShakeStarted;
     }
-    protected void shakePosition(float radius, int time){
-        if(!posShakeStarted){
+
+    protected void initPositionShake(float radius, int time){
+        if(!positionShakeStarted){
             oldPos[0] = pos[0];
             oldPos[1] = pos[1];
             oldPos[2] = pos[2];
-            timerPos = Math.max(0, time);
-            posShakeStarted = true;
-        }
-        if(timerPos > 0){
-            pos[0] = oldPos[0]+(float)(Math.random()*(radius*2) - radius);
-            pos[1] = oldPos[1]+(float)(Math.random()*(radius*2) - radius);
-            pos[2] = oldPos[2]+(float)(Math.random()*(radius*2) - radius);
-            timerPos--;
-        }
-        else{
-            pos[0] = oldPos[0];
-            pos[1] = oldPos[1];
-            pos[2] = oldPos[2];
-            posShakeStarted = false;
+            timerPos = time;
+            positionShakeRadius = radius;
+            positionShakeStarted = true;
         }
     }
-    protected void shakeRotation(float radius, int time){
-        if(!rotShakeStarted){
+
+    protected void initRotationShake(float radius, int time){
+        if(!rotationShakeStarted){
             oldRot[0] = rot[0];
             oldRot[1] = rot[1];
             oldRot[2] = rot[2];
-            timerRot = Math.max(0, time);
-            rotShakeStarted = true;
+            timerRot = time;
+            rotationShakeRadius = radius;
+            rotationShakeStarted = true;
         }
-        if(timerRot > 0){
-            rot[0] = oldRot[0]+(float)(Math.random()*(radius*2) - radius);
-            rot[1] = oldRot[1]+(float)(Math.random()*(radius*2) - radius);
-            rot[2] = oldRot[2]+(float)(Math.random()*(radius*2) - radius);
-            timerRot--;
+    }
+
+    protected void shakePosition(){
+        if(positionShakeStarted){
+            if(timerPos != 0){
+                pos[0] = oldPos[0]+(float)(Math.random()*(positionShakeRadius*2) - positionShakeRadius);
+                pos[1] = oldPos[1]+(float)(Math.random()*(positionShakeRadius*2) - positionShakeRadius);
+                pos[2] = oldPos[2]+(float)(Math.random()*(positionShakeRadius*2) - positionShakeRadius);
+                timerPos--;
+            }
+            else{
+                pos[0] = oldPos[0];
+                pos[1] = oldPos[1];
+                pos[2] = oldPos[2];
+                positionShakeStarted = false;
+            }
         }
-        else{
-            rot[0] = oldRot[0];
-            rot[1] = oldRot[1];
-            rot[2] = oldRot[2];
-            rotShakeStarted = false;
+    }
+    protected void shakeRotation(){
+        if(rotationShakeStarted){
+            if(timerRot != 0){
+                rot[0] = oldRot[0]+(float)(Math.random()*(rotationShakeRadius*2) - rotationShakeRadius);
+                rot[1] = oldRot[1]+(float)(Math.random()*(rotationShakeRadius*2) - rotationShakeRadius);
+                rot[2] = oldRot[2]+(float)(Math.random()*(rotationShakeRadius*2) - rotationShakeRadius);
+                timerRot--;
+            }
+            else{
+                rot[0] = oldRot[0];
+                rot[1] = oldRot[1];
+                rot[2] = oldRot[2];
+                rotationShakeStarted = false;
+            }
         }
     }
 
@@ -158,12 +173,47 @@ public abstract class Action{
     }
 
     protected void matrixTransform(){
-        if(rotShakeStarted)
+        if(timerRot != 0)
             model.copy(MatrixOperations.matrixMultiply(MVP.returnTranslation(oldPos), MVP.returnRotation(oldRot)));
     }
 
+    protected void addToRotation(float rate, byte axis){
+        if(axis >= 0 && axis < 3){
+            if(timerRot == 0)
+                rot[axis]+=rate;
+            else
+                oldRot[axis]+=rate;
+        }
+    }
+
+    protected void hardSetRotation(float alpha, float beta, float gamma){
+        rot[0] = alpha;
+        rot[1] = beta;
+        rot[2] = gamma;
+    }
+    protected void hardSetRotation(float[] newRot){
+        rot[0] = newRot[0];
+        rot[1] = newRot[1];
+        rot[2] = newRot[2];
+    }
+
+    protected float[] getRot(){
+        float[] rotCopy = new float[3];
+        if(timerRot == 0){
+            rotCopy[0] = rot[0];
+            rotCopy[1] = rot[1];
+            rotCopy[2] = rot[2];
+        }
+        else{
+            rotCopy[0] = oldRot[0];
+            rotCopy[1] = oldRot[1];
+            rotCopy[2] = oldRot[2];
+        }
+        return rotCopy;
+    }
+
     protected void addToPosition(float rate, float[] directional){
-        if(!posShakeStarted){
+        if(timerPos == 0){
             pos[0]+=(directional[0]*rate);
             pos[1]+=(directional[1]*rate);
             pos[2]+=(directional[2]*rate);
@@ -174,6 +224,34 @@ public abstract class Action{
             oldPos[2]+=(directional[2]*rate);
         }
     }
+
+    protected void hardSetPosition(float x, float y, float z){
+        pos[0] = x;
+        pos[1] = y;
+        pos[2] = z;
+    }
+    protected void hardSetPosition(float[] newPos){
+        pos[0] = newPos[0];
+        pos[1] = newPos[1];
+        pos[2] = newPos[2];
+    }
+
+    protected float[] getPos(){
+        float[] posCopy = new float[3];
+        if(timerPos == 0){
+            posCopy[0] = pos[0];
+            posCopy[1] = pos[1];
+            posCopy[2] = pos[2];
+        }
+        else{
+            posCopy[0] = oldPos[0];
+            posCopy[1] = oldPos[1];
+            posCopy[2] = oldPos[2];
+        }
+        return posCopy;
+    }
+
+
     protected void lookAt(float[] point, float maxDist, byte axis){
         if(point.length >= 3){
             if(Math.abs(pos[0]-point[0]) > 0.0001 && Math.abs(point[1]-pos[1]) > 0.0001 && Math.abs(pos[2]-point[2]) > 0.0001){
