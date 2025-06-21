@@ -10,7 +10,7 @@ public abstract class Action{
     protected Physics physics = new Physics(pos, rot);
     protected boolean reverseVertical = false;
     protected boolean reverseHorizontal = false;
-    protected Matrix model = new Matrix();
+    protected Matrix4x4 model = new Matrix4x4();
     private int timerPos = 0;
     private int timerRot = 0;
     private float positionShakeRadius = 0;
@@ -148,7 +148,7 @@ public abstract class Action{
     public void setPhysics(Physics newPhysics){
         physics = newPhysics;
     }
-    public void setMatrix(Matrix newModel){
+    public void setMatrix(Matrix4x4 newModel){
         model = newModel;
     }
     protected float dist(float[] otherPos){

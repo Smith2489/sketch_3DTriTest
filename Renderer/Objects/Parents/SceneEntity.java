@@ -21,7 +21,7 @@ public class SceneEntity{
     private Physics physics = new Physics(pos, rot); //Physics attached to object
     protected LinkedList<Action> actionList = new LinkedList<Action>(); //Actions associated with object
     private SceneEntity parent = null; //A parent transformation for this object
-    protected Matrix modelMatrix = new Matrix();
+    protected Matrix4x4 modelMatrix = new Matrix4x4();
     public SceneEntity(){
         pos[0] = 0;
         pos[1] = 0;
@@ -133,9 +133,9 @@ public class SceneEntity{
     }
 
     //Goes through each object's parents and multiplies their transformations together using
-    private Matrix transformRecursive(SceneEntity newParent, boolean isBillboard, boolean beforeBillboard){
+    private Matrix4x4 transformRecursive(SceneEntity newParent, boolean isBillboard, boolean beforeBillboard){
         //Create this object's transformation matrix
-        Matrix transformMatrix;
+        Matrix4x4 transformMatrix;
         if(!isBillboard)
             transformMatrix = MatrixOperations.matrixMultiply(MVP.returnTranslation(newParent.returnPosition()), MVP.returnRotation(newParent.returnRotation()));
         else{
@@ -162,9 +162,9 @@ public class SceneEntity{
     }
 
     //Goes through each object's parents and multiplies their transformations together using
-    private Matrix transformRecursive(SceneEntity newParent){
+    private Matrix4x4 transformRecursive(SceneEntity newParent){
         //Create this object's transformation matrix
-        Matrix transformMatrix = MatrixOperations.matrixMultiply(MVP.returnTranslation(newParent.returnPosition()), MVP.returnRotation(newParent.returnRotation()));
+        Matrix4x4 transformMatrix = MatrixOperations.matrixMultiply(MVP.returnTranslation(newParent.returnPosition()), MVP.returnRotation(newParent.returnRotation()));
 
         //Check if we've already seen this this object before. If we have, add it to a list, otherwise skip
         if(!alreadyVisited.contains(newParent)){
@@ -182,7 +182,7 @@ public class SceneEntity{
     }
     
     //Returns a transformation matrix for the parent objects
-    public Matrix transform(boolean isBillboard, boolean position){
+    public Matrix4x4 transform(boolean isBillboard, boolean position){
         //Checks if the parent isn't null and returns an I4 matrix if it is
         if(parent != null){
             //Clear the list of already visited parents and go through each parent's transformations
@@ -190,11 +190,11 @@ public class SceneEntity{
             return transformRecursive(parent, isBillboard, position);
         }
         else
-            return new Matrix(4, 4);
+            return new Matrix4x4();
     }
 
     //Returns a transformation matrix for the parent objects
-    public Matrix transform(){
+    public Matrix4x4 transform(){
         //Checks if the parent isn't null and returns an I4 matrix if it is
         if(parent != null){
             //Clear the list of already visited parents and go through each parent's transformations
@@ -202,7 +202,7 @@ public class SceneEntity{
             return transformRecursive(parent);
         }
         else
-            return new Matrix(4, 4);
+            return new Matrix4x4();
     }
 
     //Initializes a new action without adding it to the list
@@ -288,8 +288,8 @@ public class SceneEntity{
 
 
     //Sets the the model matrix for the object to an existing matrix
-    public void setModelMatrix(Matrix newModel){
-        if(Objects.nonNull(newModel) && newModel.returnWidth() == 4 && newModel.returnHeight() == 4)
+    public void setModelMatrix(Matrix4x4 newModel){
+        if(Objects.nonNull(newModel))
             modelMatrix.copy(newModel);
         else
             System.out.println("ERROR: MATRIX MUST BE A VALID 4x4 MATRIX");
@@ -301,7 +301,7 @@ public class SceneEntity{
     }
 
     //Returns the reference to the current model matrix
-    public Matrix returnModelMatrix(){
+    public Matrix4x4 returnModelMatrix(){
         return modelMatrix;
     }
 

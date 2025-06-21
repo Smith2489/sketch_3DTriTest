@@ -187,7 +187,7 @@ public class MVP{
   }
   
   //Rotation Matrix for Model (M)
-  public static Matrix returnRotation(float alpha, float beta, float gamma){
+  public static Matrix4x4 returnRotation(float alpha, float beta, float gamma){
     //Degrees to radians conversion
     alpha = alpha*DEG_TO_RADS-0.0001f;
     beta = beta*DEG_TO_RADS-0.0001f;
@@ -205,13 +205,13 @@ public class MVP{
                            {(float)(Math.sin(gamma)), (float)Math.cos(gamma), 0, 0},
                            {0, 0, 1, 0},
                            {0, 0, 0, 1}};
-    Matrix firstStep = new Matrix(MatrixOperations.matrixMultiply(zRotation, yRotation));
-    Matrix xRot = new Matrix(xRotation);
+    Matrix4x4 firstStep = new Matrix4x4(MatrixOperations.matrixMultiply(zRotation, yRotation));
+    Matrix4x4 xRot = new Matrix4x4(xRotation);
   
     return MatrixOperations.matrixMultiply(firstStep, xRot);
   }
   //Rotation Matrix for Model (M)
-  private static Matrix reverseRotation(float alpha, float beta, float gamma){
+  private static Matrix4x4 reverseRotation(float alpha, float beta, float gamma){
       //Degrees to radians conversion
       alpha = alpha*DEG_TO_RADS-0.0001f;
       beta = beta*DEG_TO_RADS-0.0001f;
@@ -229,12 +229,12 @@ public class MVP{
                              {(float)(Math.sin(gamma)), (float)Math.cos(gamma), 0, 0},
                              {0, 0, 1, 0},
                              {0, 0, 0, 1}};
-      Matrix firstStep = new Matrix(MatrixOperations.matrixMultiply(xRotation, yRotation));
-      Matrix xRot = new Matrix(zRotation);
+      Matrix4x4 firstStep = new Matrix4x4(MatrixOperations.matrixMultiply(xRotation, yRotation));
+      Matrix4x4 xRot = new Matrix4x4(zRotation);
     
       return MatrixOperations.matrixMultiply(firstStep, xRot);
     }
-  public static Matrix returnRotation(float[] angles){
+  public static Matrix4x4 returnRotation(float[] angles){
     //Degrees to radians conversion
     float[] anglesRad = new float[3];
     anglesRad[0] = angles[0]*DEG_TO_RADS-0.0001f;
@@ -253,12 +253,12 @@ public class MVP{
                            {(float)(Math.sin(anglesRad[2])), (float)Math.cos(anglesRad[2]), 0, 0},
                            {0, 0, 1, 0},
                            {0, 0, 0, 1}};
-    Matrix firstStep = new Matrix(MatrixOperations.matrixMultiply(zRotation, yRotation));
-    Matrix xRot = new Matrix(xRotation);
+    Matrix4x4 firstStep = new Matrix4x4(MatrixOperations.matrixMultiply(zRotation, yRotation));
+    Matrix4x4 xRot = new Matrix4x4(xRotation);
   
     return MatrixOperations.matrixMultiply(firstStep, xRot);
   }
-  public static Matrix reverseRotation(float[] angles){
+  public static Matrix4x4 reverseRotation(float[] angles){
     //Degrees to radians conversion
     float[] anglesRad = new float[3];
     anglesRad[0] = angles[0]*DEG_TO_RADS-0.0001f;
@@ -277,46 +277,46 @@ public class MVP{
                            {(float)(Math.sin(anglesRad[2])), (float)Math.cos(anglesRad[2]), 0, 0},
                            {0, 0, 1, 0},
                            {0, 0, 0, 1}};
-    Matrix firstStep = new Matrix(MatrixOperations.matrixMultiply(xRotation, yRotation));
-    Matrix xRot = new Matrix(zRotation);
+    Matrix4x4 firstStep = new Matrix4x4(MatrixOperations.matrixMultiply(xRotation, yRotation));
+    Matrix4x4 xRot = new Matrix4x4(zRotation);
   
     return MatrixOperations.matrixMultiply(firstStep, xRot);
   }
 
   //Translation Matrix for Model (M)
-  public static Matrix returnTranslation(float x, float y, float z){
+  public static Matrix4x4 returnTranslation(float x, float y, float z){
     float[][] translation = {{1, 0, 0, x},
                              {0, 1, 0, y},
                              {0, 0, 1, z},
                              {0, 0, 0, 1}};
-    return new Matrix(translation);
+    return new Matrix4x4(translation);
   }
 
-  public static Matrix returnTranslation(float[] pos){
+  public static Matrix4x4 returnTranslation(float[] pos){
     float[][] translation = {{1, 0, 0, pos[0]},
                              {0, 1, 0, pos[1]},
                              {0, 0, 1, pos[2]},
                              {0, 0, 0, 1}};
-    return new Matrix(translation);
+    return new Matrix4x4(translation);
   }
 
   //Scaling Matrix for Model (M)
-  public static Matrix returnScale(float sX, float sY, float sZ){
+  public static Matrix4x4 returnScale(float sX, float sY, float sZ){
     float[][] scaleMatrix = {{sX, 0, 0, 0},
                              {0, sY, 0, 0},
                              {0, 0, sZ, 0},
                              {0, 0, 0, 1}};
 
-    return new Matrix(scaleMatrix);
+    return new Matrix4x4(scaleMatrix);
   }
-  public static Matrix returnScale(float[] scale){
+  public static Matrix4x4 returnScale(float[] scale){
     float[][] scaleMatrix = {{scale[0], 0, 0, 0},
                              {0, scale[1], 0, 0},
                              {0, 0, scale[2], 0},
                              {0, 0, 0, 1}};
-    return new Matrix(scaleMatrix);
+    return new Matrix4x4(scaleMatrix);
   }
-  public static Matrix returnShear(float sX1, float sX2, float sY1, float sY2, float sZ1, float sZ2){
+  public static Matrix4x4 returnShear(float sX1, float sX2, float sY1, float sY2, float sZ1, float sZ2){
     float[][] shearX = {{1, sX1, sX2, 0},
                         {0, 1, 0, 0},
                         {0, 0, 1, 0},
@@ -329,9 +329,9 @@ public class MVP{
                         {0, 1, 0, 0},
                         {sZ1, sZ2, 1, 0},
                         {0, 0, 0, 1}};
-    return new Matrix(MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(shearZ, shearY), shearX));
+    return new Matrix4x4(MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(shearZ, shearY), shearX));
   }
-  private static Matrix reverseShear(float sX1, float sX2, float sY1, float sY2, float sZ1, float sZ2){
+  private static Matrix4x4 reverseShear(float sX1, float sX2, float sY1, float sY2, float sZ1, float sZ2){
     float[][] shearX = {{1, sX1, sX2, 0},
                         {0, 1, 0, 0},
                         {0, 0, 1, 0},
@@ -344,50 +344,50 @@ public class MVP{
                         {0, 1, 0, 0},
                         {sZ1, sZ2, 1, 0},
                         {0, 0, 0, 1}};
-    return new Matrix(MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(shearX, shearY), shearZ));
+    return new Matrix4x4(MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(shearX, shearY), shearZ));
   }
 
   //Model Matrix (M)
-  public static Matrix modelMatrix(){
-    Matrix translate = returnTranslation(modelPos[0], modelPos[1], modelPos[2]);
-    Matrix rotate = returnRotation(modelAngles[0], modelAngles[1], modelAngles[2]);
-    Matrix scale = returnScale(modelScale[0], modelScale[1], modelScale[2]);
-    Matrix shear = returnShear(modelShear[0][0], modelShear[0][1], modelShear[1][0], modelShear[1][1], modelShear[2][0], modelShear[2][1]);
-    Matrix step1 = new Matrix(MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(translate, shear), rotate));
+  public static Matrix4x4 modelMatrix(){
+    Matrix4x4 translate = returnTranslation(modelPos[0], modelPos[1], modelPos[2]);
+    Matrix4x4 rotate = returnRotation(modelAngles[0], modelAngles[1], modelAngles[2]);
+    Matrix4x4 scale = returnScale(modelScale[0], modelScale[1], modelScale[2]);
+    Matrix4x4 shear = returnShear(modelShear[0][0], modelShear[0][1], modelShear[1][0], modelShear[1][1], modelShear[2][0], modelShear[2][1]);
+    Matrix4x4 step1 = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(translate, shear), rotate);
     return MatrixOperations.matrixMultiply(step1, scale);
   }
 
 
   //Computing the view matrix (V)
-  public static Matrix viewMatrix(){
-    Matrix translate = returnTranslation(-eyePos[0], -eyePos[1], -eyePos[2]);
-    Matrix rotate = reverseRotation(-eyeAngles[0], -eyeAngles[1], -eyeAngles[2]);
-    Matrix scale = returnScale(eyeScale[0], eyeScale[1], eyeScale[2]);
-    Matrix shear = reverseShear(eyeShear[0][0], eyeShear[0][1], eyeShear[1][0], eyeShear[1][1], eyeShear[2][0], eyeShear[2][1]);
-    Matrix step1 = new Matrix(MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(rotate, scale), shear));
+  public static Matrix4x4 viewMatrix(){
+    Matrix4x4 translate = returnTranslation(-eyePos[0], -eyePos[1], -eyePos[2]);
+    Matrix4x4 rotate = reverseRotation(-eyeAngles[0], -eyeAngles[1], -eyeAngles[2]);
+    Matrix4x4 scale = returnScale(eyeScale[0], eyeScale[1], eyeScale[2]);
+    Matrix4x4 shear = reverseShear(eyeShear[0][0], eyeShear[0][1], eyeShear[1][0], eyeShear[1][1], eyeShear[2][0], eyeShear[2][1]);
+    Matrix4x4 step1 = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(rotate, scale), shear);
     return MatrixOperations.matrixMultiply(step1, translate);
   }
 
-  public static Matrix inverseViewMatrix(){
-    Matrix translate = returnTranslation(eyePos[0], eyePos[1], eyePos[2]);
-    Matrix rotate = returnRotation(eyeAngles);
-    Matrix scale = returnScale(inverseEyeScale[0], inverseEyeScale[1], inverseEyeScale[2]);
-    Matrix shear = returnShear(-modelShear[0][0], -modelShear[0][1], -modelShear[1][0], -modelShear[1][1], -modelShear[2][0], -modelShear[2][1]);
-    Matrix step1 = new Matrix(MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(translate, shear), rotate));
+  public static Matrix4x4 inverseViewMatrix(){
+    Matrix4x4 translate = returnTranslation(eyePos[0], eyePos[1], eyePos[2]);
+    Matrix4x4 rotate = returnRotation(eyeAngles);
+    Matrix4x4 scale = returnScale(inverseEyeScale[0], inverseEyeScale[1], inverseEyeScale[2]);
+    Matrix4x4 shear = returnShear(-modelShear[0][0], -modelShear[0][1], -modelShear[1][0], -modelShear[1][1], -modelShear[2][0], -modelShear[2][1]);
+    Matrix4x4 step1 = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(translate, shear), rotate);
     return MatrixOperations.matrixMultiply(step1, scale);
   }
-  public static Matrix inverseViewMatrix(float[] pos, float[] angles, float[] scale, float[][] shear){
-    Matrix translate = returnTranslation(pos[0], pos[1], pos[2]);
-    Matrix rotate = returnRotation(angles);
-    Matrix scaling = returnScale(scale[0], scale[1], scale[2]);
-    Matrix shearing = returnShear(shear[0][0], shear[0][1], shear[1][0], shear[1][1], shear[2][0], shear[2][1]);
-    Matrix step1 = new Matrix(MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(translate, shearing), rotate));
+  public static Matrix4x4 inverseViewMatrix(float[] pos, float[] angles, float[] scale, float[][] shear){
+    Matrix4x4 translate = returnTranslation(pos[0], pos[1], pos[2]);
+    Matrix4x4 rotate = returnRotation(angles);
+    Matrix4x4 scaling = returnScale(scale[0], scale[1], scale[2]);
+    Matrix4x4 shearing = returnShear(shear[0][0], shear[0][1], shear[1][0], shear[1][1], shear[2][0], shear[2][1]);
+    Matrix4x4 step1 = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(translate, shearing), rotate);
     return MatrixOperations.matrixMultiply(step1, scaling);
   }
 
 
   //Computing the perspective projection matrix (P)
-  public static Matrix perspMatrix(float aspectRatio, float fovY, float zNear, float zFar){
+  public static Matrix4x4 perspMatrix(float aspectRatio, float fovY, float zNear, float zFar){
     //Computing the dimensions of the display
     float top = ((float)Math.tan(fovY*DEG_TO_RADS/2))*Math.abs(zNear);
     float right = aspectRatio*top;
@@ -397,17 +397,17 @@ public class MVP{
                                {0, 1/top-0.0001f, 0, 0},
                                {0, 0, (-zNear-zFar)/farMinusNear-0.0001f, 2*zFar*zNear/farMinusNear-0.0001f},
                                {0, 0, 1, 0}};
-      return new Matrix(perspMatrix);
+      return new Matrix4x4(perspMatrix);
     }
     else{
       System.out.println("ERROR: DIVISION BY ZERO");
       System.exit(1);
-      return new Matrix();
+      return new Matrix4x4();
     }
 
   }
     //Computing the orthographic projection matrix (P)
-  public static Matrix orthoMatrix(float aspectRatio, float fovY, float zNear, float zFar){
+  public static Matrix4x4 orthoMatrix(float aspectRatio, float fovY, float zNear, float zFar){
     //Computing the dimensions of the display
     float top = ((float)Math.tan(fovY*DEG_TO_RADS/2))*Math.abs(zNear);
     float right = aspectRatio*top;
@@ -417,12 +417,12 @@ public class MVP{
                                {0, 1/top-0.0001f, 0, 0},
                                {0, 0, -2/farMinusNear-0.0001f, -(zFar+zNear)/farMinusNear-0.0001f},
                                {0, 0, 0, 1}};
-      return new Matrix(orthoMatrix);
+      return new Matrix4x4(orthoMatrix);
           }
     else{
       System.out.println("ERROR: DIVISION BY ZERO");
       System.exit(1);
-      return new Matrix();
+      return new Matrix4x4();
     }
   }
 }

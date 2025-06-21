@@ -1,9 +1,9 @@
 package Maths.LinearAlgebra;
 //Class for abstracting away 2D arrays as matrices
 public class Matrix{
-  private float[] matrix = new float[16];
-  private int width = 4;
-  private int height = 4;
+  protected float[] matrix = new float[16];
+  protected int width = 4;
+  protected int height = 4;
   //Default constructor
   public Matrix(){
     matrix = new float[16];
@@ -258,14 +258,5 @@ public class Matrix{
         if(Math.abs(matrix[j+width*i] - matrix[i+width*j]) > 0.0001)
           return false;
     return true;
-  }
-  //Casts a matrix to a 2D array of floats
-  public float[][] toFloatArray(){
-    float[][] output = new float[height][width];
-    for(int i = 0; i < height; i++){
-      for(int j = 0; j < width; j++)
-        output[i][j] = matrix[i*width+j];
-    }
-    return output;
   }
 }

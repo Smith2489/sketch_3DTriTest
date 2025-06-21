@@ -247,6 +247,229 @@ public class MatrixOperations{
     return matrixMultiply(output, mTemp);
   }
   
+  public static Matrix4x4 matrixMultiply(Matrix4x4 matrix1, Matrix4x4 matrix2){
+    float[][] output = new float[4][4];
+
+    //Row 1
+    output[0][0] = matrix1.returnData(0, 0)*matrix2.returnData(0, 0)+matrix1.returnData(0, 1)*matrix2.returnData(1, 0)+matrix1.returnData(0, 2)*matrix2.returnData(2, 0)+matrix1.returnData(0, 3)*matrix2.returnData(3, 0);
+    output[0][1] = matrix1.returnData(0, 0)*matrix2.returnData(0, 1)+matrix1.returnData(0, 1)*matrix2.returnData(1, 1)+matrix1.returnData(0, 2)*matrix2.returnData(2, 1)+matrix1.returnData(0, 3)*matrix2.returnData(3, 1);
+    output[0][2] = matrix1.returnData(0, 0)*matrix2.returnData(0, 2)+matrix1.returnData(0, 1)*matrix2.returnData(1, 2)+matrix1.returnData(0, 2)*matrix2.returnData(2, 2)+matrix1.returnData(0, 3)*matrix2.returnData(3, 2);
+    output[0][3] = matrix1.returnData(0, 0)*matrix2.returnData(0, 3)+matrix1.returnData(0, 1)*matrix2.returnData(1, 3)+matrix1.returnData(0, 2)*matrix2.returnData(2, 3)+matrix1.returnData(0, 3)*matrix2.returnData(3, 3);
+
+    //Row 2
+    output[1][0] = matrix1.returnData(1, 0)*matrix2.returnData(0, 0)+matrix1.returnData(1, 1)*matrix2.returnData(1, 0)+matrix1.returnData(1, 2)*matrix2.returnData(2, 0)+matrix1.returnData(1, 3)*matrix2.returnData(3, 0);
+    output[1][1] = matrix1.returnData(1, 0)*matrix2.returnData(0, 1)+matrix1.returnData(1, 1)*matrix2.returnData(1, 1)+matrix1.returnData(1, 2)*matrix2.returnData(2, 1)+matrix1.returnData(1, 3)*matrix2.returnData(3, 1);
+    output[1][2] = matrix1.returnData(1, 0)*matrix2.returnData(0, 2)+matrix1.returnData(1, 1)*matrix2.returnData(1, 2)+matrix1.returnData(1, 2)*matrix2.returnData(2, 2)+matrix1.returnData(1, 3)*matrix2.returnData(3, 2);
+    output[1][3] = matrix1.returnData(1, 0)*matrix2.returnData(0, 3)+matrix1.returnData(1, 1)*matrix2.returnData(1, 3)+matrix1.returnData(1, 2)*matrix2.returnData(2, 3)+matrix1.returnData(1, 3)*matrix2.returnData(3, 3);
+
+    //Row 3
+    output[2][0] = matrix1.returnData(2, 0)*matrix2.returnData(0, 0)+matrix1.returnData(2, 1)*matrix2.returnData(1, 0)+matrix1.returnData(2, 2)*matrix2.returnData(2, 0)+matrix1.returnData(2, 3)*matrix2.returnData(3, 0);
+    output[2][1] = matrix1.returnData(2, 0)*matrix2.returnData(0, 1)+matrix1.returnData(2, 1)*matrix2.returnData(1, 1)+matrix1.returnData(2, 2)*matrix2.returnData(2, 1)+matrix1.returnData(2, 3)*matrix2.returnData(3, 1);
+    output[2][2] = matrix1.returnData(2, 0)*matrix2.returnData(0, 2)+matrix1.returnData(2, 1)*matrix2.returnData(1, 2)+matrix1.returnData(2, 2)*matrix2.returnData(2, 2)+matrix1.returnData(2, 3)*matrix2.returnData(3, 2);
+    output[2][3] = matrix1.returnData(2, 0)*matrix2.returnData(0, 3)+matrix1.returnData(2, 1)*matrix2.returnData(1, 3)+matrix1.returnData(2, 2)*matrix2.returnData(2, 3)+matrix1.returnData(2, 3)*matrix2.returnData(3, 3);
+
+    //Row 4
+    output[3][0] = matrix1.returnData(3, 0)*matrix2.returnData(0, 0)+matrix1.returnData(3, 1)*matrix2.returnData(1, 0)+matrix1.returnData(3, 2)*matrix2.returnData(2, 0)+matrix1.returnData(3, 3)*matrix2.returnData(3, 0);
+    output[3][1] = matrix1.returnData(3, 0)*matrix2.returnData(0, 1)+matrix1.returnData(3, 1)*matrix2.returnData(1, 1)+matrix1.returnData(3, 2)*matrix2.returnData(2, 1)+matrix1.returnData(3, 3)*matrix2.returnData(3, 1);
+    output[3][2] = matrix1.returnData(3, 0)*matrix2.returnData(0, 2)+matrix1.returnData(3, 1)*matrix2.returnData(1, 2)+matrix1.returnData(3, 2)*matrix2.returnData(2, 2)+matrix1.returnData(3, 3)*matrix2.returnData(3, 2);
+    output[3][3] = matrix1.returnData(3, 0)*matrix2.returnData(0, 3)+matrix1.returnData(3, 1)*matrix2.returnData(1, 3)+matrix1.returnData(3, 2)*matrix2.returnData(2, 3)+matrix1.returnData(3, 3)*matrix2.returnData(3, 3);
+    
+    if(round){
+      output[0][0] = (float)Math.round(output[0][0]*sigFigs[0])*sigFigs[1];
+      output[0][1] = (float)Math.round(output[0][1]*sigFigs[0])*sigFigs[1];
+      output[0][2] = (float)Math.round(output[0][2]*sigFigs[0])*sigFigs[1];
+      output[0][3] = (float)Math.round(output[0][3]*sigFigs[0])*sigFigs[1];
+
+      output[1][0] = (float)Math.round(output[1][0]*sigFigs[0])*sigFigs[1];
+      output[1][1] = (float)Math.round(output[1][1]*sigFigs[0])*sigFigs[1];
+      output[1][2] = (float)Math.round(output[1][2]*sigFigs[0])*sigFigs[1];
+      output[1][3] = (float)Math.round(output[1][3]*sigFigs[0])*sigFigs[1];
+
+      output[2][0] = (float)Math.round(output[2][0]*sigFigs[0])*sigFigs[1];
+      output[2][1] = (float)Math.round(output[2][1]*sigFigs[0])*sigFigs[1];
+      output[2][2] = (float)Math.round(output[2][2]*sigFigs[0])*sigFigs[1];
+      output[2][3] = (float)Math.round(output[2][3]*sigFigs[0])*sigFigs[1];
+
+      output[3][0] = (float)Math.round(output[3][0]*sigFigs[0])*sigFigs[1];
+      output[3][1] = (float)Math.round(output[3][1]*sigFigs[0])*sigFigs[1];
+      output[3][2] = (float)Math.round(output[3][2]*sigFigs[0])*sigFigs[1];
+      output[3][3] = (float)Math.round(output[3][3]*sigFigs[0])*sigFigs[1];
+    }
+
+    return new Matrix4x4(output);
+  }
+
+  public static Matrix matrixMultiply(Matrix4x4 matrix1, float[] vector){
+    if(vector.length == 4){
+      float[][] output = new float[4][1];
+      output[0][0] = matrix1.returnData(0, 0)*vector[0]+matrix1.returnData(0, 1)*vector[1]+matrix1.returnData(0, 2)*vector[2]+matrix1.returnData(0, 3)*vector[3];
+      output[1][0] = matrix1.returnData(1, 0)*vector[0]+matrix1.returnData(1, 1)*vector[1]+matrix1.returnData(1, 2)*vector[2]+matrix1.returnData(1, 3)*vector[3];
+      output[2][0] = matrix1.returnData(2, 0)*vector[0]+matrix1.returnData(2, 1)*vector[1]+matrix1.returnData(2, 2)*vector[2]+matrix1.returnData(2, 3)*vector[3];
+      output[3][0] = matrix1.returnData(3, 0)*vector[0]+matrix1.returnData(3, 1)*vector[1]+matrix1.returnData(3, 2)*vector[2]+matrix1.returnData(3, 3)*vector[3];
+      return new Matrix(output);
+    }
+    System.out.println("ERROR: VECTOR MUST BE OF LENGTH 4");
+    return new Matrix4x4();
+  }
+
+  public static Matrix4x4 matrixAddition(Matrix4x4 matrix1, Matrix4x4 matrix2){
+    float[][] output = new float[4][4];
+    output[0][0] = matrix1.returnData(0,0)+matrix2.returnData(0, 0);
+    output[0][1] = matrix1.returnData(0,1)+matrix2.returnData(0, 1);
+    output[0][2] = matrix1.returnData(0,2)+matrix2.returnData(0, 2);
+    output[0][3] = matrix1.returnData(0,3)+matrix2.returnData(0, 3);
+
+    output[1][0] = matrix1.returnData(1,0)+matrix2.returnData(1, 0);
+    output[1][1] = matrix1.returnData(1,1)+matrix2.returnData(1, 1);
+    output[1][2] = matrix1.returnData(1,2)+matrix2.returnData(1, 2);
+    output[1][3] = matrix1.returnData(1,3)+matrix2.returnData(1, 3);
+
+    output[2][0] = matrix1.returnData(2,0)+matrix2.returnData(2, 0);
+    output[2][1] = matrix1.returnData(2,1)+matrix2.returnData(2, 1);
+    output[2][2] = matrix1.returnData(2,2)+matrix2.returnData(2, 2);
+    output[2][3] = matrix1.returnData(2,3)+matrix2.returnData(2, 3);
+
+    output[3][0] = matrix1.returnData(3,0)+matrix2.returnData(3, 0);
+    output[3][1] = matrix1.returnData(3,1)+matrix2.returnData(3, 1);
+    output[3][2] = matrix1.returnData(3,2)+matrix2.returnData(3, 2);
+    output[3][3] = matrix1.returnData(3,3)+matrix2.returnData(3, 3);
+
+    return new Matrix4x4(output);
+  }
+
+  public static Matrix4x4 matrixSubtraction(Matrix4x4 matrix1, Matrix4x4 matrix2){
+    float[][] output = new float[4][4];
+    output[0][0] = matrix1.returnData(0,0)-matrix2.returnData(0, 0);
+    output[0][1] = matrix1.returnData(0,1)-matrix2.returnData(0, 1);
+    output[0][2] = matrix1.returnData(0,2)-matrix2.returnData(0, 2);
+    output[0][3] = matrix1.returnData(0,3)-matrix2.returnData(0, 3);
+
+    output[1][0] = matrix1.returnData(1,0)-matrix2.returnData(1, 0);
+    output[1][1] = matrix1.returnData(1,1)-matrix2.returnData(1, 1);
+    output[1][2] = matrix1.returnData(1,2)-matrix2.returnData(1, 2);
+    output[1][3] = matrix1.returnData(1,3)-matrix2.returnData(1, 3);
+
+    output[2][0] = matrix1.returnData(2,0)-matrix2.returnData(2, 0);
+    output[2][1] = matrix1.returnData(2,1)-matrix2.returnData(2, 1);
+    output[2][2] = matrix1.returnData(2,2)-matrix2.returnData(2, 2);
+    output[2][3] = matrix1.returnData(2,3)-matrix2.returnData(2, 3);
+
+    output[3][0] = matrix1.returnData(3,0)-matrix2.returnData(3, 0);
+    output[3][1] = matrix1.returnData(3,1)-matrix2.returnData(3, 1);
+    output[3][2] = matrix1.returnData(3,2)-matrix2.returnData(3, 2);
+    output[3][3] = matrix1.returnData(3,3)-matrix2.returnData(3, 3);
+
+    return new Matrix4x4(output);
+  }
+
+  public static Matrix4x4 multByConst(Matrix4x4 matrix, final float k){
+    float[][] output = new float[4][4];
+    output[0][0] = matrix.returnData(0, 0)*k;
+    output[0][1] = matrix.returnData(0, 1)*k;
+    output[0][2] = matrix.returnData(0, 2)*k;
+    output[0][3] = matrix.returnData(0, 3)*k;
+
+    output[1][0] = matrix.returnData(1, 0)*k;
+    output[1][1] = matrix.returnData(1, 1)*k;
+    output[1][2] = matrix.returnData(1, 2)*k;
+    output[1][3] = matrix.returnData(1, 3)*k;
+
+    output[2][0] = matrix.returnData(2, 0)*k;
+    output[2][1] = matrix.returnData(2, 1)*k;
+    output[2][2] = matrix.returnData(2, 2)*k;
+    output[2][3] = matrix.returnData(2, 3)*k;
+
+    output[3][0] = matrix.returnData(3, 0)*k;
+    output[3][1] = matrix.returnData(3, 1)*k;
+    output[3][2] = matrix.returnData(3, 2)*k;
+    output[3][3] = matrix.returnData(3, 3)*k;
+
+    return new Matrix4x4(output);
+  }
+
+  public static Matrix4x4 divByConst(Matrix4x4 matrix, float k){
+    if(Math.abs(k) <= sigFigs[1]){
+      System.out.println("ERROR: DIV BY ZERO");
+      return new Matrix4x4();
+    }
+    k = 1/k;
+
+    float[][] output = new float[4][4];
+    output[0][0] = matrix.returnData(0, 0)*k;
+    output[0][1] = matrix.returnData(0, 1)*k;
+    output[0][2] = matrix.returnData(0, 2)*k;
+    output[0][3] = matrix.returnData(0, 3)*k;
+
+    output[1][0] = matrix.returnData(1, 0)*k;
+    output[1][1] = matrix.returnData(1, 1)*k;
+    output[1][2] = matrix.returnData(1, 2)*k;
+    output[1][3] = matrix.returnData(1, 3)*k;
+
+    output[2][0] = matrix.returnData(2, 0)*k;
+    output[2][1] = matrix.returnData(2, 1)*k;
+    output[2][2] = matrix.returnData(2, 2)*k;
+    output[2][3] = matrix.returnData(2, 3)*k;
+
+    output[3][0] = matrix.returnData(3, 0)*k;
+    output[3][1] = matrix.returnData(3, 1)*k;
+    output[3][2] = matrix.returnData(3, 2)*k;
+    output[3][3] = matrix.returnData(3, 3)*k;
+
+    return new Matrix4x4(output);
+  }
+
+  public static Matrix4x4 transposeMatrix(Matrix4x4 matrix){
+    float[][] output = new float[4][4];
+
+    output[0][0] = matrix.returnData(0, 0);
+    output[0][1] = matrix.returnData(1, 0);
+    output[0][2] = matrix.returnData(2, 0);
+    output[0][3] = matrix.returnData(3, 0);
+
+    output[1][0] = matrix.returnData(0, 1);
+    output[1][1] = matrix.returnData(1, 1);
+    output[1][2] = matrix.returnData(2, 1);
+    output[1][3] = matrix.returnData(3, 1);
+
+    output[2][0] = matrix.returnData(0, 2);
+    output[2][1] = matrix.returnData(1, 2);
+    output[2][2] = matrix.returnData(2, 2);
+    output[2][3] = matrix.returnData(3, 2);
+
+    output[3][0] = matrix.returnData(0, 3);
+    output[3][1] = matrix.returnData(1, 3);
+    output[3][2] = matrix.returnData(2, 3);
+    output[3][3] = matrix.returnData(3, 3);
+
+    return new Matrix4x4(output);
+  }
+
+  //Sets a matrix to an integer power
+  public static Matrix4x4 pow(Matrix4x4 m, int pow){
+    //Will be the output matrix
+    Matrix4x4 output = new Matrix4x4();
+    float[][] mFloat = m.toFloat();
+    Matrix4x4 mTemp = new Matrix4x4(mFloat);
+
+    //Returns an identity matrix should the power be 0
+    if(pow == 0)
+      return output;
+    //Computes the inverse of M when the power is less than one
+    else if(pow < 0){
+      mTemp = new Matrix4x4(invertMatrix(mFloat)); //Setting mTemp to M^(-1)
+      pow = (~pow)+1; //Negating pow
+    }
+    //Exponentiation by squaring
+    while(pow > 1){
+      if((pow & 1) == 1){
+        output = matrixMultiply(output, mTemp);
+        pow--;
+      }
+      mTemp = matrixMultiply(mTemp, mTemp);
+      pow>>>=1;
+    }
+    return matrixMultiply(output, mTemp);
+  }
 
   //Takes in two 2D arrays where wid1 == heigh2 and multiplies them together
   public static float[][] matrixMultiply(float[][] matrix1, float[][] matrix2){
