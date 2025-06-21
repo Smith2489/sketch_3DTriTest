@@ -7,8 +7,7 @@ public class Matrix4x4 extends Matrix{
 
     public Matrix4x4(float[][] newMatrix){
         if(newMatrix.length != 4 || newMatrix[0].length != 4){
-            System.out.println(newMatrix.length+" "+newMatrix[0].length);
-            System.out.println("ERROR: MATRIX MUST BE 4X4");
+            System.out.println("ERROR: MATRIX MUST BE 4X4! IS "+newMatrix[0].length+"X"+newMatrix.length+"!");
             System.exit(1);
         }
         matrix = new float[16];
