@@ -7,8 +7,10 @@ public class Matrix{
   //Default constructor
   public Matrix(){
     matrix = new float[16];
-    for(int i = 0; i < 4; i++)
-      matrix[i+width*i] = 1;
+    matrix[0] = 1;
+    matrix[5] = 1;
+    matrix[10] = 1;
+    matrix[15] = 1;
   }
 
   public Matrix(int wid, int heig){

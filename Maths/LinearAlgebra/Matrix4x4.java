@@ -13,10 +13,25 @@ public class Matrix4x4 extends Matrix{
         matrix = new float[16];
         width = 4;
         height = 4;
-        for(byte i = 0; i < 4; i++){
-            for(byte j = 0; j < 4; j++)
-                matrix[(i << 2)+j] = newMatrix[i][j];
-        }
+        matrix[0] = newMatrix[0][0];
+        matrix[1] = newMatrix[0][1];
+        matrix[2] = newMatrix[0][2];
+        matrix[3] = newMatrix[0][3];
+
+        matrix[4] = newMatrix[1][0];
+        matrix[5] = newMatrix[1][1];
+        matrix[6] = newMatrix[1][2];
+        matrix[7] = newMatrix[1][3];
+
+        matrix[8] = newMatrix[2][0];
+        matrix[9] = newMatrix[2][1];
+        matrix[10] = newMatrix[2][2];
+        matrix[11] = newMatrix[2][3];
+
+        matrix[12] = newMatrix[3][0];
+        matrix[13] = newMatrix[3][1];
+        matrix[14] = newMatrix[3][2];
+        matrix[15] = newMatrix[3][3];
     }
 
     public void setData(float newData, int row, int col){

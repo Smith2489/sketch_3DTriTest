@@ -193,47 +193,56 @@ public class MVP{
     beta = beta*DEG_TO_RADS-0.0001f;
     gamma = gamma*DEG_TO_RADS-0.0001f;
     //Rotation matrices
-    float[][] xRotation = {{1, 0, 0, 0},
-                           {0, (float)Math.cos(alpha), (float)(-Math.sin(alpha)), 0},
-                           {0, (float)Math.sin(alpha), (float)Math.cos(alpha), 0},
-                           {0, 0, 0, 1}};
-    float[][] yRotation = {{(float)Math.cos(beta), 0, (float)Math.sin(beta), 0},
-                           {0, 1, 0, 0},
-                           {(float)(-Math.sin(beta)), 0, (float)(Math.cos(beta)), 0},
-                           {0, 0, 0, 1}};
-    float[][] zRotation = {{(float)Math.cos(gamma), (float)(-Math.sin(gamma)), 0, 0},
-                           {(float)(Math.sin(gamma)), (float)Math.cos(gamma), 0, 0},
-                           {0, 0, 1, 0},
-                           {0, 0, 0, 1}};
-    Matrix4x4 firstStep = new Matrix4x4(MatrixOperations.matrixMultiply(zRotation, yRotation));
-    Matrix4x4 xRot = new Matrix4x4(xRotation);
-  
-    return MatrixOperations.matrixMultiply(firstStep, xRot);
+    Matrix4x4 xRotation = new Matrix4x4();
+    xRotation.setData((float)Math.cos(alpha), 1, 1);
+    xRotation.setData((float)-Math.sin(alpha), 1, 2);
+    xRotation.setData((float)Math.sin(alpha), 2, 1);
+    xRotation.setData((float)Math.cos(alpha), 2, 2);
+
+    Matrix4x4 yRotation = new Matrix4x4();
+    yRotation.setData((float)Math.cos(beta), 0, 0);
+    yRotation.setData((float)Math.sin(beta), 0, 2);
+    yRotation.setData((float)-Math.sin(beta), 2, 0);
+    yRotation.setData((float)Math.cos(beta), 2, 2);
+
+    Matrix4x4 zRotation = new Matrix4x4();
+    zRotation.setData((float)Math.cos(gamma), 0, 0);
+    zRotation.setData((float)-Math.sin(gamma), 0, 1);
+    zRotation.setData((float)Math.sin(gamma), 1, 0);
+    zRotation.setData((float)Math.cos(gamma), 1, 1);
+
+    Matrix4x4 firstStep = MatrixOperations.matrixMultiply(zRotation, yRotation);
+    return MatrixOperations.matrixMultiply(firstStep, xRotation);
   }
   //Rotation Matrix for Model (M)
   private static Matrix4x4 reverseRotation(float alpha, float beta, float gamma){
-      //Degrees to radians conversion
-      alpha = alpha*DEG_TO_RADS-0.0001f;
-      beta = beta*DEG_TO_RADS-0.0001f;
-      gamma = gamma*DEG_TO_RADS-0.0001f;
-      //Rotation matrices
-      float[][] xRotation = {{1, 0, 0, 0},
-                             {0, (float)Math.cos(alpha), (float)(-Math.sin(alpha)), 0},
-                             {0, (float)Math.sin(alpha), (float)Math.cos(alpha), 0},
-                             {0, 0, 0, 1}};
-      float[][] yRotation = {{(float)Math.cos(beta), 0, (float)Math.sin(beta), 0},
-                             {0, 1, 0, 0},
-                             {(float)(-Math.sin(beta)), 0, (float)(Math.cos(beta)), 0},
-                             {0, 0, 0, 1}};
-      float[][] zRotation = {{(float)Math.cos(gamma), (float)(-Math.sin(gamma)), 0, 0},
-                             {(float)(Math.sin(gamma)), (float)Math.cos(gamma), 0, 0},
-                             {0, 0, 1, 0},
-                             {0, 0, 0, 1}};
-      Matrix4x4 firstStep = new Matrix4x4(MatrixOperations.matrixMultiply(xRotation, yRotation));
-      Matrix4x4 xRot = new Matrix4x4(zRotation);
-    
-      return MatrixOperations.matrixMultiply(firstStep, xRot);
-    }
+    //Degrees to radians conversion
+    alpha = alpha*DEG_TO_RADS-0.0001f;
+    beta = beta*DEG_TO_RADS-0.0001f;
+    gamma = gamma*DEG_TO_RADS-0.0001f;
+
+    //Rotation matrices
+    Matrix4x4 xRotation = new Matrix4x4();
+    xRotation.setData((float)Math.cos(alpha), 1, 1);
+    xRotation.setData((float)-Math.sin(alpha), 1, 2);
+    xRotation.setData((float)Math.sin(alpha), 2, 1);
+    xRotation.setData((float)Math.cos(alpha), 2, 2);
+
+    Matrix4x4 yRotation = new Matrix4x4();
+    yRotation.setData((float)Math.cos(beta), 0, 0);
+    yRotation.setData((float)Math.sin(beta), 0, 2);
+    yRotation.setData((float)-Math.sin(beta), 2, 0);
+    yRotation.setData((float)Math.cos(beta), 2, 2);
+
+    Matrix4x4 zRotation = new Matrix4x4();
+    zRotation.setData((float)Math.cos(gamma), 0, 0);
+    zRotation.setData((float)-Math.sin(gamma), 0, 1);
+    zRotation.setData((float)Math.sin(gamma), 1, 0);
+    zRotation.setData((float)Math.cos(gamma), 1, 1);
+
+    Matrix4x4 firstStep = MatrixOperations.matrixMultiply(xRotation, yRotation);
+    return MatrixOperations.matrixMultiply(firstStep, zRotation);
+  }
   public static Matrix4x4 returnRotation(float[] angles){
     //Degrees to radians conversion
     float[] anglesRad = new float[3];
@@ -241,22 +250,26 @@ public class MVP{
     anglesRad[1] = angles[1]*DEG_TO_RADS-0.0001f;
     anglesRad[2] = angles[2]*DEG_TO_RADS-0.0001f;
     //Rotation matrices
-    float[][] xRotation = {{1, 0, 0, 0},
-                           {0, (float)Math.cos(anglesRad[0]), (float)(-Math.sin(anglesRad[0])), 0},
-                           {0, (float)Math.sin(anglesRad[0]), (float)Math.cos(anglesRad[0]), 0},
-                           {0, 0, 0, 1}};
-    float[][] yRotation = {{(float)Math.cos(anglesRad[1]), 0, (float)Math.sin(anglesRad[1]), 0},
-                           {0, 1, 0, 0},
-                           {(float)(-Math.sin(anglesRad[1])), 0, (float)(Math.cos(anglesRad[1])), 0},
-                           {0, 0, 0, 1}};
-    float[][] zRotation = {{(float)Math.cos(anglesRad[2]), (float)(-Math.sin(anglesRad[2])), 0, 0},
-                           {(float)(Math.sin(anglesRad[2])), (float)Math.cos(anglesRad[2]), 0, 0},
-                           {0, 0, 1, 0},
-                           {0, 0, 0, 1}};
-    Matrix4x4 firstStep = new Matrix4x4(MatrixOperations.matrixMultiply(zRotation, yRotation));
-    Matrix4x4 xRot = new Matrix4x4(xRotation);
-  
-    return MatrixOperations.matrixMultiply(firstStep, xRot);
+    Matrix4x4 xRotation = new Matrix4x4();
+    xRotation.setData((float)Math.cos(anglesRad[0]), 1, 1);
+    xRotation.setData((float)-Math.sin(anglesRad[0]), 1, 2);
+    xRotation.setData((float)Math.sin(anglesRad[0]), 2, 1);
+    xRotation.setData((float)Math.cos(anglesRad[0]), 2, 2);
+
+    Matrix4x4 yRotation = new Matrix4x4();
+    yRotation.setData((float)Math.cos(anglesRad[1]), 0, 0);
+    yRotation.setData((float)Math.sin(anglesRad[1]), 0, 2);
+    yRotation.setData((float)-Math.sin(anglesRad[1]), 2, 0);
+    yRotation.setData((float)Math.cos(anglesRad[1]), 2, 2);
+
+    Matrix4x4 zRotation = new Matrix4x4();
+    zRotation.setData((float)Math.cos(anglesRad[2]), 0, 0);
+    zRotation.setData((float)-Math.sin(anglesRad[2]), 0, 1);
+    zRotation.setData((float)Math.sin(anglesRad[2]), 1, 0);
+    zRotation.setData((float)Math.cos(anglesRad[2]), 1, 1);
+
+    Matrix4x4 firstStep = MatrixOperations.matrixMultiply(zRotation, yRotation);
+    return MatrixOperations.matrixMultiply(firstStep, xRotation);
   }
   public static Matrix4x4 reverseRotation(float[] angles){
     //Degrees to radians conversion
@@ -264,87 +277,91 @@ public class MVP{
     anglesRad[0] = angles[0]*DEG_TO_RADS-0.0001f;
     anglesRad[1] = angles[1]*DEG_TO_RADS-0.0001f;
     anglesRad[2] = angles[2]*DEG_TO_RADS-0.0001f;
+
     //Rotation matrices
-    float[][] xRotation = {{1, 0, 0, 0},
-                           {0, (float)Math.cos(anglesRad[0]), (float)(-Math.sin(anglesRad[0])), 0},
-                           {0, (float)Math.sin(anglesRad[0]), (float)Math.cos(anglesRad[0]), 0},
-                           {0, 0, 0, 1}};
-    float[][] yRotation = {{(float)Math.cos(anglesRad[1]), 0, (float)Math.sin(anglesRad[1]), 0},
-                           {0, 1, 0, 0},
-                           {(float)(-Math.sin(anglesRad[1])), 0, (float)(Math.cos(anglesRad[1])), 0},
-                           {0, 0, 0, 1}};
-    float[][] zRotation = {{(float)Math.cos(anglesRad[2]), (float)(-Math.sin(anglesRad[2])), 0, 0},
-                           {(float)(Math.sin(anglesRad[2])), (float)Math.cos(anglesRad[2]), 0, 0},
-                           {0, 0, 1, 0},
-                           {0, 0, 0, 1}};
-    Matrix4x4 firstStep = new Matrix4x4(MatrixOperations.matrixMultiply(xRotation, yRotation));
-    Matrix4x4 xRot = new Matrix4x4(zRotation);
-  
-    return MatrixOperations.matrixMultiply(firstStep, xRot);
+    Matrix4x4 xRotation = new Matrix4x4();
+    xRotation.setData((float)Math.cos(anglesRad[0]), 1, 1);
+    xRotation.setData((float)-Math.sin(anglesRad[0]), 1, 2);
+    xRotation.setData((float)Math.sin(anglesRad[0]), 2, 1);
+    xRotation.setData((float)Math.cos(anglesRad[0]), 2, 2);
+
+    Matrix4x4 yRotation = new Matrix4x4();
+    yRotation.setData((float)Math.cos(anglesRad[1]), 0, 0);
+    yRotation.setData((float)Math.sin(anglesRad[1]), 0, 2);
+    yRotation.setData((float)-Math.sin(anglesRad[1]), 2, 0);
+    yRotation.setData((float)Math.cos(anglesRad[1]), 2, 2);
+
+    Matrix4x4 zRotation = new Matrix4x4();
+    zRotation.setData((float)Math.cos(anglesRad[2]), 0, 0);
+    zRotation.setData((float)-Math.sin(anglesRad[2]), 0, 1);
+    zRotation.setData((float)Math.sin(anglesRad[2]), 1, 0);
+    zRotation.setData((float)Math.cos(anglesRad[2]), 1, 1);
+
+    Matrix4x4 firstStep = MatrixOperations.matrixMultiply(xRotation, yRotation);
+    return MatrixOperations.matrixMultiply(firstStep, zRotation);
   }
 
   //Translation Matrix for Model (M)
   public static Matrix4x4 returnTranslation(float x, float y, float z){
-    float[][] translation = {{1, 0, 0, x},
-                             {0, 1, 0, y},
-                             {0, 0, 1, z},
-                             {0, 0, 0, 1}};
-    return new Matrix4x4(translation);
+    Matrix4x4 translation = new Matrix4x4();
+    translation.setData(x, 0, 3);
+    translation.setData(y, 1, 3);
+    translation.setData(z, 2, 3);
+    return translation;
   }
 
   public static Matrix4x4 returnTranslation(float[] pos){
-    float[][] translation = {{1, 0, 0, pos[0]},
-                             {0, 1, 0, pos[1]},
-                             {0, 0, 1, pos[2]},
-                             {0, 0, 0, 1}};
-    return new Matrix4x4(translation);
+    Matrix4x4 translation = new Matrix4x4();
+    translation.setData(pos[0], 0, 3);
+    translation.setData(pos[1], 1, 3);
+    translation.setData(pos[2], 2, 3);
+    return translation;
   }
 
   //Scaling Matrix for Model (M)
   public static Matrix4x4 returnScale(float sX, float sY, float sZ){
-    float[][] scaleMatrix = {{sX, 0, 0, 0},
-                             {0, sY, 0, 0},
-                             {0, 0, sZ, 0},
-                             {0, 0, 0, 1}};
-
-    return new Matrix4x4(scaleMatrix);
+    Matrix4x4 scaleMatrix = new Matrix4x4();
+    scaleMatrix.setData(sX, 0, 0);
+    scaleMatrix.setData(sY, 1, 1);
+    scaleMatrix.setData(sZ, 2, 2);
+    return scaleMatrix;
   }
   public static Matrix4x4 returnScale(float[] scale){
-    float[][] scaleMatrix = {{scale[0], 0, 0, 0},
-                             {0, scale[1], 0, 0},
-                             {0, 0, scale[2], 0},
-                             {0, 0, 0, 1}};
-    return new Matrix4x4(scaleMatrix);
+    Matrix4x4 scaleMatrix = new Matrix4x4();
+    scaleMatrix.setData(scale[0], 0, 0);
+    scaleMatrix.setData(scale[1], 1, 1);
+    scaleMatrix.setData(scale[2], 2, 2);
+    return scaleMatrix;
   }
   public static Matrix4x4 returnShear(float sX1, float sX2, float sY1, float sY2, float sZ1, float sZ2){
-    float[][] shearX = {{1, sX1, sX2, 0},
-                        {0, 1, 0, 0},
-                        {0, 0, 1, 0},
-                        {0, 0, 0, 1}};
-    float[][] shearY = {{1, 0, 0, 0},
-                        {sY1, 1, sY2, 0},
-                        {0, 0, 1, 0},
-                        {0, 0, 0, 1}};
-    float[][] shearZ = {{1, 0, 0, 0},
-                        {0, 1, 0, 0},
-                        {sZ1, sZ2, 1, 0},
-                        {0, 0, 0, 1}};
-    return new Matrix4x4(MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(shearZ, shearY), shearX));
+    Matrix4x4 shearX = new Matrix4x4();
+    shearX.setData(sX1, 0, 1);
+    shearX.setData(sX2, 0, 2);
+
+    Matrix4x4 shearY = new Matrix4x4();
+    shearY.setData(sY1, 1, 0);
+    shearY.setData(sY2, 1, 2);
+
+    Matrix4x4 shearZ = new Matrix4x4();
+    shearZ.setData(sZ1, 2, 0);
+    shearZ.setData(sZ2, 2, 1);
+
+    return MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(shearZ, shearY), shearX);
   }
   private static Matrix4x4 reverseShear(float sX1, float sX2, float sY1, float sY2, float sZ1, float sZ2){
-    float[][] shearX = {{1, sX1, sX2, 0},
-                        {0, 1, 0, 0},
-                        {0, 0, 1, 0},
-                        {0, 0, 0, 1}};
-    float[][] shearY = {{1, 0, 0, 0},
-                        {sY1, 1, sY2, 0},
-                        {0, 0, 1, 0},
-                        {0, 0, 0, 1}};
-    float[][] shearZ = {{1, 0, 0, 0},
-                        {0, 1, 0, 0},
-                        {sZ1, sZ2, 1, 0},
-                        {0, 0, 0, 1}};
-    return new Matrix4x4(MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(shearX, shearY), shearZ));
+    Matrix4x4 shearX = new Matrix4x4();
+    shearX.setData(sX1, 0, 1);
+    shearX.setData(sX2, 0, 2);
+
+    Matrix4x4 shearY = new Matrix4x4();
+    shearY.setData(sY1, 1, 0);
+    shearY.setData(sY2, 1, 2);
+
+    Matrix4x4 shearZ = new Matrix4x4();
+    shearZ.setData(sZ1, 2, 0);
+    shearZ.setData(sZ2, 2, 1);
+
+    return MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(shearX, shearY), shearZ);
   }
 
   //Model Matrix (M)
