@@ -1768,8 +1768,12 @@ public class ScreenMake{
     return vect1[0]*vect2[0]+vect1[1]*vect2[1]+vect1[2]*vect2[2];
   }
 
-  //Forces q vector with dimensions higher than three to be 3D
+  //Forces a vector with dimensions higher than three to be 3D
   private static float[] dropW(float[] vector){
+    if(vector.length < 3){
+      System.out.println("ERROR: WRONG NUMBER OF DIMENSIONS (MUST BE AT LEAST 3)");
+      System.exit(1);
+    }
     float[] output = {vector[0], vector[1], vector[2]};
     return output;
   }
