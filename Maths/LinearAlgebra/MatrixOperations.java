@@ -127,21 +127,39 @@ public class MatrixOperations{
   }
 
   //Multiplies a matrix by a vector
-  public static Matrix matrixMultiply(Matrix matrix1, float[] vector){
+  public static float[] matrixMultiply(Matrix matrix1, float[] vector){
     if(vector.length == matrix1.returnWidth()){
-      float[][] outputMatrix = new float[matrix1.returnHeight()][1];
+      float[] outputMatrix = new float[matrix1.returnHeight()];
       for(int i = 0; i < matrix1.returnHeight(); i++){
         for(int p = 0; p < matrix1.returnWidth(); p++)
-          outputMatrix[i][0]+=matrix1.returnData(i, p)*vector[p];
+          outputMatrix[i]+=matrix1.returnData(i, p)*vector[p];
         if(round)
-          outputMatrix[i][0] = (float)Math.round(outputMatrix[i][0]*sigFigs[0])*sigFigs[1];
+          outputMatrix[i] = (float)Math.round(outputMatrix[i]*sigFigs[0])*sigFigs[1];
       }
-      return new Matrix(outputMatrix);
+      return outputMatrix;
     }
     System.out.println("ERROR: NUMBER OF ROWS IN MATRIX DOES NOT EQUAL THE NUMBER OF ELEMENTS IN VECTOR!");
     System.exit(1);
-    return new Matrix();
+    return new float[4];
   }
+
+  //Multiplies a vector by a matrix
+  public static float[] matrixMultiply(float[] vector, Matrix matrix2){
+    if(vector.length == matrix2.returnHeight()){
+      float[] outputMatrix = new float[matrix2.returnWidth()];
+      for(int i = 0; i < matrix2.returnWidth(); i++){
+        for(int p = 0; p < matrix2.returnHeight(); p++)
+          outputMatrix[i]+=matrix2.returnData(p, i)*vector[p];
+        if(round)
+          outputMatrix[i] = (float)Math.round(outputMatrix[i]*sigFigs[0])*sigFigs[1];
+      }
+      return outputMatrix;
+    }
+    System.out.println("ERROR: NUMBER OF COLUMNS IN MATRIX DOES NOT EQUAL NUMBER OF ELEMENTS IN VECTOR");
+    System.exit(1);
+    return new float[4];
+  }
+
   //Takes two matrices of the same width and same height and adds their elements together
   public static Matrix matrixAddition(Matrix matrix1, Matrix matrix2){
     if(matrix1.returnWidth() == matrix2.returnWidth() && matrix1.returnHeight() == matrix2.returnHeight()){
@@ -299,17 +317,44 @@ public class MatrixOperations{
     return new Matrix4x4(output);
   }
 
-  public static Matrix matrixMultiply(Matrix4x4 matrix1, float[] vector){
+  public static float[] matrixMultiply(Matrix4x4 matrix1, float[] vector){
     if(vector.length == 4){
-      float[][] output = new float[4][1];
-      output[0][0] = matrix1.returnData(0, 0)*vector[0]+matrix1.returnData(0, 1)*vector[1]+matrix1.returnData(0, 2)*vector[2]+matrix1.returnData(0, 3)*vector[3];
-      output[1][0] = matrix1.returnData(1, 0)*vector[0]+matrix1.returnData(1, 1)*vector[1]+matrix1.returnData(1, 2)*vector[2]+matrix1.returnData(1, 3)*vector[3];
-      output[2][0] = matrix1.returnData(2, 0)*vector[0]+matrix1.returnData(2, 1)*vector[1]+matrix1.returnData(2, 2)*vector[2]+matrix1.returnData(2, 3)*vector[3];
-      output[3][0] = matrix1.returnData(3, 0)*vector[0]+matrix1.returnData(3, 1)*vector[1]+matrix1.returnData(3, 2)*vector[2]+matrix1.returnData(3, 3)*vector[3];
-      return new Matrix(output);
+      float[] output = new float[4];
+      output[0] = matrix1.returnData(0, 0)*vector[0]+matrix1.returnData(0, 1)*vector[1]+matrix1.returnData(0, 2)*vector[2]+matrix1.returnData(0, 3)*vector[3];
+      output[1] = matrix1.returnData(1, 0)*vector[0]+matrix1.returnData(1, 1)*vector[1]+matrix1.returnData(1, 2)*vector[2]+matrix1.returnData(1, 3)*vector[3];
+      output[2] = matrix1.returnData(2, 0)*vector[0]+matrix1.returnData(2, 1)*vector[1]+matrix1.returnData(2, 2)*vector[2]+matrix1.returnData(2, 3)*vector[3];
+      output[3] = matrix1.returnData(3, 0)*vector[0]+matrix1.returnData(3, 1)*vector[1]+matrix1.returnData(3, 2)*vector[2]+matrix1.returnData(3, 3)*vector[3];
+      if(round){
+        output[0] = Math.round(output[0]*sigFigs[0])*sigFigs[1];
+        output[1] = Math.round(output[1]*sigFigs[0])*sigFigs[1];
+        output[2] = Math.round(output[2]*sigFigs[0])*sigFigs[1];
+        output[3] = Math.round(output[3]*sigFigs[0])*sigFigs[1];
+      }
+
+      return output;
     }
     System.out.println("ERROR: VECTOR MUST BE OF LENGTH 4");
-    return new Matrix4x4();
+    return new float[4];
+  }
+
+  public static float[] matrixMultiply(float[] vector, Matrix4x4 matrix2){
+    if(vector.length == 4){
+      float[] output = new float[4];
+      output[0] = vector[0]*matrix2.returnData(0, 0)+vector[1]*matrix2.returnData(1, 0)+vector[2]*matrix2.returnData(2, 0)+vector[3]*matrix2.returnData(3, 0);
+      output[0] = vector[0]*matrix2.returnData(0, 1)+vector[1]*matrix2.returnData(1, 1)+vector[2]*matrix2.returnData(2, 1)+vector[3]*matrix2.returnData(3, 1);
+      output[0] = vector[0]*matrix2.returnData(0, 2)+vector[1]*matrix2.returnData(1, 2)+vector[2]*matrix2.returnData(2, 2)+vector[3]*matrix2.returnData(3, 2);
+      output[0] = vector[0]*matrix2.returnData(0, 3)+vector[1]*matrix2.returnData(1, 3)+vector[2]*matrix2.returnData(2, 3)+vector[3]*matrix2.returnData(3, 3);
+      if(round){
+        output[0] = Math.round(output[0]*sigFigs[0])*sigFigs[1];
+        output[1] = Math.round(output[1]*sigFigs[0])*sigFigs[1];
+        output[2] = Math.round(output[2]*sigFigs[0])*sigFigs[1];
+        output[3] = Math.round(output[3]*sigFigs[0])*sigFigs[1];
+      }
+
+      return output;
+    }
+    System.out.println("VECTOR MUST HAVE A LENGTH OF 4");
+    return new float[4];
   }
 
   public static Matrix4x4 matrixAddition(Matrix4x4 matrix1, Matrix4x4 matrix2){
@@ -579,21 +624,37 @@ public class MatrixOperations{
   }
 
   //Multiplies a 2D array by a 1D array
-  public static float[][] matrixMultiply(float[][] matrix1, float[] vector){
+  public static float[] matrixMultiply(float[][] matrix1, float[] vector){
     if(vector.length == matrix1[0].length){
-      float[][] outputMatrix = new float[matrix1.length][1];
+      float[] outputMatrix = new float[matrix1.length];
       for(int i = 0; i < matrix1.length; i++){
         for(int p = 0; p < matrix1[0].length; p++)
-          outputMatrix[i][0]+=matrix1[i][p]*vector[p];
+          outputMatrix[i]+=matrix1[i][p]*vector[p];
         if(round)
-          outputMatrix[i][0] = (float)Math.round(outputMatrix[i][0]*sigFigs[0])*sigFigs[1];
+          outputMatrix[i] = (float)Math.round(outputMatrix[i]*sigFigs[0])*sigFigs[1];
       }
       return outputMatrix;
     }
     System.out.println("ERROR: NUMBER OF ROWS IN MATRIX DOES NOT EQUAL THE NUMBER OF ELEMENTS IN VECTOR!");
-    float[][] outputMatrix = {{0}};
     System.exit(1);
-    return outputMatrix;
+    return new float[1];
+  }
+
+  //Multiplies a 1D array by a 2D array
+  public static float[] matrixMultiply(float[] vector, float[][] matrix2){
+    if(vector.length == matrix2.length){
+      float[] outputMatrix = new float[matrix2[0].length];
+      for(int i = 0; i < matrix2[0].length; i++){
+        for(int p = 0; p < matrix2.length; p++)
+          outputMatrix[i]+=matrix2[p][i]*vector[p];
+        if(round)
+          outputMatrix[i] = (float)Math.round(outputMatrix[i]*sigFigs[0])*sigFigs[1];
+      }
+      return outputMatrix;
+    }
+    System.out.println("ERROR: NUMBER OF COLUMNS IN MATRIX DOES NOT EQUAL NUMBER OF ELEMENTS IN VECTOR");
+    System.exit(1);
+    return new float[4];
   }
   
   

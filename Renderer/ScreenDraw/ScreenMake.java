@@ -72,11 +72,6 @@ public class ScreenMake{
     //Same as above, but for brightness instead
     private static float[][] brightnessValues;
 
-    //lighting stuff
-    // private static float[] lightPos = new float[3];
-    // private static float[] lightAngle = new float[3];
-    private static Matrix lightMatrix = new Matrix();
-    private static Matrix lightAngleMatrix = new Matrix();
     private static int size = 0;
 
     //Changes the model list's pointer to a different array's location and sets the size of the displayList
@@ -343,13 +338,13 @@ public class ScreenMake{
         light.setModelMatrix();
         Matrix4x4 uniTransform = light.transform();
         if(light.returnType() == 'p'){
-          lightMatrix = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnPosition())));
+          lightPos[i] = dropW(MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnPosition()))));
         }
         else if(light.returnType() == 'd')
-          lightAngleMatrix = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnLightDirection(), 0)));
+          lightAngle[i] = dropW(MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnLightDirection(), 0))));
         else{
-          lightMatrix = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnPosition())));
-          lightAngleMatrix = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnLightDirection(), 0)));
+          lightPos[i] = dropW(MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnPosition()))));
+          lightAngle[i] = dropW(MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnLightDirection(), 0))));
         }
         lightColour[i] = light.returnLightColour();
         for(int j = 0; j < 3; j++){
@@ -357,12 +352,6 @@ public class ScreenMake{
           lightColour[i][j][1]*=invCamColour[1];
           lightColour[i][j][2]*=invCamColour[2];
         }
-        lightPos[i][0] = lightMatrix.returnData(0, 0);
-        lightPos[i][1] = lightMatrix.returnData(1, 0);
-        lightPos[i][2] = lightMatrix.returnData(2, 0);
-        lightAngle[i][0] = lightAngleMatrix.returnData(0, 0);
-        lightAngle[i][1] = lightAngleMatrix.returnData(1, 0);
-        lightAngle[i][2] = lightAngleMatrix.returnData(2, 0);
         lightAngle[i] = VectorOperations.vectorNormalization3D(lightAngle[i]);
       }
 
@@ -429,7 +418,6 @@ public class ScreenMake{
             for(byte s = 0; s < 3; s++){
               //Takes the current point and turns it into a homeogenous vector
               float[] homogeneousPoint = from3DVecTo4DVec(tempModel.returnPoints()[tempModel.returnPolygons()[j][s]]);
-              Matrix projection; 
               
               int vertexIndex = tempModel.returnPolygons()[j][s];
               if(vertices[vertexIndex] == null){
@@ -446,13 +434,7 @@ public class ScreenMake{
                   brightnessValues[vertexIndex][3] = vertexBrightness[s][3];
                 }
 
-                projection = MatrixOperations.matrixMultiply(mvpFull, homogeneousPoint);
-
-                //Copying the results of the projection to a set of points that are less tedious to work with
-                points[s][0] = (projection.returnData(0, 0)-0.0001f); //x
-                points[s][1] = (projection.returnData(1, 0)-0.0001f); //y
-                points[s][2] = (projection.returnData(2, 0)-0.0001f); //z
-                points[s][3] = (projection.returnData(3, 0)-0.0001f); //w
+                points[s] = MatrixOperations.matrixMultiply(mvpFull, homogeneousPoint);
 
                 triCentre[0]+=points[s][0];
                 triCentre[1]+=points[s][1];
@@ -754,11 +736,7 @@ public class ScreenMake{
           boolean isInside = ((flags & 64) == 64);
           for(byte j = 0; j < 4; j++){
             //Projects the point from 3D to 2D
-            Matrix projection = MatrixOperations.matrixMultiply(mvpFull, points[j]);
-            points[j][0] = projection.returnData(0, 0) - 0.0001f;
-            points[j][1] = projection.returnData(1, 0) - 0.0001f;
-            points[j][2] = projection.returnData(2, 0) - 0.0001f;
-            points[j][3] = projection.returnData(3, 0) - 0.0001f;
+            points[j] = MatrixOperations.matrixMultiply(mvpFull, points[j]);
             if(points[j][3] > 0){
               points[j][0]/=points[j][3];
               points[j][1]/=points[j][3];
@@ -979,12 +957,8 @@ public class ScreenMake{
       if(boundingBox[0].length < 3 || mvp.returnWidth() != 4 || mvp.returnHeight() != 4)
         return false;
       for(byte i = 0; i < boundingBox.length; i++){
-        Matrix usedCorner = MatrixOperations.matrixMultiply(mvp, from3DVecTo4DVec(boundingBox[i]));
-        float x = usedCorner.returnData(0, 0);
-        float y = usedCorner.returnData(1, 0);
-        float z = usedCorner.returnData(2, 0);
-        float w = usedCorner.returnData(3, 0);
-        if(x >= -w && x <= w && y >= -w && y <= w && z >= -w && z <= w)
+        float[] coords = MatrixOperations.matrixMultiply(mvp, from3DVecTo4DVec(boundingBox[i]));
+        if(coords[0] >= -coords[3] && coords[0] <= coords[3] && coords[1] >= -coords[3] && coords[1] <= coords[3] && coords[2] >= -coords[3] && coords[2] <= coords[3])
           return true;
         }
         return false;
@@ -993,9 +967,7 @@ public class ScreenMake{
     private static boolean isInClipSpace(Matrix4x4 vp, float[] point){
       if(point.length < 3 || vp.returnWidth() != 4 || vp.returnHeight() != 4)
         return false;
-      Matrix transformedPoint = MatrixOperations.matrixMultiply(vp, from3DVecTo4DVec(point));
-      float[] newPoint = {transformedPoint.returnData(0, 0), transformedPoint.returnData(1, 0),
-                          transformedPoint.returnData(2, 0), transformedPoint.returnData(3, 0)};
+      float[] newPoint = MatrixOperations.matrixMultiply(vp, from3DVecTo4DVec(point));
       if(newPoint[0] >= -newPoint[3] && newPoint[0] <= newPoint[3] && newPoint[1] >= -newPoint[3] && newPoint[1] <= newPoint[3] && newPoint[2] >= -newPoint[3] && newPoint[2] <= newPoint[3])
         return true;
       else
@@ -1098,8 +1070,7 @@ public class ScreenMake{
   private static void attachObjectToCamera(float[] modelPos, Camera eye){
     float[] tempPos = from3DVecTo4DVec(modelPos);
     Matrix4x4 rotation = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(MVP.returnRotation(0,0, eye.returnRotation()[2]), MVP.returnRotation(0,eye.returnRotation()[1],0)), MVP.returnRotation(eye.returnRotation()[0],0, 0));
-    Matrix offsetVals = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(MVP.returnTranslation(eye.returnPosition()), rotation), tempPos);
-    float[] offset = {offsetVals.returnData(0, 0), offsetVals.returnData(1, 0), offsetVals.returnData(2, 0)};
+    float[] offset = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(MVP.returnTranslation(eye.returnPosition()), rotation), tempPos);
     modelPos[0] = offset[0];
     modelPos[1] = offset[1];
     modelPos[2] = offset[2];
@@ -1109,7 +1080,6 @@ public class ScreenMake{
   private static void setupTrisNoLight(Matrix4x4 mvp, Matrix4x4 mvpFull, Camera eye, float drawDist){
     triListOpaque.clear();
     triListTranslucent.clear();
-    //vertices = new float[tempModel.returnPoints().length][];
 
     translusentCount = 0;
     byte faceDirection = 1;
@@ -1140,8 +1110,7 @@ public class ScreenMake{
         mvpFull.copy(MatrixOperations.matrixMultiply(mvp, model));
       //For if the model is a billboard
       else{
-        Matrix modelPosMat = MatrixOperations.matrixMultiply(transform, from3DVecTo4DVec(tempModel.returnPosition()));
-        float[] modelPos = {modelPosMat.returnData(0, 0), modelPosMat.returnData(0, 1), modelPosMat.returnData(0, 2)};
+        float[] modelPos = dropW(MatrixOperations.matrixMultiply(transform, from3DVecTo4DVec(tempModel.returnPosition())));
         //Constructs the transformation matrix for the point
         mvpFull.copy(MatrixOperations.matrixMultiply(mvp, MVP.returnTranslation(modelPos)));
         mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, billBoard));
@@ -1185,13 +1154,8 @@ public class ScreenMake{
               //Takes the current point and turns it into a homeogenous vector
               float[] homogeneousPoint = from3DVecTo4DVec(tempModel.returnPoints()[vertexIndex]);
               //Projects the point from 3D to 2D
-              Matrix projection = MatrixOperations.matrixMultiply(mvpFull, homogeneousPoint);
+              points[s] = MatrixOperations.matrixMultiply(mvpFull, homogeneousPoint);
               
-              //Copying the results of the projection to a set of points that are less tedious to work with
-              points[s][0] = (projection.returnData(0, 0)-0.0001f); //x
-              points[s][1] = (projection.returnData(1, 0)-0.0001f); //y
-              points[s][2] = (projection.returnData(2, 0)-0.0001f); //z
-              points[s][3] = (projection.returnData(3, 0)-0.0001f); //w
               centre[0]+=points[s][0];
               centre[1]+=points[s][1];
               centre[2]+=points[s][2];
@@ -1468,11 +1432,7 @@ public class ScreenMake{
         boolean isInside = ((flags & 64) == 64);
         for(byte j = 0; j < 4; j++){
           //Projects the point from 3D to 2D
-          Matrix projection = MatrixOperations.matrixMultiply(mvpFull, points[j]);
-          points[j][0] = projection.returnData(0, 0) - 0.0001f;
-          points[j][1] = projection.returnData(1, 0) - 0.0001f;
-          points[j][2] = projection.returnData(2, 0) - 0.0001f;
-          points[j][3] = projection.returnData(3, 0) - 0.0001f;
+          points[j] = MatrixOperations.matrixMultiply(mvpFull, points[j]);
           if(points[j][3] > 0){
             points[j][0]/=points[j][3];
             points[j][1]/=points[j][3];
@@ -1565,11 +1525,7 @@ public class ScreenMake{
           boolean isInside = ((flags & 64) == 64);
           for(byte s = 0; s < 2; s++){
             if(vertices[endPoints[s]] == null){
-              Matrix projection = MatrixOperations.matrixMultiply(mvpFull, points[s]);
-              points[s][0] = projection.returnData(0, 0)-0.0001f;
-              points[s][1] = projection.returnData(1, 0)-0.0001f;
-              points[s][2] = projection.returnData(2, 0)-0.0001f;
-              points[s][3] = projection.returnData(3, 0)-0.0001f;
+              points[s] = MatrixOperations.matrixMultiply(mvpFull, points[s]);
               if((points[s][2] >= -points[s][3] && points[s][2] <= points[s][3]) || ((flags & 64) == 64)){
                 insideCount++;
                 insidePoint = s;
@@ -1656,12 +1612,8 @@ public class ScreenMake{
       float[] point = from3DVecTo4DVec(tempDot.returnPosition());
       boolean isInside = ((flags & 64) == 64);
       //Projects the point from 3D to 2D
-      Matrix clipCheck = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(tempDot.transform(), point)); 
-      Matrix projection = MatrixOperations.matrixMultiply(mvp, point);
-      point[0] = projection.returnData(0, 0) - 0.0001f;
-      point[1] = projection.returnData(1, 0) - 0.0001f;
-      point[2] = projection.returnData(2, 0) - 0.0001f;
-      point[3] = projection.returnData(3, 0) - 0.0001f;
+      float[] clipCheck = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(tempDot.transform(), point)); 
+      point = MatrixOperations.matrixMultiply(mvp, point);
       if(point[3] > 0){
         point[0]/=point[3];
         point[1]/=point[3];
@@ -1669,7 +1621,7 @@ public class ScreenMake{
       }
       point[0] = (Rasterizer.halfWidth()*(point[0]+1)-0.5001f);
       point[1] = (Rasterizer.halfHeight()*(point[1]+1)-0.5001f);
-      isInside = (isInside || (point[3] > 0 && clipCheck.returnData(2, 0) >= -1 && clipCheck.returnData(2,0) <= drawDist)) && (point[0] >= 0 && point[0] <= Rasterizer.returnWidth() && point[1] >= 0 && point[1] <= Rasterizer.returnHeight());
+      isInside = (isInside || (point[3] > 0 && clipCheck[2] >= -1 && clipCheck[2] <= drawDist)) && (point[0] >= 0 && point[0] <= Rasterizer.returnWidth() && point[1] >= 0 && point[1] <= Rasterizer.returnHeight());
       if(isInside && tempDot.returnModelTint() > Rasterizer.getMinTransparency()*Colour.INV_255){
         int colour = tempDot.returnStroke(); 
         short alpha = (short)((tempDot.returnStroke() >>> 24)*tempDot.returnModelTint());
@@ -1737,12 +1689,8 @@ public class ScreenMake{
   private static float[] computeLighting(LinkedList<Light> lights, float[][] lightPos, float[][] lightAngle, float[][][] lightColour, float[] homogeneousPoint, float[] normal, float luster, float overallBrightness, Matrix4x4 model, Model tempModel, int polygonIndex, boolean alreadyComputed){
     float[] points = new float[3];
     float[] brightness = {0, 0, 0};
-    if(!alreadyComputed){
-      Matrix projection = MatrixOperations.matrixMultiply(model, homogeneousPoint);
-      points[0] = projection.returnData(0, 0); 
-      points[1] = projection.returnData(1, 0);
-      points[2] = projection.returnData(2, 0);
-    }
+    if(!alreadyComputed)
+      points = dropW(MatrixOperations.matrixMultiply(model, homogeneousPoint));
     else{
       points[0] = homogeneousPoint[0];
       points[1] = homogeneousPoint[1];
@@ -1754,14 +1702,7 @@ public class ScreenMake{
     float[] normalizedVec = {0, 0, -1};
     if(tempModel != null){
       //Transforms the homogeneous vector
-      float[] homogeneousNormal = from3DVecTo4DVec(VectorOperations.vectorNormalization3D(normal), 0);
-      Matrix transformedVector = MatrixOperations.matrixMultiply(model, homogeneousNormal);
-      //Returns the 4D vector to a 3D vector and normalizes
-      normalizedVec[0] = transformedVector.returnData(0, 0);
-      normalizedVec[1] = transformedVector.returnData(1, 0);
-      normalizedVec[2] = transformedVector.returnData(2, 0);
-            
-      
+      normalizedVec = dropW(MatrixOperations.matrixMultiply(model, from3DVecTo4DVec(VectorOperations.vectorNormalization3D(normal), 0)));
       normalizedVec = VectorOperations.vectorNormalization3D(normalizedVec);
       if(tempModel.returnIsInverted()){
         normalizedVec[0]*=-1;
@@ -1825,5 +1766,11 @@ public class ScreenMake{
       System.exit(1);
     }
     return vect1[0]*vect2[0]+vect1[1]*vect2[1]+vect1[2]*vect2[2];
+  }
+
+  //Forces q vector with dimensions higher than three to be 3D
+  private static float[] dropW(float[] vector){
+    float[] output = {vector[0], vector[1], vector[2]};
+    return output;
   }
 }
