@@ -338,34 +338,34 @@ public class VectorOperations{
   }
   
   //Projects u onto a
-  public static float[] proj(float[] u, float[] v){
+  public static float[] proj(float[] u, float[] a){
     //Length checks
-    if(u.length != v.length){
+    if(u.length != a.length){
       System.out.println("ERROR: LENGTHS MUST MATCH");
       System.exit(1);
     }
-    if(u.length <= 0 || v.length <= 0){
+    if(u.length <= 0 || a.length <= 0){
       System.out.println("ERROR: LENGTHS MUST BE GREATER THAN ONE");
       System.exit(1);
     }
     //Calculating the dot product between u and a
     float numerator = 0;
     for(int i = 0; i < u.length; i++)
-      numerator+=(u[i]*v[i]);
+      numerator+=(u[i]*a[i]);
     
     //Calculating the magnitude of a
     float denominator = 0;
-    for(int i = 0; i < v.length; i++)
-      denominator+=(v[i]*v[i]);
+    for(int i = 0; i < a.length; i++)
+      denominator+=(a[i]*a[i]);
     denominator = (float)Math.sqrt(denominator);
     //Initializing an output vector
-    float[] output = new float[v.length];
+    float[] output = new float[a.length];
     //If the magntitude of a is greater than a threshold, compute the scalar component, then multiply a by the scalar.
     //Otherwise, return an error
     if(denominator > 0.0001){
       float scalar = numerator/denominator;
-      for(int i = 0; i < v.length; i++)
-        output[i] = v[i]*scalar;
+      for(int i = 0; i < a.length; i++)
+        output[i] = a[i]*scalar;
     }
     else{
       System.out.println("ERROR: MAGNITUDE OF a IS ZERO");
