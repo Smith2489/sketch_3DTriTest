@@ -492,10 +492,11 @@ public class sketch_3DTriTest extends PApplet{;
 
     ScreenMake.drawScene(output.pixels, eye, lightsPrimary, 1.5f);
     
-    //float[][] testColours = {{0, 0, 1}, {0, 1, 0}, {1, 0, 0}};
-    //Rasterizer.fill(0xFF);
-    //Rasterizer.setVertexBrightness(testColours);
-    //Rasterizer.draw(50, 50, 0.09139264, 2, 200, 125, 0.19977298, 7, 250, 50, 0.19978599, 1);
+    // float[][] testColours = {{0, 0, 1}, {0, 1, 0}, {1, 0, 0}};
+    // Rasterizer.fill(0xFF);
+    // Rasterizer.setVertexBrightness(testColours);
+    // Rasterizer.setDepthWrite(false);
+    // Rasterizer.draw(50, 50, 0.09139264f, 200, 125, 0.9977298f, 250, 50, 0.19978599f);
     //System.out.println(output.pixels[(int)mouseY*width+(int)mouseX]);
     Rasterizer.initBuffers(RESOLUTIONS[0][resolutionIndex] >>> 2, RESOLUTIONS[1][resolutionIndex] >>> 2);
     //ScreenMake.imgBack();

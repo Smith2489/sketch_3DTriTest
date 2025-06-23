@@ -2,7 +2,7 @@ package Renderer.Objects.SceneEntities;
 import Actions.BufferActions.StencilAction;
 //Class for abstracting triangles
 public class Triangle{
-  private float[][] vertices = new float[3][4];
+  private float[][] vertices = new float[3][3];
   private byte flags = 0; //bit 0 = hasStroke; bit 1 = hasFill
   private int[] colour = {0xFFFFFFFF, 0xFFFFFFFF};
   private float[][] vertexBrightness = {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}};
@@ -15,7 +15,6 @@ public class Triangle{
        vertices[i][0] = 0;
        vertices[i][1] = 0;
        vertices[i][2] = 0;
-       vertices[i][3] = 0;
     }
     vertexBrightness[0][0] = 1;
     vertexBrightness[0][1] = 1;
@@ -37,19 +36,16 @@ public class Triangle{
     stencil = new StencilAction();
   }
   //Constructor made with 9 points
-  public Triangle(float x1, float y1, float z1, float w1, float x2, float y2, float z2, float w2, float x3, float y3, float z3, float w3, int stroke, int fill, boolean hasStroke, boolean hasFill){
+  public Triangle(float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3, int stroke, int fill, boolean hasStroke, boolean hasFill){
     vertices[0][0] = x1;
     vertices[0][1] = y1;
     vertices[0][2] = z1;
-    vertices[0][3] = w1;
     vertices[1][0] = x2;
     vertices[1][1] = y2;
     vertices[1][2] = z2;
-    vertices[1][3] = w2;
     vertices[2][0] = x3;
     vertices[2][1] = y3;
     vertices[2][2] = z3;
-    vertices[2][3] = w3;
     vertexBrightness[0][0] = 1;
     vertexBrightness[0][1] = 1;
     vertexBrightness[0][2] = 1;
@@ -90,7 +86,7 @@ public class Triangle{
   //Constructor with 2D array
   public Triangle(float[][] positions, int stroke, int fill, boolean hasStroke, boolean hasFill){
     for(byte i = 0; i < 3; i++){
-       for(byte j = 0; j < 4; j++)
+       for(byte j = 0; j < 3; j++)
          vertices[i][j] = positions[i][j];
       
     }
@@ -143,24 +139,21 @@ public class Triangle{
   //Sets the vertices and computes the centre of the triangle with a 2D array
   public void setVertices(float[][] newVertices){
      for(byte i = 0; i < 3; i++){
-        for(byte j = 0; j < 4; j++)
+        for(byte j = 0; j < 3; j++)
            vertices[i][j] = newVertices[i][j]; 
      }
   }
   //Sets the vertices and computes the centre of the triangle with 9 points
-  public void setVertices(float x1, float y1, float z1, float w1, float x2, float y2, float z2, float w2, float x3, float y3, float z3, float w3){
+  public void setVertices(float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3){
     vertices[0][0] = x1;
     vertices[0][1] = y1;
     vertices[0][2] = z1;
-    vertices[0][3] = w1;
     vertices[1][0] = x2;
     vertices[1][1] = y2;
     vertices[1][2] = z2;
-    vertices[1][3] = w2;
     vertices[2][0] = x3;
     vertices[2][1] = y3;
     vertices[2][2] = z3;
-    vertices[2][3] = w3;
   }
   //Stores the stroke
   public void setStroke(int stroke){
@@ -273,6 +266,7 @@ public class Triangle{
       flags&=-5;
   }
   public void setVertexBrightness(float r, float g, float b, byte index){
+    vertexBrightness[index][0] = 1;
     vertexBrightness[index][1] = r;
     vertexBrightness[index][2] = g;
     vertexBrightness[index][3] = b;
@@ -285,6 +279,7 @@ public class Triangle{
   }
   public void setVertexBrightness(float[] brightnessLevels, byte index){
     if(brightnessLevels.length <= 3){
+      vertexBrightness[index][0] = 1;
       vertexBrightness[index][1] = brightnessLevels[0];
       vertexBrightness[index][2] = brightnessLevels[1];
       vertexBrightness[index][3] = brightnessLevels[2];
@@ -299,12 +294,15 @@ public class Triangle{
 
   public void setVertexBrightness(float[][] brightnessLevels){
     if(brightnessLevels[0].length <= 3){
+      vertexBrightness[0][0] = 1;
       vertexBrightness[0][1] = brightnessLevels[0][0];
       vertexBrightness[0][2] = brightnessLevels[0][1];
       vertexBrightness[0][3] = brightnessLevels[0][2];
+      vertexBrightness[1][0] = 1;
       vertexBrightness[1][1] = brightnessLevels[1][0];
       vertexBrightness[1][2] = brightnessLevels[1][1];
       vertexBrightness[1][3] = brightnessLevels[1][2];
+      vertexBrightness[2][0] = 1;
       vertexBrightness[2][1] = brightnessLevels[2][0];
       vertexBrightness[2][2] = brightnessLevels[2][1];
       vertexBrightness[2][3] = brightnessLevels[2][2];
@@ -385,7 +383,7 @@ public class Triangle{
       Triangle t = (Triangle)o;
       boolean isEqual = true;
       for(byte i = 0; i < 3; i++){
-        for(byte j = 0; j < 4; j++){
+        for(byte j = 0; j < 3; j++){
           isEqual&=(Math.abs(vertices[i][j] - t.vertices[i][j]) <= 0.0001);
         }
         isEqual&=(Math.abs(vertexBrightness[i][0]-t.vertexBrightness[i][0]) <= 0.0001);
@@ -409,7 +407,7 @@ public class Triangle{
     if(o instanceof Triangle){
       Triangle t = (Triangle)o;
       for(byte i = 0; i < 3; i++){
-        for(byte j = 0; j < 4; j++){
+        for(byte j = 0; j < 3; j++){
           vertices[i][j] = t.vertices[i][j];
         }
         vertexBrightness[i][0] = t.vertexBrightness[i][0];
@@ -429,7 +427,7 @@ public class Triangle{
   public boolean equals(Triangle t){
     boolean isEqual = true;
     for(byte i = 0; i < 3; i++){
-      for(byte j = 0; j < 4; j++){
+      for(byte j = 0; j < 3; j++){
         isEqual&=(Math.abs(vertices[i][j] - t.vertices[i][j]) <= 0.0001);
       }
       isEqual&=(Math.abs(vertexBrightness[i][0]-t.vertexBrightness[i][0]) <= 0.0001);
@@ -448,7 +446,7 @@ public class Triangle{
   //Copies one triangle's data to another
   public void copy(Triangle t){
     for(byte i = 0; i < 3; i++){
-      for(byte j = 0; j < 4; j++){
+      for(byte j = 0; j < 3; j++){
         vertices[i][j] = t.vertices[i][j];
       }
       vertexBrightness[i][0] = t.vertexBrightness[i][0];

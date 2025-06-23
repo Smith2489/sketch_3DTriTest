@@ -16,7 +16,6 @@ public class Rasterizer{
   private static int background = 0xFF000000; //Background colour
   private static float maxProbability = 1;
   private static float threshold = 1.1f;
-  private static float[] invZ = {0, 0, 0};
   //Weights contributed to a pixel by the vertices
   private static float alpha = 0;
   private static float beta = 0;
@@ -46,12 +45,15 @@ public class Rasterizer{
   //Sets the brightness of each vertex
   public static void setVertexBrightness(float[][] brightnessLevels){
     if(brightnessLevels[0].length <= 3){
+      vertexBrightness[0][0] = 1;
       vertexBrightness[0][1] = brightnessLevels[0][0];
       vertexBrightness[0][2] = brightnessLevels[0][1];
       vertexBrightness[0][3] = brightnessLevels[0][2];
+      vertexBrightness[1][0] = 1;
       vertexBrightness[1][1] = brightnessLevels[1][0];
       vertexBrightness[1][2] = brightnessLevels[1][1];
       vertexBrightness[1][3] = brightnessLevels[1][2];
+      vertexBrightness[2][0] = 1;
       vertexBrightness[2][1] = brightnessLevels[2][0];
       vertexBrightness[2][2] = brightnessLevels[2][1];
       vertexBrightness[2][3] = brightnessLevels[2][2];
@@ -89,6 +91,8 @@ public class Rasterizer{
   //Solid colour reset
   public static void initBuffers(int[] newFrameBuff){
     frame = newFrameBuff;
+    zBuff = new float[frame.length];
+    stencil = new byte[frame.length];
     for(int i = 0; i < zBuff.length; i++){
       zBuff[i] = Float.NaN;
       frame[i] = background; 
@@ -435,25 +439,13 @@ public class Rasterizer{
     }
   }
   //Drawing a triangle with 3D points (points directly in parametres)
-  public static void draw(float p1X, float p1Y, float p1Z, float p1W, float p2X, float p2Y, float p2Z, float p2W, float p3X, float p3Y, float p3Z, float p3W){
+  public static void draw(float p1X, float p1Y, float p1Z, float p2X, float p2Y, float p2Z, float p3X, float p3Y, float p3Z){
     //Setting up the bounding box
     int[][] screenBounds = {{0x80000000, 0x7FFFFFF}, {0x80000000, 0x7FFFFFF}};
     //Makes forming the BB and rasterizing the triangle easier
     float[][] poses = {{p1X, p1Y}, 
                        {p2X, p2Y}, 
                        {p3X, p3Y}};
-    if(Math.abs(p1Z*p1W) > 0.0000001)
-      invZ[0] = 1/(p1Z*p1W);
-    else
-      invZ[0] = 0.0000001f;
-    if(Math.abs(p2Z*p2W) > 0.0000001)
-      invZ[1] = 1/(p2Z*p2W);
-    else
-      invZ[1] = 0.0000001f;
-    if(Math.abs(p3Z*p3W) > 0.0000001)
-      invZ[2] = 1/(p3Z*p3W);
-    else
-      invZ[2] = 0.0000001f;
 
     p1Z*=(((flags & 4) >>> 1)-1);
     p2Z*=(((flags & 4) >>> 1)-1);
@@ -493,11 +485,11 @@ public class Rasterizer{
             gamma = returnGamma(alpha, beta);
             //Plotting the pixel
             float z = (p1Z*alpha + p2Z*beta + p3Z*gamma); //Barycentric z
-            float tempZ = invZ[0]*alpha + invZ[1]*beta + invZ[2]*gamma-0.0000001f;
-            if(tempZ > 0.0000001f)
+            float tempZ = z;
+            if(Math.abs(tempZ) > 0.0000001f)
               tempZ = 1/tempZ;
             else
-              tempZ = 0.0000001f;
+              tempZ = 0.0000001f*(((flags & 4) >>> 1)-1);
             //if(!depthWrite)
             //z*=(((flags & 4) >>> 1)-1);
             int[] brokenUpFrame = {frame[pixelPos] >>> 24, 
@@ -505,8 +497,8 @@ public class Rasterizer{
                                   (frame[pixelPos] >>> 8) & 0xFF, 
                                   frame[pixelPos] & 0xFF};
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if(((flags & 4) == 0 && z < zBuff[pixelPos] || (flags & 4) == 4 && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
-              computeLighting(tempZ, invZ, vertexBrightness);
+            if((((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]) || Float.isNaN(zBuff[pixelPos]))){
+              computeLighting(tempZ, p1Z, p2Z, p3Z, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
                 Colour.interpolateColours(brokenUpColour, brokenUpFrame);
@@ -517,7 +509,7 @@ public class Rasterizer{
             }
             //For when there were triangles drawn at the current pixel that were closer than the current triangle
             else if(brokenUpFrame[0] < 0xFF){
-                computeLighting(tempZ, invZ, vertexBrightness);
+                computeLighting(tempZ, p1Z, p2Z, p3Z, vertexBrightness);
                 Colour.interpolateColours(brokenUpFrame, brokenUpColour);
                 if(brokenUpFrame[0] > minTransparency)
                   frame[pixelPos] = (brokenUpFrame[0] << 24)|(brokenUpFrame[1] << 16)|(brokenUpFrame[2] << 8)|brokenUpFrame[3];
@@ -560,18 +552,6 @@ public class Rasterizer{
     float[][] poses = {{triangle.getVertices()[0][0], triangle.getVertices()[0][1], triangle.getVertices()[0][2]}, 
                         {triangle.getVertices()[1][0], triangle.getVertices()[1][1], triangle.getVertices()[1][2]}, 
                         {triangle.getVertices()[2][0], triangle.getVertices()[2][1], triangle.getVertices()[2][2]}};
-    if(Math.abs(poses[0][2]*triangle.getVertices()[0][3]) > 0.0000001)
-      invZ[0] = 1/(poses[0][2]*triangle.getVertices()[0][3]);
-    else
-      invZ[0] = 0.0000001f;
-    if(Math.abs(poses[1][2]*triangle.getVertices()[1][3]) > 0.0000001)
-      invZ[1] = 1/(poses[1][2]*triangle.getVertices()[1][3]);
-    else
-      invZ[1] = 0.0000001f;
-    if(Math.abs(poses[2][2]*triangle.getVertices()[2][3]) > 0.0000001)
-      invZ[2] = 1/(poses[2][2]*triangle.getVertices()[2][3]);
-    else
-      invZ[2] = 0.0000001f;
     poses[0][2]*=(((flags & 4) >>> 1)-1);
     poses[1][2]*=(((flags & 4) >>> 1)-1);
     poses[2][2]*=(((flags & 4) >>> 1)-1);
@@ -610,18 +590,18 @@ public class Rasterizer{
             gamma = returnGamma(alpha, beta);
             //Plotting the pixel
             float z = (poses[0][2]*alpha + poses[1][2]*beta + poses[2][2]*gamma); //Barycentric z
-            float tempZ = invZ[0]*alpha + invZ[1]*beta + invZ[2]*gamma-0.0000001f;
-            if(tempZ > 0.0000001f)
+            float tempZ = z;
+            if(Math.abs(tempZ) > 0.0000001f)
               tempZ = 1/tempZ;
             else
-              tempZ = 0.0000001f;
+              tempZ = 0.0000001f*(((flags & 4) >>> 1)-1);
             int[] brokenUpFrame = {frame[pixelPos] >>> 24, 
                                    (frame[pixelPos] >>> 16) & 0xFF, 
                                    (frame[pixelPos] >>> 8) & 0xFF, 
                                    frame[pixelPos] & 0xFF};
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if(((flags & 4) == 0 && z < zBuff[pixelPos] || (flags & 4) == 4 && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
-              computeLighting(tempZ, invZ, vertexBrightness);
+            if((((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]) || Float.isNaN(zBuff[pixelPos]))){
+              computeLighting(tempZ, poses[0][2], poses[1][2], poses[2][2], vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
                 Colour.interpolateColours(brokenUpColour, brokenUpFrame);
@@ -632,7 +612,7 @@ public class Rasterizer{
             }
             //For when there were triangles drawn at the current pixel that were closer than the current triangle
             else if(brokenUpFrame[0] < 0xFF){
-              computeLighting(tempZ, invZ, vertexBrightness);
+              computeLighting(tempZ, poses[0][2], poses[1][2], poses[2][2], vertexBrightness);
               Colour.interpolateColours(brokenUpFrame, brokenUpColour);
               if(brokenUpFrame[0] > minTransparency)
                 frame[pixelPos] = (brokenUpFrame[0] << 24)|(brokenUpFrame[1] << 16)|(brokenUpFrame[2] << 8)|brokenUpFrame[3];
@@ -657,18 +637,6 @@ public class Rasterizer{
     float[][] poses = {{p1X, p1Y}, 
                        {p2X, p2Y}, 
                        {p3X, p3Y}};
-    if(Math.abs(p1Z*p1W) > 0.0000001)
-      invZ[0] = 1/(p1Z*p1W);
-    else
-      invZ[0] = 0.0000001f;
-    if(Math.abs(p2Z*p2W) > 0.0000001)
-      invZ[1] = 1/(p2Z*p2W);
-    else
-      invZ[1] = 0.0000001f;
-    if(Math.abs(p3Z*p3W) > 0.0000001)
-      invZ[2] = 1/(p3Z*p3W);
-    else
-      invZ[2] = 0.0000001f;
     p1Z*=(((flags & 4) >>> 1)-1);
     p2Z*=(((flags & 4) >>> 1)-1);
     p3Z*=(((flags & 4) >>> 1)-1);
@@ -709,11 +677,11 @@ public class Rasterizer{
             gamma = returnGamma(alpha, beta);
             //Plotting the pixel
             float z = (p1Z*alpha + p2Z*beta + p3Z*gamma); //Barycentric z
-            float tempZ = invZ[0]*alpha + invZ[1]*beta + invZ[2]*gamma-0.0000001f;
-            if(tempZ > 0.0000001f)
+            float tempZ = z;
+            if(Math.abs(tempZ) > 0.0000001f)
               tempZ = 1/tempZ;
             else
-              tempZ = 0.0000001f;
+              tempZ = 0.0000001f*(((flags & 4) >>> 1)-1);
             //if(!depthWrite)
             // z*=(((flags & 4) >>> 1)-1);
             int[] brokenUpFrame = {frame[pixelPos] >>> 24, 
@@ -721,8 +689,8 @@ public class Rasterizer{
                                    (frame[pixelPos] >>> 8) & 0xFF, 
                                    frame[pixelPos] & 0xFF};
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if(((flags & 4) == 0 && z < zBuff[pixelPos] || (flags & 4) == 4 && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
-              computeLighting(tempZ, invZ, vertexBrightness);
+            if((((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]) || Float.isNaN(zBuff[pixelPos]))){
+              computeLighting(tempZ, p1Z, p2Z, p3Z, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
                 Colour.interpolateColours(brokenUpColour, brokenUpFrame);
@@ -733,7 +701,7 @@ public class Rasterizer{
             }
             //For when there were triangles drawn at the current pixel that were closer than the current triangle
             else if(brokenUpFrame[0] < 0xFF){
-              computeLighting(tempZ, invZ, vertexBrightness);
+              computeLighting(tempZ, p1Z, p2Z, p3Z, vertexBrightness);
               Colour.interpolateColours(brokenUpFrame, brokenUpColour);
               if(brokenUpFrame[0] > minTransparency)
                 frame[pixelPos] = performStencilAction(brokenUpFrame, j, i, compVal, pixelPos);
@@ -776,18 +744,6 @@ public class Rasterizer{
     float[][] poses = {{triangle.getVertices()[0][0], triangle.getVertices()[0][1], triangle.getVertices()[0][2]}, 
                         {triangle.getVertices()[1][0], triangle.getVertices()[1][1], triangle.getVertices()[1][2]}, 
                         {triangle.getVertices()[2][0], triangle.getVertices()[2][1], triangle.getVertices()[2][2]}};
-    if(Math.abs(poses[0][2]*triangle.getVertices()[0][3]) > 0.0000001)
-      invZ[0] = 1/(poses[0][2]*triangle.getVertices()[0][3]);
-    else
-      invZ[0] = 0.0000001f;
-    if(Math.abs(poses[1][2]*triangle.getVertices()[1][3]) > 0.0000001)
-      invZ[1] = 1/(poses[1][2]*triangle.getVertices()[1][3]);
-    else
-      invZ[1] = 0/0000001f;
-    if(Math.abs(poses[2][2]*triangle.getVertices()[2][3]) > 0.0000001)
-      invZ[2] = 1/(poses[2][2]*triangle.getVertices()[2][3]);
-    else
-      invZ[2] = 0.0000001f;
     poses[0][2]*=(((flags & 4) >>> 1)-1);
     poses[1][2]*=(((flags & 4) >>> 1)-1);
     poses[2][2]*=(((flags & 4) >>> 1)-1);
@@ -824,11 +780,11 @@ public class Rasterizer{
             gamma = returnGamma(alpha, beta);
             //Plotting the pixel
             float z = (poses[0][2]*alpha + poses[1][2]*beta + poses[2][2]*gamma); //Barycentric z
-            float tempZ = invZ[0]*alpha + invZ[1]*beta + invZ[2]*gamma-0.0000001f;
-            if(tempZ > 0.0000001f)
+            float tempZ = z;
+            if(Math.abs(tempZ) > 0.0000001f)
               tempZ = 1/tempZ;
             else
-              tempZ = 0.0000001f;
+              tempZ = 0.0000001f*(((flags & 4) >>> 1)-1);
             //if(!depthWrite)
             //z*=(((flags & 4) >>> 1)-1);
 
@@ -836,10 +792,9 @@ public class Rasterizer{
                                   (frame[pixelPos] >>> 16) & 0xFF, 
                                   (frame[pixelPos] >>> 8) & 0xFF, 
                                   frame[pixelPos] & 0xFF};
-
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if(((flags & 4) == 0 && z < zBuff[pixelPos] || (flags & 4) == 4 && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
-              computeLighting(tempZ, invZ, vertexBrightness);
+            if((((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]) || Float.isNaN(zBuff[pixelPos]))){
+              computeLighting(tempZ, poses[0][2], poses[1][2], poses[2][2], vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
                 Colour.interpolateColours(brokenUpColour, brokenUpFrame);
@@ -849,8 +804,8 @@ public class Rasterizer{
               }
             }
             //For when there were triangles drawn at the current pixel that were closer than the current triangle
-            else if((frame[pixelPos] >>> 24) < 0xFF){
-              computeLighting(tempZ, invZ, vertexBrightness);
+            else if(brokenUpFrame[0] < 0xFF){
+              computeLighting(tempZ, poses[0][2], poses[1][2], poses[2][2], vertexBrightness);
               Colour.interpolateColours(brokenUpFrame, brokenUpColour);
               if(brokenUpFrame[0] > minTransparency)
                 frame[pixelPos] = performStencilAction(brokenUpFrame, j, i, compVal, pixelPos);
@@ -1507,21 +1462,21 @@ public class Rasterizer{
     }
   }
   //Gouraud shading
-  private static void computeLighting(float z, float[] invZ, float[][] vertexBrighness){
-    float adjustedAlpha = invZ[0]*alpha;
-    float adjustedBeta = invZ[1]*beta;
-    float adjustedGamma = invZ[2]*gamma;
-    float[] overallBrightness = {z*(Math.max(0, vertexBrightness[0][0]*adjustedAlpha+vertexBrightness[1][0]*adjustedBeta+vertexBrightness[2][0]*adjustedGamma)),
-                                 z*(Math.max(0, vertexBrightness[0][1]*adjustedAlpha+vertexBrightness[1][1]*adjustedBeta+vertexBrightness[2][1]*adjustedGamma)),
-                                 z*(Math.max(0, vertexBrightness[0][2]*adjustedAlpha+vertexBrightness[1][2]*adjustedBeta+vertexBrightness[2][2]*adjustedGamma)),
-                                 z*(Math.max(0, vertexBrightness[0][3]*adjustedAlpha+vertexBrightness[1][3]*adjustedBeta+vertexBrightness[2][3]*adjustedGamma))};
+  private static void computeLighting(float z, float invZ1, float invZ2, float invZ3, float[][] vertexBrighness){
+    float adjustedAlpha = invZ1*alpha;
+    float adjustedBeta = invZ2*beta;
+    float adjustedGamma = invZ3*gamma;
+    float[] overallBrightness = {Math.max(0, z*(vertexBrightness[0][0]*adjustedAlpha+vertexBrightness[1][0]*adjustedBeta+vertexBrightness[2][0]*adjustedGamma)),
+                                 Math.max(0, z*(vertexBrightness[0][1]*adjustedAlpha+vertexBrightness[1][1]*adjustedBeta+vertexBrightness[2][1]*adjustedGamma)),
+                                 Math.max(0, z*(vertexBrightness[0][2]*adjustedAlpha+vertexBrightness[1][2]*adjustedBeta+vertexBrightness[2][2]*adjustedGamma)),
+                                 Math.max(0, z*(vertexBrightness[0][3]*adjustedAlpha+vertexBrightness[1][3]*adjustedBeta+vertexBrightness[2][3]*adjustedGamma))};
     // float[] overallBrightness = {Math.max(0, vertexBrightness[0][0]*alpha+vertexBrightness[1][0]*beta+vertexBrightness[2][0]*gamma),
     //                              Math.max(0, vertexBrightness[0][1]*alpha+vertexBrightness[1][1]*beta+vertexBrightness[2][1]*gamma),
     //                              Math.max(0, vertexBrightness[0][2]*alpha+vertexBrightness[1][2]*beta+vertexBrightness[2][2]*gamma)};
-    brokenUpColour[0] = (int)Math.min(255, (brokenUpFill[0]*overallBrightness[0]));
-    brokenUpColour[1] = (int)Math.min(255, (brokenUpFill[1]*overallBrightness[1]));
-    brokenUpColour[2] = (int)Math.min(255, (brokenUpFill[2]*overallBrightness[2]));
-    brokenUpColour[3] = (int)Math.min(255, (brokenUpFill[3]*overallBrightness[3]));
+    brokenUpColour[0] = Math.min(255, Math.round(brokenUpFill[0]*overallBrightness[0]));
+    brokenUpColour[1] = Math.min(255, Math.round(brokenUpFill[1]*overallBrightness[1]));
+    brokenUpColour[2] = Math.min(255, Math.round(brokenUpFill[2]*overallBrightness[2]));
+    brokenUpColour[3] = Math.min(255, Math.round(brokenUpFill[3]*overallBrightness[3]));
   }
 
   //Finds the left and right edges of a triangle at a given scanline

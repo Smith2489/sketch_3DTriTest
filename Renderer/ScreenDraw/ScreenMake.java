@@ -528,8 +528,8 @@ public class ScreenMake{
               short[] alpha = {(short)((colour[0] >>> 24)*tempModel.returnModelTint()), (short)((colour[1] >>> 24)*tempModel.returnModelTint())};
               if(alpha[1] > Rasterizer.getMinTransparency()){
                 //Adding triangles to the list with near-plane clipping (WHOOP WHOOP!!!)
-                float[] intersect1 = {0, 0, 0, 0}; //Coordinates for the first point of intersection between the triangle and the near plane
-                float[] intersect2 = {0, 0, 0, 0}; //Coordinates for the second point of intersection between the triangle and the near plane
+                float[] intersect1 = {0, 0, 0}; //Coordinates for the first point of intersection between the triangle and the near plane
+                float[] intersect2 = {0, 0, 0}; //Coordinates for the second point of intersection between the triangle and the near plane
                 float t1 = 0; //How far up side AB is the intersection
                 float t2 = 0; //How far up side AC is the intersection
                 //Code for handling triangles which clip the near plane
@@ -550,12 +550,10 @@ public class ScreenMake{
                       intersect1[0] = points[insidePoints[0]][0] + t1*(points[otherPoint1][0]-points[insidePoints[0]][0]);
                       intersect1[1] = points[insidePoints[0]][1] + t1*(points[otherPoint1][1]-points[insidePoints[0]][1]);
                       intersect1[2] = points[insidePoints[0]][2] + t1*(points[otherPoint1][2]-points[insidePoints[0]][2]);
-                      intersect1[3] = points[insidePoints[0]][3] + t1*(points[otherPoint1][3]-points[insidePoints[0]][3]);
 
                       intersect2[0] = points[insidePoints[0]][0] + t2*(points[otherPoint2][0]-points[insidePoints[0]][0]);
                       intersect2[1] = points[insidePoints[0]][1] + t2*(points[otherPoint2][1]-points[insidePoints[0]][1]);
                       intersect2[2] = points[insidePoints[0]][2] + t2*(points[otherPoint2][2]-points[insidePoints[0]][2]);
-                      intersect2[3] = points[insidePoints[0]][3] + t2*(points[otherPoint2][3]-points[insidePoints[0]][3]);
                       float[] vertexBrightness1 = {vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[otherPoint1][0]-vertexBrightness[insidePoints[0]][0]),
                                                     vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[otherPoint1][1]-vertexBrightness[insidePoints[0]][1]),
                                                     vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[otherPoint1][2]-vertexBrightness[insidePoints[0]][2]),
@@ -568,12 +566,10 @@ public class ScreenMake{
                       points[otherPoint1][0] = intersect1[0];
                       points[otherPoint1][1] = intersect1[1];
                       points[otherPoint1][2] = intersect1[2];
-                      points[otherPoint1][3] = intersect1[3];
                             
                       points[otherPoint2][0] = intersect2[0];
                       points[otherPoint2][1] = intersect2[1];
                       points[otherPoint2][2] = intersect2[2];
-                      points[otherPoint2][3] = intersect2[3];
 
                       vertexBrightness[otherPoint1][0] = vertexBrightness1[0];
                       vertexBrightness[otherPoint1][1] = vertexBrightness1[1];
@@ -599,7 +595,6 @@ public class ScreenMake{
                     intersect1[0] = points[insidePoints[0]][0] + t1*(points[insidePoints[2]][0]-points[insidePoints[0]][0]);
                     intersect1[1] = points[insidePoints[0]][1] + t1*(points[insidePoints[2]][1]-points[insidePoints[0]][1]);
                     intersect1[2] = points[insidePoints[0]][2] + t1*(points[insidePoints[2]][2]-points[insidePoints[0]][2]);
-                    intersect1[3] = points[insidePoints[0]][3] + t1*(points[insidePoints[2]][3]-points[insidePoints[0]][3]);
                     finalBrightness[insidePoints[0]][0] = vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[0]][0]);
                     finalBrightness[insidePoints[0]][1] = vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[0]][1]);
                     finalBrightness[insidePoints[0]][2] = vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[0]][2]);
@@ -608,18 +603,16 @@ public class ScreenMake{
                     intersect2[0] = points[insidePoints[1]][0] + t2*(points[insidePoints[2]][0]-points[insidePoints[1]][0]);
                     intersect2[1] = points[insidePoints[1]][1] + t2*(points[insidePoints[2]][1]-points[insidePoints[1]][1]);
                     intersect2[2] = points[insidePoints[1]][2] + t2*(points[insidePoints[2]][2]-points[insidePoints[1]][2]);
-                    intersect2[3] = points[insidePoints[1]][3] + t2*(points[insidePoints[2]][3]-points[insidePoints[1]][3]);
                     finalBrightness[insidePoints[2]][0] = vertexBrightness[insidePoints[1]][0] + t2*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[1]][0]);
                     finalBrightness[insidePoints[2]][1] = vertexBrightness[insidePoints[1]][1] + t2*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[1]][1]);
                     finalBrightness[insidePoints[2]][2] = vertexBrightness[insidePoints[1]][2] + t2*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[1]][2]);
                     finalBrightness[insidePoints[2]][3] = vertexBrightness[insidePoints[1]][3] + t2*(vertexBrightness[insidePoints[2]][3]-vertexBrightness[insidePoints[1]][3]);
-                    float[][] secondPoints = new float[3][4];
+                    float[][] secondPoints = new float[3][3];
                     //Constructing a triangle B'C'C
                     //C
                     secondPoints[insidePoints[1]][0] = points[insidePoints[1]][0];
                     secondPoints[insidePoints[1]][1] = points[insidePoints[1]][1];
                     secondPoints[insidePoints[1]][2] = points[insidePoints[1]][2];
-                    secondPoints[insidePoints[1]][3] = points[insidePoints[1]][3];
                     finalBrightness[insidePoints[1]][0] = vertexBrightness[insidePoints[1]][0];
                     finalBrightness[insidePoints[1]][1] = vertexBrightness[insidePoints[1]][1];
                     finalBrightness[insidePoints[1]][2] = vertexBrightness[insidePoints[1]][2];
@@ -628,17 +621,14 @@ public class ScreenMake{
                     secondPoints[insidePoints[0]][0] = intersect1[0];
                     secondPoints[insidePoints[0]][1] = intersect1[1];
                     secondPoints[insidePoints[0]][2] = intersect1[2];
-                    secondPoints[insidePoints[0]][3] = intersect1[3];
                     //C'
                     secondPoints[insidePoints[2]][0] = intersect2[0];
                     secondPoints[insidePoints[2]][1] = intersect2[1];
                     secondPoints[insidePoints[2]][2] = intersect2[2];
-                    secondPoints[insidePoints[2]][3] = intersect2[3];
                     //Modifiying the original triangle to be BCB'
                     points[insidePoints[2]][0] = intersect1[0];
                     points[insidePoints[2]][1] = intersect1[1];
                     points[insidePoints[2]][2] = intersect1[2];
-                    points[insidePoints[2]][3] = intersect1[3];
                     vertexBrightness[insidePoints[2]][0] = finalBrightness[insidePoints[0]][0];
                     vertexBrightness[insidePoints[2]][1] = finalBrightness[insidePoints[0]][1];
                     vertexBrightness[insidePoints[2]][2] = finalBrightness[insidePoints[0]][2];
@@ -1227,8 +1217,8 @@ public class ScreenMake{
             short[] alpha = {(short)((colour[0] >>> 24)*tempModel.returnModelTint()), (short)((colour[1] >>> 24)*tempModel.returnModelTint())};
             if(alpha[1] > Rasterizer.getMinTransparency()){
               //Adding triangles to the list with near-plane clipping (WHOOP WHOOP!!!)
-              float[] intersect1 = {0, 0, 0, 0}; //Coordinates for the first point of intersection between the triangle and the near plane
-              float[] intersect2 = {0, 0, 0, 0}; //Coordinates for the second point of intersection between the triangle and the near plane
+              float[] intersect1 = {0, 0, 0}; //Coordinates for the first point of intersection between the triangle and the near plane
+              float[] intersect2 = {0, 0, 0}; //Coordinates for the second point of intersection between the triangle and the near plane
               float t1 = 0; //How far up side AB is the intersection
               float t2 = 0; //How far up side AC is the intersection
               //Code for handling triangles which clip the near plane
@@ -1249,12 +1239,10 @@ public class ScreenMake{
                   intersect1[0] = points[insidePoints[0]][0] + t1*(points[otherPoint1][0]-points[insidePoints[0]][0]);
                   intersect1[1] = points[insidePoints[0]][1] + t1*(points[otherPoint1][1]-points[insidePoints[0]][1]);
                   intersect1[2] = points[insidePoints[0]][2] + t1*(points[otherPoint1][2]-points[insidePoints[0]][2]);
-                  intersect1[3] = points[insidePoints[0]][3] + t1*(points[otherPoint1][3]-points[insidePoints[0]][3]);
 
                   intersect2[0] = points[insidePoints[0]][0] + t2*(points[otherPoint2][0]-points[insidePoints[0]][0]);
                   intersect2[1] = points[insidePoints[0]][1] + t2*(points[otherPoint2][1]-points[insidePoints[0]][1]);
                   intersect2[2] = points[insidePoints[0]][2] + t2*(points[otherPoint2][2]-points[insidePoints[0]][2]);
-                  intersect2[3] = points[insidePoints[0]][3] + t2*(points[otherPoint2][3]-points[insidePoints[0]][3]);
                   float[] vertexBrightness1 = {vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[otherPoint1][0]-vertexBrightness[insidePoints[0]][0]),
                                                 vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[otherPoint1][1]-vertexBrightness[insidePoints[0]][1]),
                                                 vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[otherPoint1][2]-vertexBrightness[insidePoints[0]][2]),
@@ -1267,12 +1255,10 @@ public class ScreenMake{
                   points[otherPoint1][0] = intersect1[0];
                   points[otherPoint1][1] = intersect1[1];
                   points[otherPoint1][2] = intersect1[2];
-                  points[otherPoint1][3] = intersect1[3];
                         
                   points[otherPoint2][0] = intersect2[0];
                   points[otherPoint2][1] = intersect2[1];
                   points[otherPoint2][2] = intersect2[2];
-                  points[otherPoint2][3] = intersect2[3];
 
                   vertexBrightness[otherPoint1][0] = vertexBrightness1[0];
                   vertexBrightness[otherPoint1][1] = vertexBrightness1[1];
@@ -1298,7 +1284,6 @@ public class ScreenMake{
                 intersect1[0] = points[insidePoints[0]][0] + t1*(points[insidePoints[2]][0]-points[insidePoints[0]][0]);
                 intersect1[1] = points[insidePoints[0]][1] + t1*(points[insidePoints[2]][1]-points[insidePoints[0]][1]);
                 intersect1[2] = points[insidePoints[0]][2] + t1*(points[insidePoints[2]][2]-points[insidePoints[0]][2]);
-                intersect1[3] = points[insidePoints[0]][3] + t1*(points[insidePoints[2]][3]-points[insidePoints[0]][3]);
                 finalBrightness[insidePoints[0]][0] = vertexBrightness[insidePoints[0]][0] + t1*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[0]][0]);
                 finalBrightness[insidePoints[0]][1] = vertexBrightness[insidePoints[0]][1] + t1*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[0]][1]);
                 finalBrightness[insidePoints[0]][2] = vertexBrightness[insidePoints[0]][2] + t1*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[0]][2]);
@@ -1307,7 +1292,6 @@ public class ScreenMake{
                 intersect2[0] = points[insidePoints[1]][0] + t2*(points[insidePoints[2]][0]-points[insidePoints[1]][0]);
                 intersect2[1] = points[insidePoints[1]][1] + t2*(points[insidePoints[2]][1]-points[insidePoints[1]][1]);
                 intersect2[2] = points[insidePoints[1]][2] + t2*(points[insidePoints[2]][2]-points[insidePoints[1]][2]);
-                intersect2[3] = points[insidePoints[1]][3] + t2*(points[insidePoints[2]][3]-points[insidePoints[1]][3]);
                 finalBrightness[insidePoints[2]][0] = vertexBrightness[insidePoints[1]][0] + t2*(vertexBrightness[insidePoints[2]][0]-vertexBrightness[insidePoints[1]][0]);
                 finalBrightness[insidePoints[2]][1] = vertexBrightness[insidePoints[1]][1] + t2*(vertexBrightness[insidePoints[2]][1]-vertexBrightness[insidePoints[1]][1]);
                 finalBrightness[insidePoints[2]][2] = vertexBrightness[insidePoints[1]][2] + t2*(vertexBrightness[insidePoints[2]][2]-vertexBrightness[insidePoints[1]][2]);
@@ -1318,7 +1302,6 @@ public class ScreenMake{
                 secondPoints[insidePoints[1]][0] = points[insidePoints[1]][0];
                 secondPoints[insidePoints[1]][1] = points[insidePoints[1]][1];
                 secondPoints[insidePoints[1]][2] = points[insidePoints[1]][2];
-                secondPoints[insidePoints[1]][3] = points[insidePoints[1]][3];
                 finalBrightness[insidePoints[1]][0] = vertexBrightness[insidePoints[1]][0];
                 finalBrightness[insidePoints[1]][1] = vertexBrightness[insidePoints[1]][1];
                 finalBrightness[insidePoints[1]][2] = vertexBrightness[insidePoints[1]][2];
@@ -1327,17 +1310,14 @@ public class ScreenMake{
                 secondPoints[insidePoints[0]][0] = intersect1[0];
                 secondPoints[insidePoints[0]][1] = intersect1[1];
                 secondPoints[insidePoints[0]][2] = intersect1[2];
-                secondPoints[insidePoints[0]][3] = intersect1[3];
                 //C'
                 secondPoints[insidePoints[2]][0] = intersect2[0];
                 secondPoints[insidePoints[2]][1] = intersect2[1];
                 secondPoints[insidePoints[2]][2] = intersect2[2];
-                secondPoints[insidePoints[2]][3] = intersect2[3];
                 //Modifiying the original triangle to be BCB'
                 points[insidePoints[2]][0] = intersect1[0];
                 points[insidePoints[2]][1] = intersect1[1];
                 points[insidePoints[2]][2] = intersect1[2];
-                points[insidePoints[2]][3] = intersect1[3];
                 vertexBrightness[insidePoints[2]][0] = finalBrightness[insidePoints[0]][0];
                 vertexBrightness[insidePoints[2]][1] = finalBrightness[insidePoints[0]][1];
                 vertexBrightness[insidePoints[2]][2] = finalBrightness[insidePoints[0]][2];
