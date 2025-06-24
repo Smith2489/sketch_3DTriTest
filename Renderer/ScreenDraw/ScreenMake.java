@@ -280,7 +280,7 @@ public class ScreenMake{
             tempColour[3] = (tempColour[3]+dither)*255;
           else
             tempColour[3] = (tempColour[3]-dither)*255;
-          screen[pixelPos] = (int)tempColour[0]|(Math.min(255, Math.max(0, Math.round(tempColour[1]))) << 16)|(Math.min(255, Math.max(0, Math.round(tempColour[2]))) << 8)|Math.min(255, Math.max(0, Math.round(tempColour[3])));
+          screen[pixelPos] = (int)tempColour[0]|(Math.min(255, Math.max(0, (int)tempColour[1])) << 16)|(Math.min(255, Math.max(0, (int)tempColour[2])) << 8)|Math.min(255, Math.max(0, (int)tempColour[3]));
           
         }
       }
