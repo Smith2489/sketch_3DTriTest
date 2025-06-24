@@ -5,12 +5,22 @@ import Maths.LinearAlgebra.*;
 import Renderer.Objects.SceneEntities.*;
 import Renderer.Objects.Parents.SceneEntity;
 public class ScreenMake{
+  //8x8 dither matrix is a precalcluated form of the same matrix in Wikipedia's article on ordered dithering
+  //https://en.wikipedia.org/wiki/Ordered_dithering 
+  private static final float[] DITHER_MATRIX = {0, 0.5f, 0.125f, 0.625f, 0.03125f, 0.53125f, 0.15625f, 0.65625f,
+                                                0.75f, 0.25f, 0.875f, 0.375f, 0.78125f, 0.28125f, 0.90625f, 0.40625f,
+                                                0.1875f, 0.6875f, 0.0625f, 0.5625f, 0.21875f, 0.71875f, 0.09375f, 0.59375f,
+                                                0.9375f, 0.4375f, 0.8125f, 0.3125f, 0.96875f, 0.46875f, 0.84375f, 0.34375f,
+                                                0.046875f, 0.546875f, 0.171875f, 0.671875f, 0.015625f, 0.515625f, 0.140625f, 0.640625f,
+                                                0.796875f, 0.296875f, 0.921875f, 0.421875f, 0.765625f, 0.265625f, 0.890625f, 0.390625f,
+                                                0.234375f, 0.734375f, 0.109375f, 0.609375f, 0.203125f, 0.703125f, 0.078125f, 0.578125f,
+                                                0.984375f, 0.484375f, 0.859375f, 0.359375f, 0.953125f, 0.453125f, 0.828125f, 0.328125f};
     //Set up for the stencil test
     private static byte stencilComp = 0;
     private static char testType = 'e';
     private static Matrix4x4 proj = MVP.perspMatrix(1, 90, -1, 1); //The projection matrix
     /*Flags
-    Bit 0: anti-aliasing enable (high enable)
+    Bit 0: dither all
     Bit 1: Solid background enable (low enable)
     Bit 2: Forced stroke enable (high enable)
     Bit 3: Forced fill enable (high enable)
@@ -19,7 +29,7 @@ public class ScreenMake{
     Bit 6: Projection is orthographic
     Bit 7: is interactive (actions will be executed)
     */
-    private static byte flags = -120;
+    private static byte flags = -119;
     private static int billBoardCountTranslucent = 0;
     private static int lineCountTranslucent = 0;
     private static int dotCountTranslucent = 0;
@@ -53,6 +63,10 @@ public class ScreenMake{
     private static LineDisp tempLine = new LineDisp();
     private static Dot tempDot = new Dot();
     private static SceneEntity tempInvis = new SceneEntity();
+
+    private static float ditherIntensity = 0.15f;
+    private static float ditherRange = 0.075f;
+
     //Contains data pertaining to translucent objects
     //IDs (1 for triangle, 2 for billboarded sprite, 3 for line, 4 for dot)
     //Lighting will only interact with triangles and billboarded sprites
@@ -73,6 +87,21 @@ public class ScreenMake{
     private static float[][] brightnessValues;
 
     private static int size = 0;
+
+    public static void setDitherIntensity(float newIntensity){
+      ditherIntensity = Math.max(0, Math.min(newIntensity, 1));
+    }
+
+    public static void setDitherRange(float newRange){
+      ditherRange = Math.max(0, Math.min(newRange*0.5f, 1));
+    }
+
+    public static void ditherOnlyObjects(){
+      flags&=-2;
+    }
+    public static void ditherAll(){
+      flags|=1;
+    }
 
     //Changes the model list's pointer to a different array's location and sets the size of the displayList
     public static void setModelList(LinkedList<Model> newList){
@@ -225,8 +254,26 @@ public class ScreenMake{
       drawObjects(screen);
       if((flags & -128) == -128 || eye.alwaysPerform())
         eye.executeActions();
-      for(int i = 0; i < Rasterizer.returnWidth()*Rasterizer.returnHeight(); i++)
-        screen[i]|=0xFF000000;
+      for(int i = 0; i < Rasterizer.returnWidth(); i++){
+        for(int j = 0; j < Rasterizer.returnHeight(); j++){
+          int pixelPos = i+Rasterizer.returnWidth()*j;
+          float[] tempColour = {0xFF000000,
+                                ((screen[pixelPos] >>> 16) & 0xFF)*Colour.INV_255,
+                                ((screen[pixelPos] >>> 8) & 0xFF)*Colour.INV_255,
+                                (screen[pixelPos] & 0xFF)*Colour.INV_255};
+          float dither = 0; 
+          if(ditherIntensity >= 0.00001 && (((flags & 1) == 0 && !Float.isNaN(Rasterizer.returnDepthBuffer()[pixelPos])) || (flags & 1) == 1)){
+            dither = ditherIntensity*DITHER_MATRIX[((j & 7) << 3)+(i & 7)];
+            if(ditherRange > 0.00001)
+              dither+=(float)(Math.random()*(ditherRange*2)-ditherRange);
+          }
+          tempColour[1] = (tempColour[1]+dither)*255;
+          tempColour[2] = (tempColour[2]+dither)*255;
+          tempColour[3] = (tempColour[3]+dither)*255;
+          screen[pixelPos] = (int)tempColour[0]|(Math.min(255, Math.max(0, Math.round(tempColour[1]))) << 16)|(Math.min(255, Math.max(0, Math.round(tempColour[2]))) << 8)|Math.min(255, Math.max(0, Math.round(tempColour[3])));
+          
+        }
+      }
     }
 
     public static void drawScene(int[] screen, Camera eye, int lightColour, float screenBrightness){
@@ -276,7 +323,7 @@ public class ScreenMake{
 
       if((flags & -128) == -128 || eye.alwaysPerform())
         eye.executeActions();
-      setLightColour(screen, lightColour, screenBrightness, Rasterizer.returnWidth()*Rasterizer.returnHeight());
+      setLightColour(screen, lightColour, screenBrightness, Rasterizer.returnWidth(), Rasterizer.returnHeight());
     }
     //The version for Blinn-Phong reflection and flat shading (1 normal per polygon)
     public static void drawScene(int[] screen, Camera eye, LinkedList<Light> lights, float generalObjectBrightness){
@@ -800,7 +847,7 @@ public class ScreenMake{
 
       if((flags & -128) == -128 || eye.alwaysPerform())
         eye.executeActions();
-      setLightColour(screen, eye.returnColour(), 1, Rasterizer.returnWidth()*Rasterizer.returnHeight());
+      setLightColour(screen, eye.returnColour(), 1, Rasterizer.returnWidth(), Rasterizer.returnHeight());
     }
 
     private static void drawObjects(int[] screen){
@@ -1038,21 +1085,34 @@ public class ScreenMake{
     return newMatrix;
   }
 
-  private static void setLightColour(int[] screen, int lightColour, float lightIntensity, int totalPixelCount){
+  private static void setLightColour(int[] screen, int lightColour, float lightIntensity, int width, int height){
     lightIntensity = Math.max(0, Math.min(lightIntensity, 1));
     lightColour&=0xFFFFFF;
     if(lightColour <= 0xFF)
       lightColour = (lightColour << 16)|(lightColour << 8)|lightColour;
     lightColour|=0xFF000000;
-    float lightRed = ((lightColour >>> 16) & 0xFF)*lightIntensity;
-    float lightGreen = ((lightColour >>> 8) & 0xFF)*lightIntensity;
-    float lightBlue = (lightColour & 0xFF)*lightIntensity;
-    for(int i = 0; i < totalPixelCount; i++){
-      int[] tempColour = {0xFF000000,
-                          (int)(Math.min(255, (((((screen[i] >>> 16) & 0xFF))*lightRed)*Colour.INV_255))) << 16,
-                          (int)(Math.min(255, ((((screen[i] >>> 8) & 0xFF))*lightGreen)*Colour.INV_255)) << 8,
-                          (int)(Math.min(255, (((screen[i] & 0xFF))*lightBlue)*Colour.INV_255))};
-      screen[i] = tempColour[0]|tempColour[1]|tempColour[2]|tempColour[3];
+    float lightRed = ((lightColour >>> 16) & 0xFF)*lightIntensity*Colour.INV_255;
+    float lightGreen = ((lightColour >>> 8) & 0xFF)*lightIntensity*Colour.INV_255;
+    float lightBlue = (lightColour & 0xFF)*lightIntensity*Colour.INV_255;
+    for(int i = 0; i < width; i++){
+      for(int j = 0; j < height; j++){
+        int pixelPos = i+width*j;
+
+        float[] tempPixels = {((screen[pixelPos] >>> 16) & 0xFF)*Colour.INV_255, 
+                              ((screen[pixelPos] >>> 8) & 0xFF)*Colour.INV_255,
+                              (screen[pixelPos] & 0xFF)*Colour.INV_255};
+        float dither = 0; 
+        if(ditherIntensity >= 0.00001 && (((flags & 1) == 0 && !Float.isNaN(Rasterizer.returnDepthBuffer()[pixelPos])) || (flags & 1) == 1)){
+          dither = ditherIntensity*DITHER_MATRIX[((j & 7) << 3)+(i & 7)];
+          if(ditherRange > 0.00001)
+            dither+=(float)(Math.random()*(ditherRange*2)-ditherRange);
+        }
+        int[] tempColour = {0xFF000000,
+                            (Math.min(255, Math.max(0, (int)((tempPixels[0]*lightRed+dither)*255)))),
+                            (Math.min(255, Math.max(0, (int)((tempPixels[1]*lightGreen+dither)*255)))),
+                            (Math.min(255, Math.max(0, (int)((tempPixels[2]*lightBlue+dither)*255))))};
+        screen[pixelPos] = tempColour[0]|(tempColour[1] << 16)|(tempColour[2] << 8)|tempColour[3];
+      }
     }
   }
 

@@ -350,6 +350,9 @@ public class sketch_3DTriTest extends PApplet{;
     //eye.setScale(10, 10, 10);
     ScreenMake.setLineList(testLineLinked);
     ScreenMake.setStencilTest((byte)0, 'p');
+    ScreenMake.setDitherRange(0);
+    //ScreenMake.setDitherIntensity(0);
+    ScreenMake.ditherOnlyObjects();
   }
 
   private static LinkedList<Model> arrayToLinkedList(Model[] arr){
@@ -487,11 +490,12 @@ public class sketch_3DTriTest extends PApplet{;
     ScreenMake.setModelList(testModelLinked);
     ScreenMake.setBillboardList(testBillboardLinked);
     ScreenMake.isInteractive();
-
+    ScreenMake.ditherAll();
     //ScreenMake.drawScene(output.pixels, eye);
 
     ScreenMake.drawScene(output.pixels, eye, lightsPrimary, 1.5f);
     
+    ScreenMake.ditherOnlyObjects();
     // float[][] testColours = {{0, 0, 1}, {0, 1, 0}, {1, 0, 0}};
     // Rasterizer.fill(0xFF);
     // Rasterizer.setVertexBrightness(testColours);
