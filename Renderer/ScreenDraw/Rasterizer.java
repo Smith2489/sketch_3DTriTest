@@ -446,10 +446,15 @@ public class Rasterizer{
     float[][] poses = {{p1X, p1Y}, 
                        {p2X, p2Y}, 
                        {p3X, p3Y}};
-
+    
     p1Z*=(((flags & 4) >>> 1)-1);
     p2Z*=(((flags & 4) >>> 1)-1);
     p3Z*=(((flags & 4) >>> 1)-1);
+
+    float denominator = (poses[1][1] - poses[2][1])*(poses[0][0] - poses[2][0]) + (poses[2][0] - poses[1][0])*(poses[0][1] - poses[2][1]);
+
+    if(Math.abs(denominator) <= 0.000000001)
+      return;
 
     //Constructing the triangle's bounding box
     screenBounds[0][0] = Math.round(Math.max(0, Math.min(poses[0][0], Math.min(poses[1][0], poses[2][0]))));
@@ -480,9 +485,9 @@ public class Rasterizer{
             //Centring the pixel
             x = j+0.5f;
             //Calculating the weight each vertex contributes to the pixel
-            alpha = returnAlpha(poses[0][0], poses[0][1], poses[1][0], poses[1][1], poses[2][0], poses[2][1], x, y);
-            beta = returnBeta(poses[0][0], poses[0][1], poses[1][0], poses[1][1], poses[2][0], poses[2][1], x, y);
-            gamma = returnGamma(alpha, beta);
+            alpha = ((poses[1][1] - poses[2][1])*(x - poses[2][0]) + (poses[2][0] - poses[1][0])*(y - poses[2][1]))/denominator;
+            beta = ((poses[2][1] - poses[0][1])*(x - poses[2][0]) + (poses[0][0] - poses[2][0])*(y - poses[2][1]))/denominator;
+            gamma = 1-alpha-beta;
             //Plotting the pixel
             float z = (p1Z*alpha + p2Z*beta + p3Z*gamma); //Barycentric z
             float tempZ = z;
@@ -556,6 +561,10 @@ public class Rasterizer{
     poses[1][2]*=(((flags & 4) >>> 1)-1);
     poses[2][2]*=(((flags & 4) >>> 1)-1);
 
+    float denominator = (poses[1][1] - poses[2][1])*(poses[0][0] - poses[2][0]) + (poses[2][0] - poses[1][0])*(poses[0][1] - poses[2][1]);
+    
+    if(Math.abs(denominator) <= 0.000000001)
+      return;
 
     //Constructing the triangle's bounding box
     screenBounds[0][0] = Math.round(Math.max(0, Math.min(poses[0][0], Math.min(poses[1][0], poses[2][0]))));
@@ -585,9 +594,9 @@ public class Rasterizer{
             //Centring the pixel
             x = j+0.5f;
             //Calculating the weight each vertex contributes to the pixel
-            alpha = returnAlpha(poses[0][0], poses[0][1], poses[1][0], poses[1][1], poses[2][0], poses[2][1], x, y);
-            beta = returnBeta(poses[0][0], poses[0][1], poses[1][0], poses[1][1], poses[2][0], poses[2][1], x, y);
-            gamma = returnGamma(alpha, beta);
+            alpha = ((poses[1][1] - poses[2][1])*(x - poses[2][0]) + (poses[2][0] - poses[1][0])*(y - poses[2][1]))/denominator;
+            beta = ((poses[2][1] - poses[0][1])*(x - poses[2][0]) + (poses[0][0] - poses[2][0])*(y - poses[2][1]))/denominator;
+            gamma = 1-alpha-beta;
             //Plotting the pixel
             float z = (poses[0][2]*alpha + poses[1][2]*beta + poses[2][2]*gamma); //Barycentric z
             float tempZ = z;
@@ -641,6 +650,11 @@ public class Rasterizer{
     p2Z*=(((flags & 4) >>> 1)-1);
     p3Z*=(((flags & 4) >>> 1)-1);
 
+    float denominator = (poses[1][1] - poses[2][1])*(poses[0][0] - poses[2][0]) + (poses[2][0] - poses[1][0])*(poses[0][1] - poses[2][1]);
+
+    if(Math.abs(denominator) <= 0.000000001)
+      return;
+
     //Constructing the triangle's bounding box
     screenBounds[0][0] = Math.round(Math.max(0, Math.min(poses[0][0], Math.min(poses[1][0], poses[2][0]))));
     screenBounds[0][1] = Math.round(Math.min(wid, Math.max(poses[0][0], Math.max(poses[1][0], poses[2][0]))));
@@ -672,9 +686,9 @@ public class Rasterizer{
             //Centring the pixel
             x = j+0.5f;
             //Calculating the weight each vertex contributes to the pixel
-            alpha = returnAlpha(poses[0][0], poses[0][1], poses[1][0], poses[1][1], poses[2][0], poses[2][1], x, y);
-            beta = returnBeta(poses[0][0], poses[0][1], poses[1][0], poses[1][1], poses[2][0], poses[2][1], x, y);
-            gamma = returnGamma(alpha, beta);
+            alpha = ((poses[1][1] - poses[2][1])*(x - poses[2][0]) + (poses[2][0] - poses[1][0])*(y - poses[2][1]))/denominator;
+            beta = ((poses[2][1] - poses[0][1])*(x - poses[2][0]) + (poses[0][0] - poses[2][0])*(y - poses[2][1]))/denominator;
+            gamma = 1-alpha-beta;
             //Plotting the pixel
             float z = (p1Z*alpha + p2Z*beta + p3Z*gamma); //Barycentric z
             float tempZ = z;
@@ -747,6 +761,10 @@ public class Rasterizer{
     poses[0][2]*=(((flags & 4) >>> 1)-1);
     poses[1][2]*=(((flags & 4) >>> 1)-1);
     poses[2][2]*=(((flags & 4) >>> 1)-1);
+    float denominator = (poses[1][1] - poses[2][1])*(poses[0][0] - poses[2][0]) + (poses[2][0] - poses[1][0])*(poses[0][1] - poses[2][1]);
+    if(Math.abs(denominator) <= 0.000000001)
+      return;
+
     //Constructing the triangle's bounding box
     screenBounds[0][0] = Math.round(Math.max(0, Math.min(poses[0][0], Math.min(poses[1][0], poses[2][0]))));
     screenBounds[0][1] = Math.round(Math.min(wid, Math.max(poses[0][0], Math.max(poses[1][0], poses[2][0]))));
@@ -775,9 +793,9 @@ public class Rasterizer{
             //Centring the pixel
             x = j+0.5f;
             //Calculating the weight each vertex contributes to the pixel
-            alpha = returnAlpha(poses[0][0], poses[0][1], poses[1][0], poses[1][1], poses[2][0], poses[2][1], x, y);
-            beta = returnBeta(poses[0][0], poses[0][1], poses[1][0], poses[1][1], poses[2][0], poses[2][1], x, y);
-            gamma = returnGamma(alpha, beta);
+            alpha = ((poses[1][1] - poses[2][1])*(x - poses[2][0]) + (poses[2][0] - poses[1][0])*(y - poses[2][1]))/denominator;
+            beta = ((poses[2][1] - poses[0][1])*(x - poses[2][0]) + (poses[0][0] - poses[2][0])*(y - poses[2][1]))/denominator;
+            gamma = 1-alpha-beta;
             //Plotting the pixel
             float z = (poses[0][2]*alpha + poses[1][2]*beta + poses[2][2]*gamma); //Barycentric z
             float tempZ = z;
@@ -1256,11 +1274,6 @@ public class Rasterizer{
     float[] coords = {0, 0, 0};
     coords[0] = numerator/denominator;
     //Beta weight
-    denominator = (y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3);
-    if(Math.abs(denominator) <= 0.000000001){
-      System.out.println("ERROR: DIV BY 0");
-      System.exit(1);
-    }
     numerator = (y3 - y1)*(x - x3) + (x1 - x3)*(y - y3);
     coords[1] = numerator/denominator;
     //Gamma weight
