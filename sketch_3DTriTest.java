@@ -264,7 +264,7 @@ public class sketch_3DTriTest extends PApplet{;
     testModels[9].setScale(1.5f, 1.5f, 1.5f);
     testModels[9].addAction(new RotateRhombohedron());
     testModels[9].setParentTransform(testModels[5]);
-    testModels[7].setParentTransform(testModels[9]);
+    testModels[7].setParentTransform(testModels[5]);
     //Flag
     testModels[10] = new Model(testGeometry[7], testPallets[8]);
     testModels[10].setPosition(0, 0, -0.5f);

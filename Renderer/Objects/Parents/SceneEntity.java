@@ -133,26 +133,20 @@ public class SceneEntity{
     }
 
     //Goes through each object's parents and multiplies their transformations together using
-    private Matrix4x4 transformRecursive(SceneEntity newParent, boolean isBillboard, boolean beforeBillboard){
+    private Matrix4x4 transformRecursive(SceneEntity newParent, boolean beforeBillboard){
         //Create this object's transformation matrix
         Matrix4x4 transformMatrix;
-        if(!isBillboard)
+        if(beforeBillboard)
             transformMatrix = MatrixOperations.matrixMultiply(MVP.returnTranslation(newParent.returnPosition()), MVP.returnRotation(newParent.returnRotation()));
-        else{
-            if(beforeBillboard){
-                transformMatrix = MVP.returnTranslation(newParent.returnPosition());
-            }
-            else{
-                transformMatrix = MVP.returnRotation(0, 0, newParent.returnRotation()[2]);
-            }
-        }
+        else
+            transformMatrix = MVP.returnRotation(0, 0, newParent.returnRotation()[2]);
         //Check if we've already seen this this object before. If we have, add it to a list, otherwise skip
         if(!alreadyVisited.contains(newParent)){
             alreadyVisited.add(newParent);
             //Multiply the current object's parent's transformations by its own if it has a parent. Otherwise, skip and
             //return this object's transformation matrix
             if(newParent.getParentTransformation() != null){
-                return MatrixOperations.matrixMultiply(transformRecursive(newParent.getParentTransformation(), isBillboard, beforeBillboard), transformMatrix);
+                return MatrixOperations.matrixMultiply(transformRecursive(newParent.getParentTransformation(), beforeBillboard), transformMatrix);
             }
             else
                 return transformMatrix;
@@ -182,12 +176,12 @@ public class SceneEntity{
     }
     
     //Returns a transformation matrix for the parent objects
-    public Matrix4x4 transform(boolean isBillboard, boolean position){
+    public Matrix4x4 transform(boolean position){
         //Checks if the parent isn't null and returns an I4 matrix if it is
         if(parent != null){
             //Clear the list of already visited parents and go through each parent's transformations
             alreadyVisited.clear();
-            return transformRecursive(parent, isBillboard, position);
+            return transformRecursive(parent, position);
         }
         else
             return new Matrix4x4();

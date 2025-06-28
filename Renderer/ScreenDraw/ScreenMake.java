@@ -431,18 +431,18 @@ public class ScreenMake{
           attachObjectToCamera(tempModel.returnPosition(), eye);
         tempModel.setModelMatrix();
         Matrix4x4 model;
-        Matrix4x4 transform = tempModel.transform(tempModel.returnIsBillBoard(), true);
+        Matrix4x4 transform = tempModel.transform(true);
         //For if the model is not a billboard
         if(!tempModel.returnIsBillBoard())
           model = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(transform, tempModel.returnModelMatrix()));
         //For if the model is a billboard
         else{
           //Constructs the transformation matrix for the point
-          model = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(transform, MVP.returnTranslation(tempModel.returnPosition())));    
+          model = MatrixOperations.matrixMultiply(view, MVP.returnTranslation(MatrixOperations.matrixMultiply(transform, from3DVecTo4DVec(tempModel.returnPosition()))));    
           model.copy(MatrixOperations.matrixMultiply(model, billBoard));       
           //Enables rotation about the z-axis and scaling along the x and y axis
           Matrix4x4 modelMatrix = MatrixOperations.matrixMultiply(MVP.returnRotation(0, 0, tempModel.returnRotation()[2]), MVP.returnScale(tempModel.returnScale()[0], tempModel.returnScale()[1], 1));
-          model = MatrixOperations.matrixMultiply(model, MatrixOperations.matrixMultiply(tempModel.transform(true, false), modelMatrix));
+          model = MatrixOperations.matrixMultiply(model, MatrixOperations.matrixMultiply(tempModel.transform(false), modelMatrix));
         }
        // model.copy(MatrixOperations.matrixMultiply(tempModel.transform(), model));
 
@@ -768,10 +768,10 @@ public class ScreenMake{
 
 
           //Constructs the transformation matrix for the point
-          Matrix4x4 model = MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(tempBillboard.transform(true, true), MVP.returnTranslation(tempBillboard.returnPosition())));
+          Matrix4x4 model = MatrixOperations.matrixMultiply(view, MVP.returnTranslation(MatrixOperations.matrixMultiply(tempBillboard.transform(true), from3DVecTo4DVec(tempBillboard.returnPosition()))));
           model.copy(MatrixOperations.matrixMultiply(model, billBoard));
           //Multiplying the transformed matrices by the scale of the model
-          model.copy(MatrixOperations.matrixMultiply(model, MatrixOperations.matrixMultiply(tempBillboard.transform(true, false), MVP.returnScale(tempBillboard.returnScale()[0], tempBillboard.returnScale()[1], 1))));
+          model.copy(MatrixOperations.matrixMultiply(model, MatrixOperations.matrixMultiply(tempBillboard.transform(false), MVP.returnScale(tempBillboard.returnScale()[0], tempBillboard.returnScale()[1], 1))));
 
           mvpFull = MatrixOperations.matrixMultiply(proj, model);
           tempBillboard.setPosition(position);
@@ -1172,7 +1172,7 @@ public class ScreenMake{
       if(tempModel.returnAttachedToCamera())
         attachObjectToCamera(tempModel.returnPosition(), eye);
       tempModel.setModelMatrix();
-      Matrix4x4 transform = tempModel.transform(tempModel.returnIsBillBoard(), true);
+      Matrix4x4 transform = tempModel.transform(true);
       Matrix4x4 model = MatrixOperations.matrixMultiply(transform, tempModel.returnModelMatrix());
 
       //For if the model is not a billboard
@@ -1187,7 +1187,7 @@ public class ScreenMake{
         
         //Enables rotation about the z-axis and scaling along the x and y axis
         Matrix4x4 modelMatrix = MatrixOperations.matrixMultiply(MVP.returnRotation(0, 0, tempModel.returnRotation()[2]), MVP.returnScale(tempModel.returnScale()[0], tempModel.returnScale()[1], 1));
-        mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, MatrixOperations.matrixMultiply(tempModel.transform(true, false), modelMatrix)));
+        mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, MatrixOperations.matrixMultiply(tempModel.transform(false), modelMatrix)));
       }
 
       //Checking if the model is in clipspace and adjusting the face direction to account for negative scales
@@ -1480,10 +1480,10 @@ public class ScreenMake{
       tempBillboard.setModelMatrix();
       if(distCamToBillboard <= drawDist && tempBillboard.returnModelTint() > Rasterizer.getMinTransparency()*Colour.INV_255){
         //Constructs the transformation matrix for the point
-        mvpFull.copy(MatrixOperations.matrixMultiply(mvp, MatrixOperations.matrixMultiply(tempBillboard.transform(true, true), MVP.returnTranslation(tempBillboard.returnPosition()))));
+        mvpFull.copy(MatrixOperations.matrixMultiply(mvp, MVP.returnTranslation(MatrixOperations.matrixMultiply(tempBillboard.transform(true), from3DVecTo4DVec(tempBillboard.returnPosition())))));
         mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, billBoard));
         //Multiplying the transformed matrices by the scale of the model
-        mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, MatrixOperations.matrixMultiply(tempBillboard.transform(true, false), MVP.returnScale(tempBillboard.returnScale()[0], tempBillboard.returnScale()[1], 1))));
+        mvpFull.copy(MatrixOperations.matrixMultiply(mvpFull, MatrixOperations.matrixMultiply(tempBillboard.transform(false), MVP.returnScale(tempBillboard.returnScale()[0], tempBillboard.returnScale()[1], 1))));
         tempBillboard.setPosition(position);
         float[][] points = {{-(tempBillboard.returnWidth() >>> 1), -(tempBillboard.returnHeight() >>> 1), 0, 1}, 
                             {(tempBillboard.returnWidth() >>> 1), -(tempBillboard.returnHeight() >>> 1), 0, 1},
