@@ -473,6 +473,8 @@ public class Rasterizer{
     if(Math.abs(denominator) <= 0.000000001)
       return;
 
+    denominator = 1/denominator;
+
     //Constructing the triangle's bounding box
     screenBounds[0][0] = Math.round(Math.max(0, Math.min(poses[0][0], Math.min(poses[1][0], poses[2][0]))));
     screenBounds[0][1] = Math.round(Math.min(wid, Math.max(poses[0][0], Math.max(poses[1][0], poses[2][0]))));
@@ -494,7 +496,6 @@ public class Rasterizer{
       denominators[0] = Float.NaN;
     else
       denominators[0] = 1/denominators[0];
-    
     denominators[1] = poses[2][1]-poses[1][1];
     if(Math.abs(denominators[1]) < 0.0000001)
       denominators[1] = Float.NaN;
@@ -519,8 +520,8 @@ public class Rasterizer{
             //Centring the pixel
             x = j+0.5f;
             //Calculating the weight each vertex contributes to the pixel
-            alpha = ((poses[1][1] - poses[2][1])*(x - poses[2][0]) + (poses[2][0] - poses[1][0])*(y - poses[2][1]))/denominator;
-            beta = ((poses[2][1] - poses[0][1])*(x - poses[2][0]) + (poses[0][0] - poses[2][0])*(y - poses[2][1]))/denominator;
+            alpha = ((poses[1][1] - poses[2][1])*(x - poses[2][0]) + (poses[2][0] - poses[1][0])*(y - poses[2][1]))*denominator;
+            beta = ((poses[2][1] - poses[0][1])*(x - poses[2][0]) + (poses[0][0] - poses[2][0])*(y - poses[2][1]))*denominator;
             gamma = 1-alpha-beta;
             //Plotting the pixel
             float z = (p1Z*alpha + p2Z*beta + p3Z*gamma); //Barycentric z
@@ -600,6 +601,8 @@ public class Rasterizer{
     if(Math.abs(denominator) <= 0.000000001)
       return;
 
+    denominator = 1/denominator;
+
     //Constructing the triangle's bounding box
     screenBounds[0][0] = Math.round(Math.max(0, Math.min(poses[0][0], Math.min(poses[1][0], poses[2][0]))));
     screenBounds[0][1] = Math.round(Math.min(wid, Math.max(poses[0][0], Math.max(poses[1][0], poses[2][0]))));
@@ -620,7 +623,6 @@ public class Rasterizer{
       denominators[0] = Float.NaN;
     else
       denominators[0] = 1/denominators[0];
-    
     denominators[1] = poses[2][1]-poses[1][1];
     if(Math.abs(denominators[1]) < 0.0000001)
       denominators[1] = Float.NaN;
@@ -645,8 +647,8 @@ public class Rasterizer{
             //Centring the pixel
             x = j+0.5f;
             //Calculating the weight each vertex contributes to the pixel
-            alpha = ((poses[1][1] - poses[2][1])*(x - poses[2][0]) + (poses[2][0] - poses[1][0])*(y - poses[2][1]))/denominator;
-            beta = ((poses[2][1] - poses[0][1])*(x - poses[2][0]) + (poses[0][0] - poses[2][0])*(y - poses[2][1]))/denominator;
+            alpha = ((poses[1][1] - poses[2][1])*(x - poses[2][0]) + (poses[2][0] - poses[1][0])*(y - poses[2][1]))*denominator;
+            beta = ((poses[2][1] - poses[0][1])*(x - poses[2][0]) + (poses[0][0] - poses[2][0])*(y - poses[2][1]))*denominator;
             gamma = 1-alpha-beta;
             //Plotting the pixel
             float z = (poses[0][2]*alpha + poses[1][2]*beta + poses[2][2]*gamma); //Barycentric z
@@ -706,6 +708,8 @@ public class Rasterizer{
     if(Math.abs(denominator) <= 0.000000001)
       return;
 
+    denominator = 1/denominator;    
+
     //Constructing the triangle's bounding box
     screenBounds[0][0] = Math.round(Math.max(0, Math.min(poses[0][0], Math.min(poses[1][0], poses[2][0]))));
     screenBounds[0][1] = Math.round(Math.min(wid, Math.max(poses[0][0], Math.max(poses[1][0], poses[2][0]))));
@@ -726,7 +730,6 @@ public class Rasterizer{
       denominators[0] = Float.NaN;
     else
       denominators[0] = 1/denominators[0];
-    
     denominators[1] = poses[2][1]-poses[1][1];
     if(Math.abs(denominators[1]) < 0.0000001)
       denominators[1] = Float.NaN;
@@ -754,8 +757,8 @@ public class Rasterizer{
             //Centring the pixel
             x = j+0.5f;
             //Calculating the weight each vertex contributes to the pixel
-            alpha = ((poses[1][1] - poses[2][1])*(x - poses[2][0]) + (poses[2][0] - poses[1][0])*(y - poses[2][1]))/denominator;
-            beta = ((poses[2][1] - poses[0][1])*(x - poses[2][0]) + (poses[0][0] - poses[2][0])*(y - poses[2][1]))/denominator;
+            alpha = ((poses[1][1] - poses[2][1])*(x - poses[2][0]) + (poses[2][0] - poses[1][0])*(y - poses[2][1]))*denominator;
+            beta = ((poses[2][1] - poses[0][1])*(x - poses[2][0]) + (poses[0][0] - poses[2][0])*(y - poses[2][1]))*denominator;
             gamma = 1-alpha-beta;
             //Plotting the pixel
             float z = (p1Z*alpha + p2Z*beta + p3Z*gamma); //Barycentric z
@@ -833,6 +836,9 @@ public class Rasterizer{
     if(Math.abs(denominator) <= 0.000000001)
       return;
 
+
+    denominator = 1/denominator;
+
     //Constructing the triangle's bounding box
     screenBounds[0][0] = Math.round(Math.max(0, Math.min(poses[0][0], Math.min(poses[1][0], poses[2][0]))));
     screenBounds[0][1] = Math.round(Math.min(wid, Math.max(poses[0][0], Math.max(poses[1][0], poses[2][0]))));
@@ -853,7 +859,6 @@ public class Rasterizer{
       denominators[0] = Float.NaN;
     else
       denominators[0] = 1/denominators[0];
-    
     denominators[1] = poses[2][1]-poses[1][1];
     if(Math.abs(denominators[1]) < 0.0000001)
       denominators[1] = Float.NaN;
@@ -879,8 +884,8 @@ public class Rasterizer{
             //Centring the pixel
             x = j+0.5f;
             //Calculating the weight each vertex contributes to the pixel
-            alpha = ((poses[1][1] - poses[2][1])*(x - poses[2][0]) + (poses[2][0] - poses[1][0])*(y - poses[2][1]))/denominator;
-            beta = ((poses[2][1] - poses[0][1])*(x - poses[2][0]) + (poses[0][0] - poses[2][0])*(y - poses[2][1]))/denominator;
+            alpha = ((poses[1][1] - poses[2][1])*(x - poses[2][0]) + (poses[2][0] - poses[1][0])*(y - poses[2][1]))*denominator;
+            beta = ((poses[2][1] - poses[0][1])*(x - poses[2][0]) + (poses[0][0] - poses[2][0])*(y - poses[2][1]))*denominator;
             gamma = 1-alpha-beta;
             //Plotting the pixel
             float z = (poses[0][2]*alpha + poses[1][2]*beta + poses[2][2]*gamma); //Barycentric z
