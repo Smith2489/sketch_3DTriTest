@@ -398,13 +398,30 @@ public class Rasterizer{
       
     //The edges that will be iterated over
     float[] interpolatedEdges = {0, 0}; //i0 = lowest-mid, i1 = mid-highest, i2 = highest-lowest
+    float[] denominators = {0, 0, 0};
+    denominators[0] = poses[1][1]-poses[0][1];
+    if(Math.abs(denominators[0]) < 0.0000001)
+      denominators[0] = Float.NaN;
+    else
+      denominators[0] = 1/denominators[0];
+    
+    denominators[1] = poses[2][1]-poses[1][1];
+    if(Math.abs(denominators[1]) < 0.0000001)
+      denominators[1] = Float.NaN;
+    else
+      denominators[1] = 1/denominators[1];
+    denominators[2] = poses[2][1]-poses[0][1];
+    if(Math.abs(denominators[2]) < 0.0000001)
+      denominators[2] = Float.NaN;
+    else
+      denominators[2] = 1/denominators[2];
     //Filling in the triangle
     if((flags & 16) == 16){
       
       //Iterating over the BB
       for(int i = screenBounds[1][0]; i < screenBounds[1][1]; i++){
         y = i+0.5f;
-        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges);
+        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges, denominators);
 
         //Filling the scanline
         for(int j = screenBounds[0][0]; j < screenBounds[0][1]; j++){
@@ -471,13 +488,30 @@ public class Rasterizer{
       
     //The edges that will be iterated over
     float[] interpolatedEdges = {0, 0}; //i0 = lowest-mid, i1 = mid-highest, i2 = highest-lowest
+    float[] denominators = {0, 0, 0};
+    denominators[0] = poses[1][1]-poses[0][1];
+    if(Math.abs(denominators[0]) < 0.0000001)
+      denominators[0] = Float.NaN;
+    else
+      denominators[0] = 1/denominators[0];
+    
+    denominators[1] = poses[2][1]-poses[1][1];
+    if(Math.abs(denominators[1]) < 0.0000001)
+      denominators[1] = Float.NaN;
+    else
+      denominators[1] = 1/denominators[1];
+    denominators[2] = poses[2][1]-poses[0][1];
+    if(Math.abs(denominators[2]) < 0.0000001)
+      denominators[2] = Float.NaN;
+    else
+      denominators[2] = 1/denominators[2];
     //Filling in the triangle
     if((flags & 16) == 16){
       
       //Iterating over the BB
       for(int i = screenBounds[1][0]; i < screenBounds[1][1]; i++){
         y = i+0.5f;
-        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges);
+        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges, denominators);
         //Filling the scanline
         for(int j = screenBounds[0][0]; j < screenBounds[0][1]; j++){
           int pixelPos = wid*i+j;
@@ -580,13 +614,30 @@ public class Rasterizer{
       
     //The edges that will be iterated over
     float[] interpolatedEdges = {0, 0}; //i0 = lowest-mid, i1 = mid-highest, i2 = highest-lowest
+    float[] denominators = {0, 0, 0};
+    denominators[0] = poses[1][1]-poses[0][1];
+    if(Math.abs(denominators[0]) < 0.0000001)
+      denominators[0] = Float.NaN;
+    else
+      denominators[0] = 1/denominators[0];
+    
+    denominators[1] = poses[2][1]-poses[1][1];
+    if(Math.abs(denominators[1]) < 0.0000001)
+      denominators[1] = Float.NaN;
+    else
+      denominators[1] = 1/denominators[1];
+    denominators[2] = poses[2][1]-poses[0][1];
+    if(Math.abs(denominators[2]) < 0.0000001)
+      denominators[2] = Float.NaN;
+    else
+      denominators[2] = 1/denominators[2];
     //Filling in the triangle
     if((flags & 16) == 16){
       
       //Iterating over the BB
       for(int i = screenBounds[1][0]; i < screenBounds[1][1]; i++){
         y = i+0.5f;
-        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges);
+        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges, denominators);
         //Filling the scanline
         for(int j = screenBounds[0][0]; j < screenBounds[0][1]; j++){
           int pixelPos = wid*i+j;
@@ -669,13 +720,30 @@ public class Rasterizer{
       
     //The edges that will be iterated over
     float[] interpolatedEdges = {0, 0}; //i0 = lowest-mid, i1 = mid-highest, i2 = highest-lowest
+    float[] denominators = {0, 0, 0};
+    denominators[0] = poses[1][1]-poses[0][1];
+    if(Math.abs(denominators[0]) < 0.0000001)
+      denominators[0] = Float.NaN;
+    else
+      denominators[0] = 1/denominators[0];
+    
+    denominators[1] = poses[2][1]-poses[1][1];
+    if(Math.abs(denominators[1]) < 0.0000001)
+      denominators[1] = Float.NaN;
+    else
+      denominators[1] = 1/denominators[1];
+    denominators[2] = poses[2][1]-poses[0][1];
+    if(Math.abs(denominators[2]) < 0.0000001)
+      denominators[2] = Float.NaN;
+    else
+      denominators[2] = 1/denominators[2];
     //Filling in the triangle
     if((flags & 16) == 16){
 
       //Iterating over the BB
       for(int i = screenBounds[1][0]; i < screenBounds[1][1]; i++){
         y = i+0.5f;
-        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges);
+        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges, denominators);
 
         //Filling the scanline
         for(int j = screenBounds[0][0]; j < screenBounds[0][1]; j++){
@@ -779,12 +847,30 @@ public class Rasterizer{
       
     //The edges that will be iterated over
     float[] interpolatedEdges = {0, 0}; //i0 = lowest-mid, i1 = mid-highest, i2 = highest-lowest
+    float[] denominators = {0, 0, 0};
+    denominators[0] = poses[1][1]-poses[0][1];
+    if(Math.abs(denominators[0]) < 0.0000001)
+      denominators[0] = Float.NaN;
+    else
+      denominators[0] = 1/denominators[0];
+    
+    denominators[1] = poses[2][1]-poses[1][1];
+    if(Math.abs(denominators[1]) < 0.0000001)
+      denominators[1] = Float.NaN;
+    else
+      denominators[1] = 1/denominators[1];
+    denominators[2] = poses[2][1]-poses[0][1];
+    if(Math.abs(denominators[2]) < 0.0000001)
+      denominators[2] = Float.NaN;
+    else
+      denominators[2] = 1/denominators[2];
+
     //Filling in the triangle
     if((flags & 16) == 16){
       //Iterating over the BB
       for(int i = screenBounds[1][0]; i < screenBounds[1][1]; i++){
         y = i+0.5f;
-        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges);
+        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges, denominators);
         //Filling the scanline
         for(int j = screenBounds[0][0]; j < screenBounds[0][1]; j++){
           int pixelPos = wid*i+j;
@@ -1493,20 +1579,14 @@ public class Rasterizer{
   }
 
   //Finds the left and right edges of a triangle at a given scanline
-  private static void computeEdges(float y, int minX, int maxX, int[][] screenBounds, float[][] poses, float[] interpolatedEdges){
+  private static void computeEdges(float y, int minX, int maxX, int[][] screenBounds, float[][] poses, float[] interpolatedEdges, float[] invDenominators){
     byte currentEdge = 1;
     //Holds how far along each edge the function is at the current scanline
     float[] t = {-1, -1, -1};
     //Computes time t for the two edges that go to the middle vertex at the current scanline
-    float denominator = (poses[1][1]-poses[0][1])-0.0000001f;
-    if(Math.abs(denominator) > 0.0000001)
-      t[2] = (poses[1][1]-y)/denominator-0.0000001f;
-    denominator = (poses[2][1]-poses[1][1])-0.0000001f;
-    if(Math.abs(denominator) > 0.0000001)
-      t[0] = (poses[2][1]-y)/denominator-0.0000001f;
-    denominator = (poses[2][1]-poses[0][1])-0.0000001f;
-    if(Math.abs(denominator) > 0.0000001)
-      t[1] = (poses[2][1]-y)/denominator-0.0000001f;
+    t[2] = (poses[1][1]-y)*invDenominators[0];
+    t[0] = (poses[2][1]-y)*invDenominators[1];
+    t[1] = (poses[2][1]-y)*invDenominators[2];
     
     //Uses the times to interpolate along the edges
     if(t[2] >= 0f && t[2] <= 1f){
