@@ -370,8 +370,8 @@ public class MVP{
     Matrix4x4 rotate = returnRotation(modelAngles[0], modelAngles[1], modelAngles[2]);
     Matrix4x4 scale = returnScale(modelScale[0], modelScale[1], modelScale[2]);
     Matrix4x4 shear = returnShear(modelShear[0][0], modelShear[0][1], modelShear[1][0], modelShear[1][1], modelShear[2][0], modelShear[2][1]);
-    Matrix4x4 step1 = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(translate, shear), rotate);
-    return MatrixOperations.matrixMultiply(step1, scale);
+    Matrix4x4 step1 = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(translate, scale), rotate);
+    return MatrixOperations.matrixMultiply(step1, shear);
   }
 
 
@@ -381,7 +381,7 @@ public class MVP{
     Matrix4x4 rotate = reverseRotation(-eyeAngles[0], -eyeAngles[1], -eyeAngles[2]);
     Matrix4x4 scale = returnScale(eyeScale[0], eyeScale[1], eyeScale[2]);
     Matrix4x4 shear = reverseShear(eyeShear[0][0], eyeShear[0][1], eyeShear[1][0], eyeShear[1][1], eyeShear[2][0], eyeShear[2][1]);
-    Matrix4x4 step1 = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(rotate, scale), shear);
+    Matrix4x4 step1 = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(shear, rotate), scale);
     return MatrixOperations.matrixMultiply(step1, translate);
   }
 
@@ -390,16 +390,16 @@ public class MVP{
     Matrix4x4 rotate = returnRotation(eyeAngles);
     Matrix4x4 scale = returnScale(inverseEyeScale[0], inverseEyeScale[1], inverseEyeScale[2]);
     Matrix4x4 shear = returnShear(-modelShear[0][0], -modelShear[0][1], -modelShear[1][0], -modelShear[1][1], -modelShear[2][0], -modelShear[2][1]);
-    Matrix4x4 step1 = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(translate, shear), rotate);
-    return MatrixOperations.matrixMultiply(step1, scale);
+    Matrix4x4 step1 = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(translate, scale), rotate);
+    return MatrixOperations.matrixMultiply(step1, shear);
   }
   public static Matrix4x4 inverseViewMatrix(float[] pos, float[] angles, float[] scale, float[][] shear){
     Matrix4x4 translate = returnTranslation(pos[0], pos[1], pos[2]);
     Matrix4x4 rotate = returnRotation(angles);
     Matrix4x4 scaling = returnScale(scale[0], scale[1], scale[2]);
     Matrix4x4 shearing = returnShear(shear[0][0], shear[0][1], shear[1][0], shear[1][1], shear[2][0], shear[2][1]);
-    Matrix4x4 step1 = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(translate, shearing), rotate);
-    return MatrixOperations.matrixMultiply(step1, scaling);
+    Matrix4x4 step1 = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(translate, scaling), rotate);
+    return MatrixOperations.matrixMultiply(step1, shearing);
   }
 
 
