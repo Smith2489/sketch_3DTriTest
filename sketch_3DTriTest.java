@@ -244,7 +244,7 @@ public class sketch_3DTriTest extends PApplet{;
     
     //Half-green, half-translucent black billboard
     testModels[7] = new Model(testGeometry[6], testPallets[7]);
-    testModels[7].setPosition(0, 0, 25);
+    testModels[7].setPosition(0, 0, 5);
     testModels[7].setScale(0.5f, 0.5f, 1);
     testModels[7].addAction(new RotateBillboard());
     testModels[7].setShininess(0.25f);
@@ -351,7 +351,8 @@ public class sketch_3DTriTest extends PApplet{;
     ScreenMake.setLineList(testLineLinked);
     ScreenMake.setStencilTest((byte)0, 'p');
     ScreenMake.setDitherRange(0);
-    //ScreenMake.setDitherIntensity(0);
+    ScreenMake.setDitherIntensity(0.82f);
+    //ScreenMake.setDitherSize(7);
     ScreenMake.ditherOnlyObjects();
   }
 
