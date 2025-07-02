@@ -351,8 +351,9 @@ public class sketch_3DTriTest extends PApplet{;
     ScreenMake.setLineList(testLineLinked);
     ScreenMake.setStencilTest((byte)0, 'p');
     ScreenMake.setDitherRange(0);
-    ScreenMake.setDitherIntensity(0.82f);
-    //ScreenMake.setDitherSize(7);
+    ScreenMake.setDitherMatrixSize(8);
+    ScreenMake.setDitherIntensity(0.2f);
+    ScreenMake.setDitherThreshold(0.75f);
     ScreenMake.ditherOnlyObjects();
   }
 

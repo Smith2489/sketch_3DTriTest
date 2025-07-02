@@ -2,19 +2,20 @@ package Renderer.ScreenDraw;
 import Wrapper.*;
 import java.util.*;
 import Maths.LinearAlgebra.*;
+import Maths.*;
 import Renderer.Objects.SceneEntities.*;
 import Renderer.Objects.Parents.SceneEntity;
 public class ScreenMake{
   //8x8 dither matrix is a precalcluated form of the same matrix in Wikipedia's article on ordered dithering
   //https://en.wikipedia.org/wiki/Ordered_dithering 
-  private static final float[] DITHER_MATRIX = {0, 0.5f, 0.125f, 0.625f, 0.03125f, 0.53125f, 0.15625f, 0.65625f,
-                                                0.75f, 0.25f, 0.875f, 0.375f, 0.78125f, 0.28125f, 0.90625f, 0.40625f,
-                                                0.1875f, 0.6875f, 0.0625f, 0.5625f, 0.21875f, 0.71875f, 0.09375f, 0.59375f,
-                                                0.9375f, 0.4375f, 0.8125f, 0.3125f, 0.96875f, 0.46875f, 0.84375f, 0.34375f,
-                                                0.046875f, 0.546875f, 0.171875f, 0.671875f, 0.015625f, 0.515625f, 0.140625f, 0.640625f,
-                                                0.796875f, 0.296875f, 0.921875f, 0.421875f, 0.765625f, 0.265625f, 0.890625f, 0.390625f,
-                                                0.234375f, 0.734375f, 0.109375f, 0.609375f, 0.203125f, 0.703125f, 0.078125f, 0.578125f,
-                                                0.984375f, 0.484375f, 0.859375f, 0.359375f, 0.953125f, 0.453125f, 0.828125f, 0.328125f};
+  private static float[] ditherMatrix = {-0.5f, -0.46875f, -0.375f, -0.34375f, 0.0f, 0.03125f, 0.125f, 0.15625f, 
+                                         -0.453125f, -0.484375f, -0.328125f, -0.359375f, 0.046875f, 0.015625f, 0.171875f, 0.140625f,
+                                         -0.3125f, -0.28125f, -0.4375f, -0.40625f, 0.1875f, 0.21875f, 0.0625f, 0.09375f,
+                                         -0.265625f, -0.296875f, -0.390625f, -0.421875f, 0.234375f, 0.203125f, 0.109375f, 0.078125f,
+                                          0.25f, 0.28125f, 0.375f, 0.40625f, -0.25f, -0.21875f, -0.125f, -0.09375f,
+                                          0.296875f, 0.265625f, 0.421875f, 0.390625f, -0.203125f, -0.234375f, -0.078125f, -0.109375f,
+                                          0.4375f, 0.46875f, 0.3125f, 0.34375f, -0.0625f, -0.03125f, -0.1875f, -0.15625f,
+                                          0.484375f, 0.453125f, 0.359375f, 0.328125f, -0.015625f, -0.046875f, -0.140625f, -0.171875f};
     //Set up for the stencil test
     private static byte stencilComp = 0;
     private static char testType = 'e';
@@ -30,6 +31,10 @@ public class ScreenMake{
     Bit 7: is interactive (actions will be executed)
     */
     private static byte flags = -119;
+    /*
+    Bit 0 Dither matrix size has already been modified 
+    */
+    private static byte flags2 = 0;
     private static int billBoardCountTranslucent = 0;
     private static int lineCountTranslucent = 0;
     private static int dotCountTranslucent = 0;
@@ -64,11 +69,10 @@ public class ScreenMake{
     private static Dot tempDot = new Dot();
     private static SceneEntity tempInvis = new SceneEntity();
 
-    private static float ditherIntensity = 0.15f;
+    private static float ditherIntensity = 1f;
     private static float ditherRange = 0.075f;
-    private static byte ditherMatrixSize = 8;
-    private static int horizOffset = 0;
-    private static int verticalOffset = 0;
+    private static float ditherThreshold = 0.5f;
+    private static int ditherMatrixSize = 8;
     //Contains data pertaining to translucent objects
     //IDs (1 for triangle, 2 for billboarded sprite, 3 for line, 4 for dot)
     //Lighting will only interact with triangles and billboarded sprites
@@ -90,6 +94,9 @@ public class ScreenMake{
 
     private static int size = 0;
 
+    //Solution for finding the nearest neighbouring 15-bit colour found in Acerola's video Color Quantization and Dithering
+    //https://www.youtube.com/watch?v=8wOUe32Pt-E
+
     public static void setDitherIntensity(float newIntensity){
       ditherIntensity = Math.max(0, Math.min(newIntensity, 1));
     }
@@ -105,13 +112,25 @@ public class ScreenMake{
       flags|=1;
     }
 
-    public static void setDitherSize(int squareSize){
-      ditherMatrixSize = (byte)Math.max(1, Math.min(squareSize, 8));
+    public static void setDitherMatrixSize(int squareSize){
+      if((flags2 & 1) == 0){
+        ditherMatrixSize = Math.max(2, squareSize);
+        ditherMatrix = new float[squareSize*squareSize];
+        float invSqrSize = 1f/(squareSize*squareSize);
+  
+        for(int i = 0; i < squareSize; i++){
+          for(int j = 0; j < squareSize; j++){
+            ditherMatrix[i+squareSize*j] = BitOperations.interleave(i, i^j)*invSqrSize-0.5f;
+          }
+        }
+        flags2|=1;
+      }
+      else
+        System.out.println("CANNOT SET THE DITHER MATRIX SIZE ONCE IT'S BEEN SET");
     }
 
-    public static void setOffsets(int horiz, int vert){
-      horizOffset = Math.max(0, horiz);
-      verticalOffset = Math.max(0, vert);
+    public static void setDitherThreshold(float threshold){
+      ditherThreshold = Math.max(0, ditherThreshold);
     }
 
     //Changes the model list's pointer to a different array's location and sets the size of the displayList
@@ -273,16 +292,19 @@ public class ScreenMake{
                                 ((screen[pixelPos] >>> 8) & 0xFF)*Colour.INV_255,
                                 (screen[pixelPos] & 0xFF)*Colour.INV_255};
           float dither = 0; 
-           int ditherPos = ((j+verticalOffset)%ditherMatrixSize)*ditherMatrixSize+(i+horizOffset)%ditherMatrixSize;
+          int ditherPos = (j%ditherMatrixSize)*ditherMatrixSize+i%ditherMatrixSize;
           if(ditherIntensity >= 0.00001 && (((flags & 1) == 0 && !Float.isNaN(Rasterizer.returnDepthBuffer()[pixelPos])) || (flags & 1) == 1)){
-            dither = ditherIntensity*DITHER_MATRIX[ditherPos]-0.5f;
+            dither = ditherIntensity*ditherMatrix[ditherPos];
             if(ditherRange > 0.00001)
               dither+=(float)(Math.random()*(ditherRange*2)-ditherRange);
+            tempColour[1] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[1]+dither)*31+ditherThreshold)*0.032258064516129)))*255)/32*32;
+            tempColour[2] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[2]+dither)*31+ditherThreshold)*0.032258064516129)))*255)/32*32;
+            tempColour[3] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[3]+dither)*31+ditherThreshold)*0.032258064516129)))*255)/32*32;
           }
-          tempColour[1] = (tempColour[1]+dither)*255;
-          tempColour[2] = (tempColour[2]+dither)*255;
-          tempColour[3] = (tempColour[3]+dither)*255;
-          screen[pixelPos] = (int)tempColour[0]|(Math.min(255, Math.max(0, (int)tempColour[1])) << 16)|(Math.min(255, Math.max(0, (int)tempColour[2])) << 8)|Math.min(255, Math.max(0, (int)tempColour[3]));
+          tempColour[1] = tempColour[1]*255;
+          tempColour[2] = tempColour[2]*255;
+          tempColour[3] = tempColour[3]*255;
+          screen[pixelPos] = (int)tempColour[0]|((int)tempColour[1] << 16)|((int)tempColour[2] << 8)|(int)tempColour[3];
           
         }
       }
@@ -1113,26 +1135,31 @@ public class ScreenMake{
         float[] tempPixels = {((screen[pixelPos] >>> 16) & 0xFF)*Colour.INV_255, 
                               ((screen[pixelPos] >>> 8) & 0xFF)*Colour.INV_255,
                               (screen[pixelPos] & 0xFF)*Colour.INV_255};
-        float dither = 0; 
-        int ditherPos = ((j+verticalOffset)%ditherMatrixSize)*ditherMatrixSize+(i+horizOffset)%ditherMatrixSize;
+
+        float[] adjColours = {tempPixels[0]*lightRed, tempPixels[1]*lightGreen, tempPixels[2]*lightBlue};
+        // else
+        //   dither = 1;
+
+        int[] tempColour = {0xFF000000,
+                            (int)(adjColours[0]*255),
+                            (int)(adjColours[1]*255),
+                            (int)(adjColours[2]*255)}; 
+        int ditherPos = (i%ditherMatrixSize)*ditherMatrixSize+(j%ditherMatrixSize);
         if(ditherIntensity >= 0.00001 && (((flags & 1) == 0 && !Float.isNaN(Rasterizer.returnDepthBuffer()[pixelPos])) || (flags & 1) == 1)){
-          dither = ditherIntensity*DITHER_MATRIX[ditherPos]-0.5f;
+          float dither = ditherIntensity*ditherMatrix[ditherPos];
           if(ditherRange > 0.00001)
             dither+=(float)(Math.random()*(ditherRange*2)-ditherRange);
+          tempColour[1] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[0]+dither)*31+ditherThreshold)*0.032258064516129)))*255)/32*32;
+          tempColour[2] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[1]+dither)*31+ditherThreshold)*0.032258064516129)))*255)/32*32;
+          tempColour[3] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[2]+dither)*31+ditherThreshold)*0.032258064516129)))*255)/32*32;
         }
-        float[] adjColours = {tempPixels[0]*lightRed, tempPixels[1]*lightGreen, tempPixels[2]*lightBlue};
-        // float grey = adjColours[0]*0.3f+adjColours[1]*0.59f+adjColours[2]*0.11f;
-        // if(grey < DITHER_MATRIX[ditherPos])
-        //   dither*=-1;
+        else{
 
-        // int[] tempColour = {0xFF000000,
-        //                     (Math.min(255, Math.max(0, (int)((adjColours[0]+dither)*255)))),
-        //                     (Math.min(255, Math.max(0, (int)((adjColours[1]+dither)*255)))),
-        //                     (Math.min(255, Math.max(0, (int)((adjColours[2]+dither)*255))))};
-        int[] tempColour = {0xFF000000,
-                            (Math.min(255, Math.max(0, Math.round((adjColours[0]+dither)*255)))),
-                            (Math.min(255, Math.max(0, Math.round((adjColours[1]+dither)*255)))),
-                            (Math.min(255, Math.max(0, Math.round((adjColours[2]+dither)*255))))};
+          tempColour[1] = Math.min(255, Math.max(0, tempColour[1]));
+          tempColour[2] = Math.min(255, Math.max(0, tempColour[2]));
+          tempColour[3] = Math.min(255, Math.max(0, tempColour[3]));
+        }
+
         screen[pixelPos] = tempColour[0]|(tempColour[1] << 16)|(tempColour[2] << 8)|tempColour[3];
       }
     }
@@ -1789,8 +1816,10 @@ public class ScreenMake{
         r2 = vectorDotProduct(lightToTriVec, lightToTriVec);
         if(Math.abs(r2) > 0.00000001)
           r2 = 1/r2;
-        else
+        else if(r2 <= 0.00000001)
           r2 = 100000000;
+        else
+          r2 = -100000000;
         lightToTriVec = VectorOperations.vectorNormalization3D(lightToTriVec);
         halfVec = VectorOperations.vectorNormalization3D(VectorOperations.vectorAddition(camToTriVec, lightToTriVec));
       }
