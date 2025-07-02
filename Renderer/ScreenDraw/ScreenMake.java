@@ -297,9 +297,9 @@ public class ScreenMake{
             dither = ditherIntensity*ditherMatrix[ditherPos];
             if(ditherRange > 0.00001)
               dither+=(float)(Math.random()*(ditherRange*2)-ditherRange);
-            tempColour[1] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[1]+dither)*31+ditherThreshold)*0.032258064516129)))*255)/32*32;
-            tempColour[2] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[2]+dither)*31+ditherThreshold)*0.032258064516129)))*255)/32*32;
-            tempColour[3] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[3]+dither)*31+ditherThreshold)*0.032258064516129)))*255)/32*32;
+            tempColour[1] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[1]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>5<<5;
+            tempColour[2] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[2]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>5<<5;
+            tempColour[3] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[3]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>5<<5;
           }
           tempColour[1] = tempColour[1]*255;
           tempColour[2] = tempColour[2]*255;
@@ -1149,9 +1149,9 @@ public class ScreenMake{
           float dither = ditherIntensity*ditherMatrix[ditherPos];
           if(ditherRange > 0.00001)
             dither+=(float)(Math.random()*(ditherRange*2)-ditherRange);
-          tempColour[1] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[0]+dither)*31+ditherThreshold)*0.032258064516129)))*255)/32*32;
-          tempColour[2] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[1]+dither)*31+ditherThreshold)*0.032258064516129)))*255)/32*32;
-          tempColour[3] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[2]+dither)*31+ditherThreshold)*0.032258064516129)))*255)/32*32;
+          tempColour[1] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[0]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>5<<5;
+          tempColour[2] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[1]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>5<<5;
+          tempColour[3] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[2]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>5<<5;
         }
         else{
 
