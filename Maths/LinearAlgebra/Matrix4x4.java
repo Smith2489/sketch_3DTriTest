@@ -42,6 +42,28 @@ public class Matrix4x4 extends Matrix{
         return matrix[col+(row << 2)];
     }
 
+    public void setToAllOnes(){
+        matrix[0] = 1;
+        matrix[1] = 1;
+        matrix[2] = 1;
+        matrix[3] = 1;
+
+        matrix[4] = 1;
+        matrix[5] = 1;
+        matrix[6] = 1;
+        matrix[7] = 1;
+
+        matrix[8] = 1;
+        matrix[9] = 1;
+        matrix[10] = 1;
+        matrix[11] = 1;
+        
+        matrix[12] = 1;
+        matrix[13] = 1;
+        matrix[14] = 1;
+        matrix[15] = 1;
+    }
+
     public float[] returnCol(int col){
         float[] returnCol = {matrix[col], matrix[4+col], matrix[8+col], matrix[12+col]};
         return returnCol;

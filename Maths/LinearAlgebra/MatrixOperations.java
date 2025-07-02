@@ -43,6 +43,17 @@ public class MatrixOperations{
     return new Matrix();
   }
 
+  public static Matrix kroneckerProduct(Matrix matrix1, Matrix matrix2){
+    float[][] output = new float[matrix1.returnHeight()*matrix2.returnHeight()][matrix1.returnWidth()*matrix2.returnWidth()];
+    for(int i = 0; i < output.length; i++){
+      for(int j = 0; j < output[0].length; j++){
+        output[i][j] = matrix1.returnData(i/matrix2.returnHeight(), j/matrix2.returnWidth())*matrix2.returnData(i%matrix2.returnHeight(), j%matrix2.returnWidth());
+      }
+    }
+    return new Matrix(output);
+  }
+
+
   //Computes the inverse of a square matrix
   public static Matrix invertMatrix(Matrix matrix1){
     if(matrix1.returnWidth() == matrix1.returnHeight()){
@@ -534,6 +545,16 @@ public class MatrixOperations{
     float[][] outputMatrix = {{0}};
     System.exit(1);
     return outputMatrix;
+  }
+
+  public static Matrix kroneckerProduct(float[][] matrix1, float[][] matrix2){
+    float[][] output = new float[matrix1.length*matrix2.length][matrix1[0].length*matrix2[0].length];
+    for(int i = 0; i < output.length; i++){
+      for(int j = 0; j < output[0].length; j++){
+        output[i][j] = matrix1[i/matrix2.length][j/matrix2[0].length]*matrix2[i%matrix2.length][j%matrix2[0].length];
+      }
+    }
+    return new Matrix(output);
   }
 
    //Computes the inverse of a square matrix

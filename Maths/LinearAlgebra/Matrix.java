@@ -103,6 +103,11 @@ public class Matrix{
     }
   }
   
+  public void setToAllOnes(){
+    for(int i = 0; i < width*height; i++)
+      matrix[i] = 1;
+  }
+
   //Casts the matrix to a string
   public String toString(){
     String matrixString = "";
@@ -261,4 +266,12 @@ public class Matrix{
           return false;
     return true;
   }
+
+  public boolean isAllOnes(){
+    for(int i = 0; i < width*height; i++)
+      if(matrix[i] != 1)
+        return false;
+    return true;
+  }
+
 }
