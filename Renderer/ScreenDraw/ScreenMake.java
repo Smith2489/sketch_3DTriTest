@@ -116,15 +116,15 @@ public class ScreenMake{
         ditherMatrix = new float[ditherMatrixSize*ditherMatrixSize];
         float invSqrSize = 1f/(ditherMatrix.length);
         float maxValue = 1f/(ditherMatrix.length-1);
-        int doubleSquare = squareSize*2;
+        long doubleSquare = squareSize << 1;
         for(int i = 0; i < ditherMatrixSize; i++){
           for(int j = 0; j < ditherMatrixSize; j++){
             //Solution based on https://bisqwit.iki.fi/story/howto/dither/jy/
             //Wikipedia's mention of this method for generating dither matrices does not do a good job
             int y = i^j;
             int mask = squareSize-1;
-            int output = 0;
-            for(int s = 0; s < doubleSquare; mask--){
+            long output = 0;
+            for(long s = 0; s < doubleSquare; mask--){
               output|=(((i >>> mask) & 1) << s) | (y >>> mask & 1) << (s+1);
               s+=2; 
             }
@@ -303,9 +303,9 @@ public class ScreenMake{
             float dither = ditherIntensity*ditherMatrix[(i%ditherMatrixSize)*ditherMatrixSize+(j%ditherMatrixSize)];
             if(ditherRange > 0.00001)
               dither+=(float)(Math.random()*(ditherRange*2)-ditherRange);
-            tempColour[1] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[1]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>5<<5;
-            tempColour[2] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[2]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>5<<5;
-            tempColour[3] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[3]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>5<<5;
+            tempColour[1] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[1]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>3<<3;
+            tempColour[2] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[2]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>3<<3;
+            tempColour[3] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[3]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>3<<3;
           }
           tempColour[1] = tempColour[1]*255;
           tempColour[2] = tempColour[2]*255;
@@ -1152,12 +1152,11 @@ public class ScreenMake{
           float dither = ditherIntensity*ditherMatrix[(i%ditherMatrixSize)*ditherMatrixSize+(j%ditherMatrixSize)];
           if(ditherRange > 0.00001)
             dither+=(float)(Math.random()*(ditherRange*2)-ditherRange);
-          tempColour[1] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[0]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>5<<5;
-          tempColour[2] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[1]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>5<<5;
-          tempColour[3] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[2]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>5<<5;
+          tempColour[1] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[0]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>3<<3;
+          tempColour[2] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[1]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>3<<3;
+          tempColour[3] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[2]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>3<<3;
         }
         else{
-
           tempColour[1] = Math.min(255, Math.max(0, tempColour[1]));
           tempColour[2] = Math.min(255, Math.max(0, tempColour[2]));
           tempColour[3] = Math.min(255, Math.max(0, tempColour[3]));
