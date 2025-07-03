@@ -67,7 +67,7 @@ public class ScreenMake{
     private static Dot tempDot = new Dot();
     private static SceneEntity tempInvis = new SceneEntity();
 
-    private static float ditherIntensity = 0.25f;
+    private static float ditherIntensity = 0;
     private static float ditherRange = 0;
     private static float ditherThreshold = 0.5f;
     private static int ditherMatrixSize = 8;
