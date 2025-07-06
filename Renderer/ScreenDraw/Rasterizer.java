@@ -376,7 +376,7 @@ public class Rasterizer{
     stencilMask = newMask;
   }
   //Rendering a triangle with 2D points
-  public static void draw(float p1X, float p1Y, float p2X, float p2Y, float p3X, float p3Y){
+  public static void triangleDraw2D(float p1X, float p1Y, float p2X, float p2Y, float p3X, float p3Y){
     //Fill for the triangle
     //Setting up the bounding box
     int[][] screenBounds = {{0x80000000, 0x7FFFFFF}, {0x80000000, 0x7FFFFFF}};
@@ -456,7 +456,7 @@ public class Rasterizer{
     }
   }
   //Drawing a triangle with 3D points (points directly in parametres)
-  public static void draw(float p1X, float p1Y, float p1Z, float p2X, float p2Y, float p2Z, float p3X, float p3Y, float p3Z){
+  public static void triangleDraw3D(float p1X, float p1Y, float p1Z, float p2X, float p2Y, float p2Z, float p3X, float p3Y, float p3Z){
     //Setting up the bounding box
     int[][] screenBounds = {{0x80000000, 0x7FFFFFF}, {0x80000000, 0x7FFFFFF}};
     //Makes forming the BB and rasterizing the triangle easier
@@ -573,7 +573,7 @@ public class Rasterizer{
     }
   }
   
-  public static void draw(Triangle triangle){
+  public static void triangleDraw3D(Triangle triangle){
     //Setting up the colour
     stroke = triangle.getStroke();
     fill = triangle.getFill();
@@ -691,7 +691,7 @@ public class Rasterizer{
   }
   
   //Versions with modifiable stencil tests
-  public static void draw(float p1X, float p1Y, float p1Z, float p1W, float p2X, float p2Y, float p2Z, float p2W, float p3X, float p3Y, float p3Z, float p3W, byte compVal, char testType){
+  public static void triangleDraw3D(float p1X, float p1Y, float p1Z, float p2X, float p2Y, float p2Z, float p3X, float p3Y, float p3Z, byte compVal, char testType){
     //Triangle fill
     //Setting up the bounding box
     int[][] screenBounds = {{0x80000000, 0x7FFFFFF}, {0x80000000, 0x7FFFFFF}};
@@ -810,7 +810,7 @@ public class Rasterizer{
     }
   }
   
-  public static void draw(Triangle triangle, byte compVal, char testType){
+  public static void triangleDraw3D(Triangle triangle, byte compVal, char testType){
     //Setting up the colour
     tempAction = triangle.returnStencilActionPtr();
     stroke = triangle.getStroke();

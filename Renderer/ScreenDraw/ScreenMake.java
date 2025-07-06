@@ -949,7 +949,7 @@ public class ScreenMake{
         Rasterizer.setProbabilities(tempTri.returnMaxFizzel(), tempTri.returnFizzelThreshold());
         Rasterizer.setVertexBrightness(tempTri.returnVertexBrightness());
         Rasterizer.setDepthWrite(tempTri.getHasDepthWrite());
-        Rasterizer.draw(tempTri, stencilComp, testType);
+        Rasterizer.triangleDraw3D(tempTri, stencilComp, testType);
       }
       sortAndDrawTranslucent(screen);
     }
@@ -1761,7 +1761,7 @@ public class ScreenMake{
           Rasterizer.setDepthWrite(tempTris[j].getHasDepthWrite());
           Rasterizer.setVertexBrightness(tempTris[j].returnVertexBrightness());
           Rasterizer.setProbabilities(tempTris[j].returnMaxFizzel(), tempTris[j].returnFizzelThreshold());
-          Rasterizer.draw(tempTris[j], stencilComp, testType);
+          Rasterizer.triangleDraw3D(tempTris[j], stencilComp, testType);
           break;
         case 2:
           Rasterizer.setProbabilities(tempBillboards[j].returnMaxFizzel(), tempBillboards[j].returnFizzelThreshold());
