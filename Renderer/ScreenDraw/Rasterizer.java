@@ -32,6 +32,7 @@ public class Rasterizer{
     bit 2 = depthWrite
     bit 3 = has stroke
     bit 4 = has fill
+    bit 5 = lerpBrightness
   */
   private static byte flags = 0b0001110;
 
@@ -44,6 +45,7 @@ public class Rasterizer{
 
   //Sets the brightness of each vertex
   public static void setVertexBrightness(float[][] brightnessLevels){
+    flags&=-33;
     if(brightnessLevels[0].length <= 3){
       vertexBrightness[0][0] = 1;
       vertexBrightness[0][1] = brightnessLevels[0][0];
@@ -72,6 +74,9 @@ public class Rasterizer{
       vertexBrightness[2][2] = brightnessLevels[2][2];
       vertexBrightness[2][3] = brightnessLevels[2][3];
     }
+    for(byte i = 0; i < 4; i++)
+      if(Math.abs(vertexBrightness[0][i]-vertexBrightness[1][i]) > 0.0000001 || Math.abs(vertexBrightness[1][i]-vertexBrightness[2][i]) > 0.0000001)
+        flags|=32;
   }
 
   //Initial z-buffer and frame buffer initialization
@@ -1570,13 +1575,20 @@ public class Rasterizer{
     float adjustedAlpha = invZ1*alpha;
     float adjustedBeta = invZ2*beta;
     float adjustedGamma = invZ3*gamma;
-    float[] overallBrightness = {Math.max(0, z*(vertexBrightness[0][0]*adjustedAlpha+vertexBrightness[1][0]*adjustedBeta+vertexBrightness[2][0]*adjustedGamma)),
-                                 Math.max(0, z*(vertexBrightness[0][1]*adjustedAlpha+vertexBrightness[1][1]*adjustedBeta+vertexBrightness[2][1]*adjustedGamma)),
-                                 Math.max(0, z*(vertexBrightness[0][2]*adjustedAlpha+vertexBrightness[1][2]*adjustedBeta+vertexBrightness[2][2]*adjustedGamma)),
-                                 Math.max(0, z*(vertexBrightness[0][3]*adjustedAlpha+vertexBrightness[1][3]*adjustedBeta+vertexBrightness[2][3]*adjustedGamma))};
-    // float[] overallBrightness = {Math.max(0, vertexBrightness[0][0]*alpha+vertexBrightness[1][0]*beta+vertexBrightness[2][0]*gamma),
-    //                              Math.max(0, vertexBrightness[0][1]*alpha+vertexBrightness[1][1]*beta+vertexBrightness[2][1]*gamma),
-    //                              Math.max(0, vertexBrightness[0][2]*alpha+vertexBrightness[1][2]*beta+vertexBrightness[2][2]*gamma)};
+    float[] overallBrightness = new float[4];
+    if((flags & 32) == 32){
+      overallBrightness[0] = Math.max(0, z*(vertexBrightness[0][0]*adjustedAlpha+vertexBrightness[1][0]*adjustedBeta+vertexBrightness[2][0]*adjustedGamma));
+      overallBrightness[1] = Math.max(0, z*(vertexBrightness[0][1]*adjustedAlpha+vertexBrightness[1][1]*adjustedBeta+vertexBrightness[2][1]*adjustedGamma));                  
+      overallBrightness[2] = Math.max(0, z*(vertexBrightness[0][2]*adjustedAlpha+vertexBrightness[1][2]*adjustedBeta+vertexBrightness[2][2]*adjustedGamma));                  
+      overallBrightness[3] = Math.max(0, z*(vertexBrightness[0][3]*adjustedAlpha+vertexBrightness[1][3]*adjustedBeta+vertexBrightness[2][3]*adjustedGamma));
+    }
+    else{
+      overallBrightness[0] = Math.max(0, vertexBrightness[0][0]);
+      overallBrightness[1] = Math.max(0, vertexBrightness[0][1]);
+      overallBrightness[2] = Math.max(0, vertexBrightness[0][2]);
+      overallBrightness[3] = Math.max(0, vertexBrightness[0][3]);
+    }
+
     brokenUpColour[0] = Math.min(255, Math.round(brokenUpFill[0]*overallBrightness[0]));
     brokenUpColour[1] = Math.min(255, Math.round(brokenUpFill[1]*overallBrightness[1]));
     brokenUpColour[2] = Math.min(255, Math.round(brokenUpFill[2]*overallBrightness[2]));

@@ -42,7 +42,7 @@ public class sketch_3DTriTest extends PApplet{;
   private LineObj[] testLines = new LineObj[4];
   private LinkedList<LineObj> testLineLinked;
 
-  private Light[] light = new Light[2];
+  private Light[] light = new Light[3];
   private Light secondLight;
 
   private float[][] endPoints1 = {{0, 1.25f, -2.5f}, {0, -1.25f, 2.5f}, {2, -1.25f, 2.5f}};
@@ -112,6 +112,13 @@ public class sketch_3DTriTest extends PApplet{;
     light[1].setType('s');
     light[1].addAction(new RotateLight());
     light[1].addAction(new ColonThree());
+    light[2] = new Light(100, 0, 1500);
+    light[2].setAmbientIntensity(0);
+    light[2].setDiffuseIntensity(10000000);
+    light[2].setSpecularIntensity(20000000);
+    light[2].setType('s');
+    light[2].setInnerSpread(45);
+    light[2].setOuterSpread(90);
     secondLight = new Light();
     secondLight.copy(light[0]);
     secondLight.setLightColour(0xFF);
