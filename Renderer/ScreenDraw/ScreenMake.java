@@ -112,7 +112,11 @@ public class ScreenMake{
 
     public static void setDitherMatrixSize(int squareSize){
       if((flags2 & 1) == 0){
-        ditherMatrixSize = 1 << Math.max(1, squareSize);
+        ditherMatrixSize = 1 << squareSize;
+        if(ditherMatrixSize*ditherMatrixSize < 4){
+          ditherMatrixSize = 2;
+          squareSize = 1;
+        }
         ditherMatrix = new float[ditherMatrixSize*ditherMatrixSize];
         float invSqrSize = 1f/(ditherMatrix.length);
         float maxValue = 1f/(ditherMatrix.length-1);
