@@ -1,9 +1,9 @@
 package Renderer.Objects.SceneEntities;
-import Renderer.ModelDataHandler.BillboardImg;
+import Renderer.ModelDataHandler.Graphic;
 import Renderer.Objects.Parents.*;
 //Class for abstracting away billboarded sprite object data
 public class Billboard extends ShadedObject{
-  private BillboardImg image;
+  private Graphic image;
   private int fill = 0xFFFFFFFF;
   private int stroke = 0xFF000000;
   //Flag bits:
@@ -12,44 +12,44 @@ public class Billboard extends ShadedObject{
 
   public Billboard(){
     super((byte)-120);
-    image = new BillboardImg();
+    image = new Graphic();
     fill = 0xFFFFFFFF;
     stroke = 0xFF000000;
   }
 
   public Billboard(String imagePath){
     super((byte)-120);
-    image = new BillboardImg(imagePath);
+    image = new Graphic(imagePath);
     stroke = 0xFF000000;
     fill = 0xFFFFFFFF;
   }
   public Billboard(String imagePath, int newFill){
     super((byte)-120);
-    image = new BillboardImg(imagePath);
+    image = new Graphic(imagePath);
     fill(newFill);
     stroke = 0xFF000000;
   }
   public Billboard(int[] newImage, int newWidth, int newHeight){
     super((byte)-120);
-    image = new BillboardImg(newImage, newWidth, newHeight);
+    image = new Graphic(newImage, newWidth, newHeight);
     fill = 0xFFFFFFFF;
     stroke = 0xFF000000;
 
   }
   public Billboard(int[] newImage, int newWidth, int newHeight, byte newTint){
     super((byte)-120);
-    image = new BillboardImg(newImage, newWidth, newHeight);
+    image = new Graphic(newImage, newWidth, newHeight);
     fill = 0xFFFFFFFF;
     stroke = 0xFF000000;
   }
 
-  public Billboard(BillboardImg img){
+  public Billboard(Graphic img){
     super((byte)-120);
     image = img;
     fill = 0xFFFFFFFF;
     stroke = 0xFF000000;
   }
-  public Billboard(BillboardImg img, int newFill){
+  public Billboard(Graphic img, int newFill){
     super((byte)-120);
     image = img;
     fill(newFill); 
