@@ -71,6 +71,7 @@ public class ScreenMake{
     private static float ditherRange = 0;
     private static float ditherThreshold = 0.5f;
     private static int ditherMatrixSize = 8;
+    private static int ditherWindow = 8;
     //Contains data pertaining to translucent objects
     //IDs (1 for triangle, 2 for billboarded sprite, 3 for line, 4 for dot)
     //Lighting will only interact with triangles and billboarded sprites
@@ -117,6 +118,7 @@ public class ScreenMake{
           ditherMatrixSize = 2;
           squareSize = 1;
         }
+        ditherWindow = ditherMatrixSize;
         ditherMatrix = new float[ditherMatrixSize*ditherMatrixSize];
         float invSqrSize = 1f/(ditherMatrix.length);
         float maxValue = 1f/(ditherMatrix.length-1);
@@ -124,7 +126,7 @@ public class ScreenMake{
         for(int i = 0; i < ditherMatrixSize; i++){
           for(int j = 0; j < ditherMatrixSize; j++){
             //Solution based on https://bisqwit.iki.fi/story/howto/dither/jy/
-            //Wikipedia's mention of this method for generating dither matrices does not do a good job
+            //Wikipedia's mention of this method for generating dither matrices does not do a good job at explaining it
             int y = i^j;
             int mask = squareSize-1;
             long output = 0;
@@ -139,6 +141,10 @@ public class ScreenMake{
       }
       else
         System.out.println("CANNOT SET THE DITHER MATRIX SIZE ONCE IT'S BEEN SET");
+    }
+
+    public static void setDitherWindowSize(int squareSize){
+      ditherWindow = Math.max(2, Math.min(ditherMatrixSize, squareSize));
     }
 
     public static void setDitherThreshold(float threshold){
@@ -304,7 +310,7 @@ public class ScreenMake{
                                 ((screen[pixelPos] >>> 8) & 0xFF)*Colour.INV_255,
                                 (screen[pixelPos] & 0xFF)*Colour.INV_255};
           if(ditherIntensity >= 0.00001 && (((flags & 1) == 0 && !Float.isNaN(Rasterizer.returnDepthBuffer()[pixelPos])) || (flags & 1) == 1)){
-            float dither = ditherIntensity*ditherMatrix[(i%ditherMatrixSize)*ditherMatrixSize+(j%ditherMatrixSize)];
+            float dither = ditherIntensity*ditherMatrix[(i%ditherWindow)*ditherMatrixSize+(j%ditherWindow)];
             if(ditherRange > 0.00001)
               dither+=(float)(Math.random()*(ditherRange*2)-ditherRange);
             tempColour[1] = (int)(Math.min(1, Math.max(0, ((int)((tempColour[1]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>3<<3;
@@ -1153,7 +1159,7 @@ public class ScreenMake{
                             (int)(adjColours[2]*255)}; 
 
         if(ditherIntensity >= 0.00001 && (((flags & 1) == 0 && !Float.isNaN(Rasterizer.returnDepthBuffer()[pixelPos])) || (flags & 1) == 1)){
-          float dither = ditherIntensity*ditherMatrix[(i%ditherMatrixSize)*ditherMatrixSize+(j%ditherMatrixSize)];
+          float dither = ditherIntensity*ditherMatrix[(i%ditherWindow)*ditherMatrixSize+(j%ditherWindow)];
           if(ditherRange > 0.00001)
             dither+=(float)(Math.random()*(ditherRange*2)-ditherRange);
           tempColour[1] = (int)(Math.min(1, Math.max(0, ((int)((adjColours[0]+dither)*31+ditherThreshold)*0.032258064516129)))*255)>>>3<<3;
