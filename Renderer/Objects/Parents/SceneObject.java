@@ -1,6 +1,7 @@
 package Renderer.Objects.Parents;
 import Wrapper.*;
 import Actions.ObjectActions.*;
+import Renderer.ScreenDraw.MVP;
 //Superclass for objects that are drawn in a scene
 public class SceneObject extends ScalableEntity{
     //1 = isAttachedToCamera, 2 = noDepth
@@ -73,6 +74,10 @@ public class SceneObject extends ScalableEntity{
     }
     public float returnModelTint(){
         return uniTint.val;
+    }
+
+    public void setModelMatrix(){
+        modelMatrix.copy(MVP.inverseViewMatrix(pos, rot, scale, shear));
     }
 
     public void copy(Object o){

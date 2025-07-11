@@ -15,7 +15,7 @@ import processing.data.*;
 import processing.event.*;
 import processing.opengl.*;
 
-public class sketch_3DTriTest extends PApplet{;
+public class sketch_3DTriTest extends PApplet{
   //SCREEN DIMENSIONS
   private final int WIDTH = 480;
   private final int HEIGHT = 640;
@@ -86,6 +86,7 @@ public class sketch_3DTriTest extends PApplet{;
 
 
   public void setup(){
+    MVP.returnRotation(0, 0, 90);
     //LoadModelFile.disableMessages();
     eye.addAction(new MoveCamera());
     eye.setDrawDistance(1800);
