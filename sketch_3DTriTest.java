@@ -220,7 +220,7 @@ public class sketch_3DTriTest extends PApplet{;
     
     //The long rectangular prism
     testModels[3] = new Model(testGeometry[0], testPallets[1]);
-    testModels[3].setPosition(0.5f, 3, 9);
+    testModels[3].setPosition(0, 3, 9);
     testModels[3].setScale(1, 0.5f, 4);
     testModels[3].setShininess(100);
     testModels[3].addAction(new RotateLongModel());
@@ -237,14 +237,14 @@ public class sketch_3DTriTest extends PApplet{;
     
     //Black-and-white cube
     testModels[5] = new Model(testGeometry[0], testPallets[0]);
-    testModels[5].setPosition(1, 0, 18);
+    testModels[5].setPosition(0, 0, 18);
     testModels[5].addAction(new RotateDefaultModel());
     testModels[5].setStencilAction(new ChangeStencil());
 
     
     //Bowser platform
     testModels[6] = new Model(testGeometry[0], testPallets[1]);
-    testModels[6].setPosition(0.5f, 3, 12);
+    testModels[6].setPosition(0, 3, 12);
     testModels[6].setScale(2, 0.5f, 2);
     testModels[6].addAction(new RotateAtFiveDegrees(true));
     testModels[6].setGauroud(false);
