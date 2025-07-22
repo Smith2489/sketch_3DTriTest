@@ -5,8 +5,9 @@ import Maths.LinearAlgebra.*;
 import Renderer.ModelDataHandler.*;
 import Renderer.Objects.SceneEntities.*;
 import Renderer.ScreenDraw.*;
-import Renderer.Objects.Physics.*;
-
+import TestActions.Models.*;
+import TestActions.Lights.*;
+import TestActions.Cameras.*;
 import Wrapper.*;
 
 
@@ -87,12 +88,13 @@ public class sketch_3DTriTest extends PApplet{
 
   public void setup(){
     MVP.returnRotation(0, 0, 90);
+    Action.setPApplet(this);
     //LoadModelFile.disableMessages();
     eye.addAction(new MoveCamera());
     eye.setDrawDistance(1800);
     eye.colour(0x55AAFF);
     eye2.setDrawDistance(1800);
-    eye2.addAction(new ManageSecondCamera(eye));
+    //eye2.addAction(new ManageSecondCamera(eye));
     eye2.alwaysPerform(true);
     light[0] = new Light(0, -50, -25);
     light[0].setLightColour(0x55AAFF, (byte)0);
@@ -338,6 +340,9 @@ public class sketch_3DTriTest extends PApplet{
     sceneCentre[0]/=smallerSet.length;
     sceneCentre[1]/=smallerSet.length;
     sceneCentre[2]/=smallerSet.length;
+    ManageSecondCamera secondEyeAction = new ManageSecondCamera(eye);
+    secondEyeAction.setSceneCentre(sceneMag, sceneCentre);
+    eye2.addAction(secondEyeAction);
     if(Math.abs((float)width/height - THREE_FOUR) <= 0.00001)
       testImages[1] = loadImage(PATH_BASE+"backgrounds/testImage.png");
     else
@@ -554,73 +559,6 @@ public class sketch_3DTriTest extends PApplet{
     System.out.println(Math.round(frameRate));
   }
 
-  private class SetTransparency extends ModelAction{
-    private Camera object;
-    //ORIGINALS: 360, 1800
-    private static final float MIN_DIST = 360;
-    private static final float MAX_DIST = 1800;
-    public SetTransparency(Camera newCam){
-      object = newCam; 
-    }
-    public void init(){
-
-    }
-    public void perform(){
-      float tint = dist(object.returnPosition());
-      if(tint > MIN_DIST)
-        setModelTint(1 - ((tint)/MAX_DIST)); 
-      else
-        setModelTint(1);
-    }
-  }
-
-  private class RotateMess extends ModelAction{
-    public void init(){
-      
-    }
-    public void perform(){
-      addToRotation(-1.5f*speed, (byte)0);
-      addToRotation(-1.5f*speed, (byte)2);
-      float[] tempRot = getRot();
-      if(tempRot[0] < 0)
-        addToRotation(360, (byte)0);
-      if(tempRot[2] < 0)
-        addToRotation(360, (byte)2);
-    }
-  }
-
-  private class RotateTetrahedron extends ModelAction{
-    public void init(){
-      
-    }
-    public void perform(){
-      addToRotation(1.5f*speed, (byte)0);
-      addToRotation(-3*speed, (byte)1);
-      float[] tempRot = getRot();
-      if(tempRot[1] < 0)
-        addToRotation(360, (byte)1);
-      if(tempRot[0] >= 360)
-        addToRotation(-360, (byte)0);
-    }
-  }
-
-  private class SpinTwoTriangles extends ModelAction{
-    private int direction = 0;
-    public void init(){
-      direction = (int)(Math.random()*2)-1;
-      if(direction == 0)
-        direction = 1;
-    }
-    public void perform(){
-      addToRotation(-0.5f*direction*speed, (byte)1);
-      float[] tempRot = getRot();
-      if(tempRot[1] < 0)
-        addToRotation(360, (byte)1);
-      else if(tempRot[1] >= 360)
-        addToRotation(-360, (byte)1);
-    }
-  }
-
   private class ColonThree extends LightAction{
     public void init(){
       System.out.println("Started. :3");
@@ -630,362 +568,9 @@ public class sketch_3DTriTest extends PApplet{
     }
   }
 
-  private class RotateLongModel extends ModelAction{
-    public void init(){
-    }
-    public void perform(){
-      matrixTransform();
-      float[] modelForward = getForward();
-      if(keyPressed){
-        switch(key){
-          case 'w':
-            addToPosition(0.5f*speed, modelForward);
-            break;
-          case 's':
-            addToPosition(-0.5f*speed, modelForward);
-            break;
-          case 'd':
-            addToRotation(0.5f*speed, (byte)1);
-            break;
-          case 'a':
-            addToRotation(-0.5f*speed, (byte)1);
-            break;
-          case 'g':
-            addToRotation(0.5f*speed, (byte)0);
-            break;
-          case 'h':
-            addToRotation(-0.5f*speed, (byte)0);
-            break;
-          case '=':
-            initPositionShake(0.6f, 50);
-            initRotationShake(15, 50);
-            break;
-        }
-      }
-      shakePosition();
-      shakeRotation();
-      float[] tempRot = getRot();
-      if(tempRot[1] < 0)
-        addToRotation(360, (byte)1);
-      else if(tempRot[1] >= 360)
-        addToRotation(-360, (byte)1);
-      if(tempRot[0] < 0)
-        addToRotation(360, (byte)0);
-      else if(tempRot[0] >= 360)
-        addToRotation(-360, (byte)0);
-    }
-  }
-
   private class ChangeStencil extends StencilAction{
     public void updateStencil(){
       stencilPixel = -1;
-    }
-  }
-
-
-  private class RotateAtFiveDegrees extends ModelAction{
-    private int direction = 1;
-    public RotateAtFiveDegrees(boolean positive){
-      if(positive)
-        direction = 1;
-      else
-        direction = -1;
-    }
-    public void init(){
-      
-    }
-    public void perform(){
-      addToRotation(5*direction*speed, (byte)1);
-      float[] tempRot = getRot();
-      if(tempRot[1] < 0)
-        addToRotation(360, (byte)1);
-      else if(tempRot[1] >= 360)
-        addToRotation(-360, (byte)1);
-    }
-  }
-
-  private class RotateBillboard extends ModelAction{
-    public void init(){
-      
-    }
-    public void perform(){
-      addToRotation(0.25f*speed, (byte)2);
-      if(getRot()[2] >= 360)
-        addToRotation(-360, (byte)2);
-    }
-  }
-  private class RotateDefaultModel extends ModelAction{
-    public void init(){
-      
-    }
-    public void perform(){
-      addToRotation(0.25f*speed, (byte)0);
-      addToRotation(0.25f*speed, (byte)1);
-      addToRotation(0.25f*speed, (byte)2);
-      float[] tempRot = getRot();
-      if(tempRot[0] >= 360)
-        addToRotation(-360, (byte)0);
-      if(tempRot[1] >= 360)
-        addToRotation(-360, (byte)1);
-      if(tempRot[2] >= 360)
-        addToRotation(-360, (byte)2);
-    }
-  }
-  private class RotateRhombohedron extends ModelAction{
-    public void init(){
-      
-    }
-    public void perform(){
-      addToRotation(-2*speed, (byte)0);
-      addToRotation(2*speed, (byte)1);
-      float[] tempRot = getRot();
-      if(tempRot[0] < 0)
-        addToRotation(360, (byte)0);
-      if(tempRot[1] >= 360)
-        addToRotation(-360, (byte)1);
-    }
-  }
-
-  private class RotateLight extends LightAction{
-    public void init(){
-      
-    }
-    private float angularVelocity = 1f;
-    public void perform(){
-      addToRotation(angularVelocity, (byte)1);
-      float[] tempRot = getRot();
-      if(tempRot[1] > 360){
-        addToRotation(-360, (byte)1);
-      }
-      else if(tempRot[1] < 0){
-          addToRotation(360, (byte)1);
-      }
-    }
-  }
-
-  private class MoveLight extends LightAction{
-    private float velocity = 0.05f;
-    private final float[] DIR = {0, 0, 1};
-    public void init(){
-
-      
-    }
-    public void perform(){
-        addToPosition(velocity*speed, DIR);
-        float[] tempPos = getPos();
-        if(tempPos[2] > 100){
-          hardSetPosition(tempPos[0], tempPos[1], 100);
-          velocity*=-1;
-        }
-        else if(tempPos[2] < -100){
-          hardSetPosition(tempPos[0], tempPos[1], 100);
-          velocity*=-1;
-        }
-    }
-  }
-
-  private class SpinSlab extends ModelAction{
-    private boolean keyLocked = false;
-    private int spinSpeed = 2;
-    private float[] startPosition = {0, 0, 0};
-    private float[] scale = new float[3];
-    public void init(){
-      startPosition[0] = getPos()[0];
-      startPosition[1] = getPos()[1];
-      startPosition[2] = getPos()[2];
-      Physics.fluidDensity = 0.25f;
-      Physics.gravityAcceleration = 0.005f;
-      physics.terminalVelocity = 0.5f;
-      physics.setGravityVelocity();
-      scale = getScale();
-    }
-    public void perform(){
-      physics.applyGravity();
-      if(keyPressed){
-        if(key == 'r'){
-          hardSetPosition(startPosition);
-          physics.setGravityVelocity();
-        }
-        if(!keyLocked){
-          keyLocked = true;
-          switch(key){
-            case '5':
-              if(Math.abs(spinSpeed) == 2)
-                spinSpeed = 0;
-              else
-                spinSpeed = 2;
-              break;
-            case '6':
-              if(Math.abs(spinSpeed) == 2)
-                spinSpeed = 0;
-              else
-                spinSpeed = -2;
-              break;
-          }
-        }
-      }
-      else
-        keyLocked = false;
-      float[] tempScale = getScale();
-      if(keyPressed){
-        if(key == '8'){
-          if(tempScale[0] < 10)
-            scale[0]+=0.5;
-        }
-        else if(key == '3'){
-          if(scale[0] > 0.5)
-            scale[0]-=0.5;
-        }
-        scale[1] = scale[0];
-        scale[2] = scale[0];
-        hardSetScale(scale);
-      }
-      addToRotation(spinSpeed*speed, (byte)2);
-      addToRotation(spinSpeed*speed+0.0001f, (byte)1);
-      float[] tempRot = getRot();
-      if(tempRot[2] > 360)
-        addToRotation(-360, (byte)2);
-      if(tempRot[2] < 0)
-        addToRotation(360, (byte)2);
-      if(tempRot[1] > 360)
-        addToRotation(-360, (byte)1);
-      if(tempRot[1] < 0)
-        addToRotation(360, (byte)1);
-    }
-  }
-
-
-  private class MoveCamera extends CameraAction{
-    public void init(){
-      
-    }
-    public void perform(){
-      float[] eyeForward = getForward();
-      float[] eyeRight = getRight();
-      if(keyPressed){
-        switch(key){
-          case 'i':
-            addToRotation(0.5f*speed, (byte)0);
-            break;
-          case 'k':
-            addToRotation(-0.5f*speed, (byte)0);
-            break;
-          case 'j':
-            addToRotation(-0.5f*speed, (byte)1);
-            break;
-          case 'l':
-            addToRotation(0.5f*speed, (byte)1);
-            break; 
-          case '1':
-            addToPosition(0.05f*speed, eyeForward);
-          break;
-          case '2':
-            addToPosition(-0.05f*speed, eyeForward);
-            break;
-          case '9':
-            addToPosition(-0.05f*speed, eyeRight);
-            break;
-          case '0':
-            addToPosition(0.05f*speed, eyeRight);
-            break;
-        }
-      }
-      
-      if(mousePressed){
-        if(mouseButton == LEFT){
-          if(mouseX >= ((width >>> 1) + 50))
-            addToPosition(0.05f*speed, eyeRight);
-          else if(mouseX <= ((width >>> 1) - 50))
-            addToPosition(-0.05f*speed, eyeRight);
-          if(mouseY >= ((height >>> 1)+50))
-            addToPosition(-0.05f*speed, eyeForward);
-          else if(mouseY <= ((height >>> 1)-50))
-            addToPosition(0.05f*speed, eyeForward);
-        }
-        if(mouseButton == RIGHT){
-          if(mouseX >= ((width >>> 1) + 50))
-            addToRotation(0.5f*speed, (byte)1);
-          else if(mouseX <= ((width >>> 1) - 50))
-            addToRotation(-0.5f*speed, (byte)1);
-          if(mouseY >= ((height >>> 1)+50))
-            addToRotation(-0.5f*speed, (byte)0);
-          else if(mouseY <= ((height >>> 1)-50))
-            addToRotation(0.5f*speed, (byte)0);
-        }
-      }
-      float[] tempRot = getRot();
-      if(tempRot[0] >= 360)
-        addToRotation(-360, (byte)0);
-      else if(tempRot[0] < 0)
-        addToRotation(360, (byte)0);
-      if(tempRot[1] >= 360)
-        addToRotation(-360, (byte)1);
-      else if(tempRot[1] < 0)
-        addToRotation(360, (byte)1);
-    }
-  }
-
-  private class ManageSecondCamera extends CameraAction{
-    private boolean cPressed = false;
-    private Camera other;
-    public ManageSecondCamera(Camera newCamera){
-      cPressed = false;
-      other = newCamera;
-    }
-    public void init(){
-      
-    }
-    public void perform(){
-      if(keyPressed){
-        if(key == 'c' && !cPressed){
-            if((outlineControl & 16) == 0){
-              outlineControl = (byte)((outlineControl & -13) | ((outlineControl+4 & 12)));
-              hardSetPosition(0, 0, 0);
-              hardSetRotation(0, 0, 0);
-              cPressed = true;
-          }
-        }
-      }
-      else
-        cPressed = false;
-        
-    if((outlineControl & 12) == 0){
-      model.copy(other.returnModelMatrix());
-      hardSetPosition(other.returnPosition());
-      hardSetRotation(other.returnRotation());
-      hardSetScale(other.returnScale());
-      hardSetShear(other.returnShear());
-    }
-    else{
-        //Secondary camera
-        switch(outlineControl & 12){
-          case 4:
-            addToRotation(-speed, (byte)1);
-            break;
-          case 8:
-            addToRotation(0.5f*speed, (byte)0);
-            break;
-          case 12:
-            addToRotation(-0.5f*speed, (byte)2);
-            break;
-        }
-        float[] eye2Back = getBackward();
-        hardSetPosition(sceneMag*eye2Back[0]+sceneCentre[0], sceneMag*eye2Back[1]+sceneCentre[1], sceneMag*eye2Back[2]+sceneCentre[2]);
-      }
-    }
-  }
-
-  private class CopyLight extends LightAction{
-    private Light tempLight;
-    public CopyLight(Light newLight){
-      tempLight = newLight; 
-    }
-    public void init(){
-      
-    }
-    public void perform(){
-      hardSetPosition(tempLight.returnPosition());
-      hardSetRotation(tempLight.returnRotation());
     }
   }
 

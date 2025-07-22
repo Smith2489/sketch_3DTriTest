@@ -2,7 +2,11 @@ package Actions.ObjectActions;
 import Maths.LinearAlgebra.*;
 import Renderer.Objects.Physics.*;
 import Renderer.ScreenDraw.MVP;
-public abstract class Action{
+public abstract class Action extends PInputHandler{
+    protected static final double PI = Math.PI;
+    protected static final double TAU = 2*Math.PI;
+    protected static final double HALF_PI = Math.PI*0.5;
+    protected static final double QUARTER_PI = Math.PI*0.25;
     protected static float speed = 0;
     private static int counter = 0;
     private float[] pos = {0, 0, 0};
@@ -19,10 +23,14 @@ public abstract class Action{
     private boolean rotationShakeStarted = false;
     private float[] oldPos = {0, 0, 0};
     private float[] oldRot = {0, 0, 0};
+
     public abstract void perform();
+
     public static void setRatePerFrame(float newSpeed){
         speed = newSpeed;
     }
+
+
     public boolean positionShakeStarted(){
         return positionShakeStarted;
     }
