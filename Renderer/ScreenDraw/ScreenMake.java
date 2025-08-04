@@ -66,6 +66,7 @@ public class ScreenMake{
     private static LineDisp tempLine = new LineDisp();
     private static Dot tempDot = new Dot();
     private static SceneEntity tempInvis = new SceneEntity();
+    private static Light tempLight = new Light();
 
     private static float ditherIntensity = 0;
     private static float ditherRange = 0;
@@ -90,7 +91,8 @@ public class ScreenMake{
     private static float[][] primativeVertices;
     //Same as above, but for brightness instead
     private static float[][] brightnessValues;
-
+    private static float[] points = new float[3]; //The temporary copy of the point used to calculate the vector from a light source
+    private static float[] halfVec = {0, 0, 0}; //A vector that is between the camera-to-point and light-to-point vectors
     private static int size = 0;
 
     //Solution for finding the nearest neighbouring 15-bit colour found in Acerola's video Color Quantization and Dithering
@@ -429,21 +431,21 @@ public class ScreenMake{
       //Matrix mv = new Matrix(); //For checking if a model is within zNear and zFar (using the frustum does not work for some reason)
       boolean isInClipSpace = false; //Checks if a model is in the frustum
       for(int i = 0; i < lights.size(); i++){
-        Light light = lights.removeFirst();
-        lights.add(light);
+        tempLight = lights.removeFirst();
+        lights.add(tempLight);
         //Calcluating where the light and the camera should be relative to everything else
-        light.setModelMatrix();
-        Matrix4x4 uniTransform = light.transform();
-        if(light.returnType() == 'p'){
-          lightPos[i] = dropW(MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnPosition()))));
+        tempLight.setModelMatrix();
+        Matrix4x4 uniTransform = tempLight.transform();
+        if(tempLight.returnType() == 'p'){
+          lightPos[i] = dropW(MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(tempLight.returnPosition()))));
         }
-        else if(light.returnType() == 'd')
-          lightAngle[i] = dropW(MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnLightDirection(), 0))));
+        else if(tempLight.returnType() == 'd')
+          lightAngle[i] = dropW(MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(tempLight.returnLightDirection(), 0))));
         else{
-          lightPos[i] = dropW(MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnPosition()))));
-          lightAngle[i] = dropW(MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(light.returnLightDirection(), 0))));
+          lightPos[i] = dropW(MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(tempLight.returnPosition()))));
+          lightAngle[i] = dropW(MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(tempLight.returnLightDirection(), 0))));
         }
-        lightColour[i] = light.returnLightColour();
+        lightColour[i] = tempLight.returnLightColour();
         for(int j = 0; j < 3; j++){
           lightColour[i][j][0]*=invCamColour[0];
           lightColour[i][j][1]*=invCamColour[1];
@@ -1788,7 +1790,7 @@ public class ScreenMake{
     }
   }
   private static float[] computeLighting(LinkedList<Light> lights, float[][] lightPos, float[][] lightAngle, float[][][] lightColour, float[] homogeneousPoint, float[] normal, float luster, float overallBrightness, Matrix4x4 model, Model tempModel, int polygonIndex, boolean alreadyComputed){
-    float[] points = new float[3];
+    float[] normalizedVec = {0, 0, -1};
     float[] brightness = {0, 0, 0};
     if(!alreadyComputed)
       points = dropW(MatrixOperations.matrixMultiply(model, homogeneousPoint));
@@ -1800,7 +1802,6 @@ public class ScreenMake{
     float[] camToTriVec = {points[0], points[1], points[2]};
     camToTriVec = VectorOperations.vectorNormalization3D(camToTriVec);
     
-    float[] normalizedVec = {0, 0, -1};
     if(tempModel != null){
       //Transforms the homogeneous vector
       normalizedVec = dropW(MatrixOperations.matrixMultiply(model, from3DVecTo4DVec(VectorOperations.vectorNormalization3D(normal), 0)));
@@ -1813,30 +1814,29 @@ public class ScreenMake{
     }
 
     for(int i = 0; i < lights.size(); i++){
-      Light light = lights.removeFirst();
-      lights.add(light);
+      tempLight = lights.removeFirst();
+      lights.add(tempLight);
       float[] lightToTriVec = new float[3];
       float r2 = 1;
 
-      float[] halfVec = {0, 0, 0};
-
-      if(light.returnType() != 'd'){
+      if(tempLight.returnType() != 'd'){
         lightToTriVec[0] = lightPos[i][0]-points[0];
         lightToTriVec[1] = lightPos[i][1]-points[1];
         lightToTriVec[2] = lightPos[i][2]-points[2];
 
         r2 = vectorDotProduct(lightToTriVec, lightToTriVec);
-        if(Math.abs(r2) > 0.00000001)
+        if(r2 > 0.000001){
           r2 = 1/r2;
-        else if(r2 <= 0.00000001)
-          r2 = 100000000;
+          if(r2 <= 0.000001)
+            continue;
+        }
         else
-          r2 = -100000000;
+          r2 = 1000000;
         lightToTriVec = VectorOperations.vectorNormalization3D(lightToTriVec);
-        halfVec = VectorOperations.vectorNormalization3D(VectorOperations.vectorAddition(camToTriVec, lightToTriVec));
+        halfVec = VectorOperations.vectorNormalization3D(vectorAddition(camToTriVec, lightToTriVec));
       }
       else
-        halfVec = VectorOperations.vectorNormalization3D(VectorOperations.vectorAddition(camToTriVec, lightAngle[i]));
+        halfVec = VectorOperations.vectorNormalization3D(vectorAddition(camToTriVec, lightAngle[i]));
       
       if(tempModel != null && vectorDotProduct(halfVec, normalizedVec) > 0 && tempModel.returnPalletPtr().returnBackVisible(polygonIndex)){
         normalizedVec[0]*=-1;
@@ -1845,38 +1845,35 @@ public class ScreenMake{
       }
       float diffuse = 1;
       float specular = Math.max(0, vectorDotProduct(normalizedVec, halfVec));
-      if(light.returnType() == 'p')
+      if(tempLight.returnType() == 'p')
         diffuse = Math.max(0, vectorDotProduct(normalizedVec, lightToTriVec));
-      else if(light.returnType() == 'd')
+      else if(tempLight.returnType() == 'd')
         diffuse = Math.max(0, vectorDotProduct(normalizedVec, lightAngle[i]));
       else{
         float bright = vectorDotProduct(lightToTriVec, lightAngle[i]);
-        diffuse = light.spreadBrightness(bright)*Math.max(0, vectorDotProduct(normalizedVec, lightToTriVec));
-        specular*=light.spreadBrightness(bright);
+        diffuse = tempLight.spreadBrightness(bright)*Math.max(0, vectorDotProduct(normalizedVec, lightToTriVec));
+        specular*=tempLight.spreadBrightness(bright);
       }
-      diffuse*=(light.returnDiffuseIntensity()*r2);
-      specular = ((float)Math.pow(specular, luster)*light.returnSpecularIntensity()*r2);
-      brightness[0]+=((lightColour[i][0][0]*light.returnAmbientIntensity()) + ((lightColour[i][1][0]*diffuse) + (lightColour[i][2][0]*specular)))*overallBrightness;
-      brightness[1]+=((lightColour[i][0][1]*light.returnAmbientIntensity()) + ((lightColour[i][1][1]*diffuse) + (lightColour[i][2][1]*specular)))*overallBrightness;
-      brightness[2]+=((lightColour[i][0][2]*light.returnAmbientIntensity()) + ((lightColour[i][1][2]*diffuse) + (lightColour[i][2][2]*specular)))*overallBrightness;
+      diffuse*=(tempLight.returnDiffuseIntensity()*r2);
+      specular = ((float)Math.pow(specular, luster)*tempLight.returnSpecularIntensity()*r2);
+      brightness[0]+=((lightColour[i][0][0]*tempLight.returnAmbientIntensity()) + ((lightColour[i][1][0]*diffuse) + (lightColour[i][2][0]*specular)))*overallBrightness;
+      brightness[1]+=((lightColour[i][0][1]*tempLight.returnAmbientIntensity()) + ((lightColour[i][1][1]*diffuse) + (lightColour[i][2][1]*specular)))*overallBrightness;
+      brightness[2]+=((lightColour[i][0][2]*tempLight.returnAmbientIntensity()) + ((lightColour[i][1][2]*diffuse) + (lightColour[i][2][2]*specular)))*overallBrightness;
     }
     return brightness;
   
   }
   private static float vectorDotProduct(float[] vect1, float[] vect2){
-    if(vect1.length != 3 || vect2.length != 3){
-      System.out.println("ERROR: WRONG NUMBER OF DIMESIONS (MUST BE 3)");
-      System.exit(1);
-    }
     return vect1[0]*vect2[0]+vect1[1]*vect2[1]+vect1[2]*vect2[2];
+  }
+
+  private static float[] vectorAddition(float[] vect1, float[] vect2){
+    float[] output = {vect1[0]+vect2[0], vect1[1]+vect2[1], vect1[2]+vect2[2]};
+    return output;
   }
 
   //Forces a vector with dimensions higher than three to be 3D
   private static float[] dropW(float[] vector){
-    if(vector.length < 3){
-      System.out.println("ERROR: WRONG NUMBER OF DIMENSIONS (MUST BE AT LEAST 3)");
-      System.exit(1);
-    }
     float[] output = {vector[0], vector[1], vector[2]};
     return output;
   }

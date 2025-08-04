@@ -4,6 +4,7 @@ import Renderer.Objects.SceneEntities.*;
 import Actions.BufferActions.StencilAction;
 //Draws triangles to a frame buffer
 public class Rasterizer{
+  private static final float EPSILON = 0.0000001f;
   private static int minTransparency = 0;
   private static int halfWidth = 50;
   private static int halfHeight = 50;
@@ -11,8 +12,8 @@ public class Rasterizer{
   private static float[] zBuff = new float[10000]; //Z-buffer
   private static byte[] stencil = new byte[10000]; //Stencil buffer (why is stencil such a weirdly spelt word?) 00000000 = completely black (no draw), 11111111 = completely white (draw), in between values should affect the brightness
   private static int wid = 100; //Width
-  private static byte stencilMask = -1; //A mask for the stencil test
   private static int heig = 100; //Height
+  private static byte stencilMask = -1; //A mask for the stencil test
   private static int background = 0xFF000000; //Background colour
   private static float maxProbability = 1;
   private static float threshold = 1.1f;
@@ -75,7 +76,7 @@ public class Rasterizer{
       vertexBrightness[2][3] = brightnessLevels[2][3];
     }
     for(byte i = 0; i < 4; i++)
-      if(Math.abs(vertexBrightness[0][i]-vertexBrightness[1][i]) > 0.0000001 || Math.abs(vertexBrightness[1][i]-vertexBrightness[2][i]) > 0.0000001)
+      if(Math.abs(vertexBrightness[0][i]-vertexBrightness[1][i]) > EPSILON || Math.abs(vertexBrightness[1][i]-vertexBrightness[2][i]) > EPSILON)
         flags|=32;
   }
 
@@ -394,8 +395,9 @@ public class Rasterizer{
     screenBounds[0][1] = Math.round(Math.min(wid, Math.max(poses[0][0], Math.max(poses[1][0], poses[2][0]))));
     screenBounds[1][0] = Math.round(Math.max(0, Math.min(poses[0][1], Math.min(poses[1][1], poses[2][1]))));
     screenBounds[1][1] = Math.round(Math.min(heig, Math.max(poses[0][1], Math.max(poses[1][1], poses[2][1]))));
-    int maxX = screenBounds[0][1];
     int minX = screenBounds[0][0];
+    int maxX = screenBounds[0][1];
+
   
       
     //Used for centring a pixel
@@ -405,28 +407,31 @@ public class Rasterizer{
     float[] interpolatedEdges = {0, 0}; //i0 = lowest-mid, i1 = mid-highest, i2 = highest-lowest
     float[] denominators = {0, 0, 0};
     denominators[0] = poses[1][1]-poses[0][1];
-    if(Math.abs(denominators[0]) < 0.0000001)
+    if(denominators[0] >= -EPSILON && denominators[0] <= EPSILON)
       denominators[0] = Float.NaN;
     else
       denominators[0] = 1/denominators[0];
     
     denominators[1] = poses[2][1]-poses[1][1];
-    if(Math.abs(denominators[1]) < 0.0000001)
+    if(denominators[1] >= -EPSILON && denominators[1] <= EPSILON)
       denominators[1] = Float.NaN;
     else
       denominators[1] = 1/denominators[1];
     denominators[2] = poses[2][1]-poses[0][1];
-    if(Math.abs(denominators[2]) < 0.0000001)
+    if(denominators[2] >= -EPSILON && denominators[2] <= EPSILON)
       denominators[2] = Float.NaN;
     else
       denominators[2] = 1/denominators[2];
+
+    //Holds how far along each edge the function is at the current scanline
+    float[] t = {-1, -1, -1};
     //Filling in the triangle
     if((flags & 16) == 16){
       
       //Iterating over the BB
       for(int i = screenBounds[1][0]; i < screenBounds[1][1]; i++){
         y = i+0.5f;
-        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges, denominators);
+        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges, denominators, t);
 
         //Filling the scanline
         for(int j = screenBounds[0][0]; j < screenBounds[0][1]; j++){
@@ -456,8 +461,9 @@ public class Rasterizer{
        final IntWrapper[] endX = {new IntWrapper(xE[1].val), new IntWrapper(xE[2].val), new IntWrapper(xE[0].val)};
        final IntWrapper[] endY = {new IntWrapper(yE[1].val), new IntWrapper(yE[2].val), new IntWrapper(yE[0].val)};
        //Drawing each side using Bresenham's line algorithm
-       for(byte i = 0; i < 3; i++)
-         drawLine(xE[i], yE[i], endX[i], endY[i], stroke);
+       drawLine(xE[0], yE[0], endX[0], endY[0], stroke);
+       drawLine(xE[1], yE[1], endX[1], endY[1], stroke);
+       drawLine(xE[2], yE[2], endX[2], endY[2], stroke);
     }
   }
   //Drawing a triangle with 3D points (points directly in parametres)
@@ -475,7 +481,7 @@ public class Rasterizer{
 
     float denominator = (poses[1][1] - poses[2][1])*(poses[0][0] - poses[2][0]) + (poses[2][0] - poses[1][0])*(poses[0][1] - poses[2][1]);
 
-    if(Math.abs(denominator) <= 0.000000001)
+    if(denominator >= -EPSILON && denominator <= EPSILON)
       return;
 
     denominator = 1/denominator;
@@ -485,8 +491,8 @@ public class Rasterizer{
     screenBounds[0][1] = Math.round(Math.min(wid, Math.max(poses[0][0], Math.max(poses[1][0], poses[2][0]))));
     screenBounds[1][0] = Math.round(Math.max(0, Math.min(poses[0][1], Math.min(poses[1][1], poses[2][1]))));
     screenBounds[1][1] = Math.round(Math.min(heig, Math.max(poses[0][1], Math.max(poses[1][1], poses[2][1]))));
-    int maxX = screenBounds[0][1];
     int minX = screenBounds[0][0];
+    int maxX = screenBounds[0][1];
 
       
     //Used for centring a pixel
@@ -497,27 +503,30 @@ public class Rasterizer{
     float[] interpolatedEdges = {0, 0}; //i0 = lowest-mid, i1 = mid-highest, i2 = highest-lowest
     float[] denominators = {0, 0, 0};
     denominators[0] = poses[1][1]-poses[0][1];
-    if(Math.abs(denominators[0]) < 0.0000001)
+    if(denominators[0] >= -EPSILON && denominators[0] <= EPSILON)
       denominators[0] = Float.NaN;
     else
       denominators[0] = 1/denominators[0];
     denominators[1] = poses[2][1]-poses[1][1];
-    if(Math.abs(denominators[1]) < 0.0000001)
+    if(denominators[1] >= -EPSILON && denominators[1] <= EPSILON)
       denominators[1] = Float.NaN;
     else
       denominators[1] = 1/denominators[1];
     denominators[2] = poses[2][1]-poses[0][1];
-    if(Math.abs(denominators[2]) < 0.0000001)
+    if(denominators[2] >= -EPSILON && denominators[2] <= EPSILON)
       denominators[2] = Float.NaN;
     else
       denominators[2] = 1/denominators[2];
+    //Holds how far along each edge the function is at the current scanline
+    float[] t = {-1, -1, -1};
+
     //Filling in the triangle
     if((flags & 16) == 16){
       
       //Iterating over the BB
       for(int i = screenBounds[1][0]; i < screenBounds[1][1]; i++){
         y = i+0.5f;
-        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges, denominators);
+        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges, denominators, t);
         //Filling the scanline
         for(int j = screenBounds[0][0]; j < screenBounds[0][1]; j++){
           int pixelPos = wid*i+j;
@@ -531,10 +540,10 @@ public class Rasterizer{
             //Plotting the pixel
             float z = (p1Z*alpha + p2Z*beta + p3Z*gamma); //Barycentric z
             float tempZ = z;
-            if(Math.abs(tempZ) > 0.0000001f)
+            if(tempZ < -EPSILON || tempZ > EPSILON)
               tempZ = 1/tempZ;
             else
-              tempZ = 0.0000001f*(((flags & 4) >>> 1)-1);
+              tempZ = EPSILON*(((flags & 4) >>> 1)-1);
             //if(!depthWrite)
             //z*=(((flags & 4) >>> 1)-1);
             int[] brokenUpFrame = {frame[pixelPos] >>> 24, 
@@ -542,7 +551,7 @@ public class Rasterizer{
                                   (frame[pixelPos] >>> 8) & 0xFF, 
                                   frame[pixelPos] & 0xFF};
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if((((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]) || Float.isNaN(zBuff[pixelPos]))){
+            if(Float.isNaN(zBuff[pixelPos]) || (((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]))){
               computeLighting(tempZ, p1Z, p2Z, p3Z, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
@@ -573,23 +582,35 @@ public class Rasterizer{
        final IntWrapper[] endY = {new IntWrapper(yE[1].val), new IntWrapper(yE[2].val), new IntWrapper(yE[0].val)};
        final float[] endZ = {zE[1], zE[2], zE[0]};
        //Drawing each side with Bresenham's line algorithm
-       for(byte i = 0; i < 3; i++)
-         drawLine(xE[i], yE[i], zE[i], endX[i], endY[i], endZ[i], stroke, (flags & 4) == 0);
+       drawLine(xE[0], yE[0], zE[0], endX[0], endY[0], endZ[0], stroke, (flags & 4) == 0);
+       drawLine(xE[1], yE[1], zE[1], endX[1], endY[1], endZ[1], stroke, (flags & 4) == 0);
+       drawLine(xE[2], yE[2], zE[2], endX[2], endY[2], endZ[2], stroke, (flags & 4) == 0);
     }
   }
   
   public static void triangleDraw3D(Triangle triangle){
     //Setting up the colour
-    stroke = triangle.getStroke();
-    fill = triangle.getFill();
+    if(triangle.getHasStroke()){
+      flags|=8;
+      stroke = triangle.getStroke();
+    }
+    else
+      flags&=-9;
+
+    if(triangle.getHasFill()){
+      flags|=16;
+      fill = triangle.getFill();
+    }
+    else
+      flags&=-17;
+    
     brokenUpColour[0] = fill >>> 24;
     alphaNorm = brokenUpColour[0]*Colour.INV_255;
     brokenUpFill[0] = brokenUpColour[0];
     brokenUpFill[1] = (fill >>> 16) & 0xFF;
     brokenUpFill[2] = (fill >>> 8) & 0xFF;
     brokenUpFill[3] = fill & 0xFF;
-    flags = (byte)(((triangle.getHasStroke()) ? flags|8 : flags&-9));
-    flags = (byte)(((triangle.getHasFill()) ? flags|16 : flags&-17));
+
     
     //Setting up the bounding box
     int[][] screenBounds = {{0x80000000, 0x7FFFFFF}, {0x80000000, 0x7FFFFFF}};
@@ -603,7 +624,7 @@ public class Rasterizer{
 
     float denominator = (poses[1][1] - poses[2][1])*(poses[0][0] - poses[2][0]) + (poses[2][0] - poses[1][0])*(poses[0][1] - poses[2][1]);
     
-    if(Math.abs(denominator) <= 0.000000001)
+    if(denominator >= -EPSILON && denominator <= EPSILON)
       return;
 
     denominator = 1/denominator;
@@ -613,8 +634,9 @@ public class Rasterizer{
     screenBounds[0][1] = Math.round(Math.min(wid, Math.max(poses[0][0], Math.max(poses[1][0], poses[2][0]))));
     screenBounds[1][0] = Math.round(Math.max(0, Math.min(poses[0][1], Math.min(poses[1][1], poses[2][1]))));
     screenBounds[1][1] = Math.round(Math.min(heig, Math.max(poses[0][1], Math.max(poses[1][1], poses[2][1]))));
-    int maxX = screenBounds[0][1];
     int minX = screenBounds[0][0];
+    int maxX = screenBounds[0][1];
+
       
     //Used for centring a pixel
     float x = 0;
@@ -624,27 +646,31 @@ public class Rasterizer{
     float[] interpolatedEdges = {0, 0}; //i0 = lowest-mid, i1 = mid-highest, i2 = highest-lowest
     float[] denominators = {0, 0, 0};
     denominators[0] = poses[1][1]-poses[0][1];
-    if(Math.abs(denominators[0]) < 0.0000001)
+    if(denominators[0] >= -EPSILON && denominators[0] <= EPSILON)
       denominators[0] = Float.NaN;
     else
       denominators[0] = 1/denominators[0];
     denominators[1] = poses[2][1]-poses[1][1];
-    if(Math.abs(denominators[1]) < 0.0000001)
+    if(denominators[1] >= -EPSILON && denominators[1] <= EPSILON)
       denominators[1] = Float.NaN;
     else
       denominators[1] = 1/denominators[1];
     denominators[2] = poses[2][1]-poses[0][1];
-    if(Math.abs(denominators[2]) < 0.0000001)
+    if(denominators[2] >= -EPSILON && denominators[2] <= EPSILON)
       denominators[2] = Float.NaN;
     else
       denominators[2] = 1/denominators[2];
+
+    //Holds how far along each edge the function is at the current scanline
+    float[] t = {-1, -1, -1};
+
     //Filling in the triangle
     if((flags & 16) == 16){
       
       //Iterating over the BB
       for(int i = screenBounds[1][0]; i < screenBounds[1][1]; i++){
         y = i+0.5f;
-        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges, denominators);
+        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges, denominators, t);
         //Filling the scanline
         for(int j = screenBounds[0][0]; j < screenBounds[0][1]; j++){
           int pixelPos = wid*i+j;
@@ -658,16 +684,16 @@ public class Rasterizer{
             //Plotting the pixel
             float z = (poses[0][2]*alpha + poses[1][2]*beta + poses[2][2]*gamma); //Barycentric z
             float tempZ = z;
-            if(Math.abs(tempZ) > 0.0000001f)
+            if(tempZ < -EPSILON || tempZ > EPSILON)
               tempZ = 1/tempZ;
             else
-              tempZ = 0.0000001f*(((flags & 4) >>> 1)-1);
+              tempZ = EPSILON*(((flags & 4) >>> 1)-1);
             int[] brokenUpFrame = {frame[pixelPos] >>> 24, 
                                    (frame[pixelPos] >>> 16) & 0xFF, 
                                    (frame[pixelPos] >>> 8) & 0xFF, 
                                    frame[pixelPos] & 0xFF};
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if((((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]) || Float.isNaN(zBuff[pixelPos]))){
+            if(Float.isNaN(zBuff[pixelPos]) || (((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]))){
               computeLighting(tempZ, poses[0][2], poses[1][2], poses[2][2], vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
@@ -690,8 +716,9 @@ public class Rasterizer{
      }
      //Drawing the outline
      if((flags & 8) == 8){
-       for(byte i = 0; i < 3; i++)
-         drawLine(new IntWrapper(Math.round(triangle.getVertices()[i][0])), new IntWrapper(Math.round(triangle.getVertices()[i][1])), triangle.getVertices()[i][2]+0.0004f, new IntWrapper(Math.round(triangle.getVertices()[(i+1)%3][0])), new IntWrapper(Math.round(triangle.getVertices()[(i+1)%3][1])), triangle.getVertices()[(i+1)%3][2]+0.0004f, stroke, (flags & 4) == 0);
+      drawLine(new IntWrapper(Math.round(triangle.getVertices()[0][0])), new IntWrapper(Math.round(triangle.getVertices()[0][1])), triangle.getVertices()[0][2]+0.0004f, new IntWrapper(Math.round(triangle.getVertices()[1][0])), new IntWrapper(Math.round(triangle.getVertices()[1][1])), triangle.getVertices()[1][2]+0.0004f, stroke, (flags & 4) == 0);
+      drawLine(new IntWrapper(Math.round(triangle.getVertices()[1][0])), new IntWrapper(Math.round(triangle.getVertices()[1][1])), triangle.getVertices()[1][2]+0.0004f, new IntWrapper(Math.round(triangle.getVertices()[2][0])), new IntWrapper(Math.round(triangle.getVertices()[2][1])), triangle.getVertices()[2][2]+0.0004f, stroke, (flags & 4) == 0);
+      drawLine(new IntWrapper(Math.round(triangle.getVertices()[2][0])), new IntWrapper(Math.round(triangle.getVertices()[2][1])), triangle.getVertices()[2][2]+0.0004f, new IntWrapper(Math.round(triangle.getVertices()[0][0])), new IntWrapper(Math.round(triangle.getVertices()[0][1])), triangle.getVertices()[0][2]+0.0004f, stroke, (flags & 4) == 0);
     }
   }
   
@@ -710,7 +737,7 @@ public class Rasterizer{
 
     float denominator = (poses[1][1] - poses[2][1])*(poses[0][0] - poses[2][0]) + (poses[2][0] - poses[1][0])*(poses[0][1] - poses[2][1]);
 
-    if(Math.abs(denominator) <= 0.000000001)
+    if(denominator >= -EPSILON && denominator <= EPSILON)
       return;
 
     denominator = 1/denominator;    
@@ -720,8 +747,9 @@ public class Rasterizer{
     screenBounds[0][1] = Math.round(Math.min(wid, Math.max(poses[0][0], Math.max(poses[1][0], poses[2][0]))));
     screenBounds[1][0] = Math.round(Math.max(0, Math.min(poses[0][1], Math.min(poses[1][1], poses[2][1]))));
     screenBounds[1][1] = Math.round(Math.min(heig, Math.max(poses[0][1], Math.max(poses[1][1], poses[2][1]))));
-    int maxX = screenBounds[0][1];
     int minX = screenBounds[0][0];
+    int maxX = screenBounds[0][1];
+ 
       
     //Used for centring a pixel
     float x = 0;
@@ -731,27 +759,31 @@ public class Rasterizer{
     float[] interpolatedEdges = {0, 0}; //i0 = lowest-mid, i1 = mid-highest, i2 = highest-lowest
     float[] denominators = {0, 0, 0};
     denominators[0] = poses[1][1]-poses[0][1];
-    if(Math.abs(denominators[0]) < 0.0000001)
+    if(denominators[0] >= -EPSILON && denominators[0] <= EPSILON)
       denominators[0] = Float.NaN;
     else
       denominators[0] = 1/denominators[0];
     denominators[1] = poses[2][1]-poses[1][1];
-    if(Math.abs(denominators[1]) < 0.0000001)
+    if(denominators[1] >= -EPSILON && denominators[1] <= EPSILON)
       denominators[1] = Float.NaN;
     else
       denominators[1] = 1/denominators[1];
     denominators[2] = poses[2][1]-poses[0][1];
-    if(Math.abs(denominators[2]) < 0.0000001)
+    if(denominators[2] >= -EPSILON && denominators[2] <= EPSILON)
       denominators[2] = Float.NaN;
     else
       denominators[2] = 1/denominators[2];
+
+    //Holds how far along each edge the function is at the current scanline
+    float[] t = {-1, -1, -1};
+
     //Filling in the triangle
     if((flags & 16) == 16){
 
       //Iterating over the BB
       for(int i = screenBounds[1][0]; i < screenBounds[1][1]; i++){
         y = i+0.5f;
-        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges, denominators);
+        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges, denominators, t);
 
         //Filling the scanline
         for(int j = screenBounds[0][0]; j < screenBounds[0][1]; j++){
@@ -768,10 +800,10 @@ public class Rasterizer{
             //Plotting the pixel
             float z = (p1Z*alpha + p2Z*beta + p3Z*gamma); //Barycentric z
             float tempZ = z;
-            if(Math.abs(tempZ) > 0.0000001f)
+            if(tempZ < -EPSILON || tempZ > EPSILON)
               tempZ = 1/tempZ;
             else
-              tempZ = 0.0000001f*(((flags & 4) >>> 1)-1);
+              tempZ = EPSILON*(((flags & 4) >>> 1)-1);
             //if(!depthWrite)
             // z*=(((flags & 4) >>> 1)-1);
             int[] brokenUpFrame = {frame[pixelPos] >>> 24, 
@@ -779,7 +811,7 @@ public class Rasterizer{
                                    (frame[pixelPos] >>> 8) & 0xFF, 
                                    frame[pixelPos] & 0xFF};
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if((((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]) || Float.isNaN(zBuff[pixelPos]))){
+            if(Float.isNaN(zBuff[pixelPos]) || (((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]))){
               computeLighting(tempZ, p1Z, p2Z, p3Z, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
@@ -810,24 +842,36 @@ public class Rasterizer{
        final IntWrapper[] endY = {new IntWrapper(yE[1].val), new IntWrapper(yE[2].val), new IntWrapper(yE[0].val)};
        final float[] endZ = {zE[1], zE[2], zE[0]};
        //Drawing each side with Bresenham's line algorithm
-       for(byte i = 0; i < 3; i++)
-         drawLine(xE[i], yE[i], zE[i], endX[i], endY[i], endZ[i], stroke, (flags & 4) == 0);
+       drawLine(xE[0], yE[0], zE[0], endX[0], endY[0], endZ[0], stroke, (flags & 4) == 0);
+       drawLine(xE[1], yE[1], zE[1], endX[1], endY[1], endZ[1], stroke, (flags & 4) == 0);
+       drawLine(xE[2], yE[2], zE[2], endX[2], endY[2], endZ[2], stroke, (flags & 4) == 0);
     }
   }
   
   public static void triangleDraw3D(Triangle triangle, byte compVal, char testType){
     //Setting up the colour
     tempAction = triangle.returnStencilActionPtr();
-    stroke = triangle.getStroke();
-    fill = triangle.getFill();
+    if(triangle.getHasStroke()){
+      flags|=8;
+      stroke = triangle.getStroke();
+    }
+    else
+      flags&=-9;
+
+    if(triangle.getHasFill()){
+      flags|=16;
+      fill = triangle.getFill();
+    }
+    else
+      flags&=-17;
+
     brokenUpColour[0] = fill >>> 24;
     alphaNorm = brokenUpColour[0]*Colour.INV_255;
     brokenUpFill[0] = brokenUpColour[0];
     brokenUpFill[1] = (fill >>> 16) & 0xFF;
     brokenUpFill[2] = (fill >>> 8) & 0xFF;
     brokenUpFill[3] = fill & 0xFF;
-    flags = (byte)((triangle.getHasStroke()) ? flags|8 : flags&-9);
-    flags = (byte)((triangle.getHasFill()) ? flags|16 : flags&-17);
+
     //Setting up the bounding box
     int[][] screenBounds = {{0x80000000, 0x7FFFFFF}, {0x80000000, 0x7FFFFFF}};
     //Makes forming the BB and rasterizing the triangle easier
@@ -838,7 +882,7 @@ public class Rasterizer{
     poses[1][2]*=(((flags & 4) >>> 1)-1);
     poses[2][2]*=(((flags & 4) >>> 1)-1);
     float denominator = (poses[1][1] - poses[2][1])*(poses[0][0] - poses[2][0]) + (poses[2][0] - poses[1][0])*(poses[0][1] - poses[2][1]);
-    if(Math.abs(denominator) <= 0.000000001)
+    if(denominator >= -EPSILON && denominator <= EPSILON)
       return;
 
 
@@ -849,8 +893,9 @@ public class Rasterizer{
     screenBounds[0][1] = Math.round(Math.min(wid, Math.max(poses[0][0], Math.max(poses[1][0], poses[2][0]))));
     screenBounds[1][0] = Math.round(Math.max(0, Math.min(poses[0][1], Math.min(poses[1][1], poses[2][1]))));
     screenBounds[1][1] = Math.round(Math.min(heig, Math.max(poses[0][1], Math.max(poses[1][1], poses[2][1]))));
-    int maxX = screenBounds[0][1];
     int minX = screenBounds[0][0];
+    int maxX = screenBounds[0][1];
+    
       
     //Used for centring a pixel
     float x = 0;
@@ -860,27 +905,30 @@ public class Rasterizer{
     float[] interpolatedEdges = {0, 0}; //i0 = lowest-mid, i1 = mid-highest, i2 = highest-lowest
     float[] denominators = {0, 0, 0};
     denominators[0] = poses[1][1]-poses[0][1];
-    if(Math.abs(denominators[0]) < 0.0000001)
+    if(denominators[0] >= -EPSILON && denominators[0] <= EPSILON)
       denominators[0] = Float.NaN;
     else
       denominators[0] = 1/denominators[0];
     denominators[1] = poses[2][1]-poses[1][1];
-    if(Math.abs(denominators[1]) < 0.0000001)
+    if(denominators[1] >= -EPSILON && denominators[1] <= EPSILON)
       denominators[1] = Float.NaN;
     else
       denominators[1] = 1/denominators[1];
     denominators[2] = poses[2][1]-poses[0][1];
-    if(Math.abs(denominators[2]) < 0.0000001)
+    if(denominators[2] >= -EPSILON && denominators[2] <= EPSILON)
       denominators[2] = Float.NaN;
     else
       denominators[2] = 1/denominators[2];
+
+    //Holds how far along each edge the function is at the current scanline
+    float[] t = {-1, -1, -1};
 
     //Filling in the triangle
     if((flags & 16) == 16){
       //Iterating over the BB
       for(int i = screenBounds[1][0]; i < screenBounds[1][1]; i++){
         y = i+0.5f;
-        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges, denominators);
+        computeEdges(y, minX, maxX, screenBounds, poses, interpolatedEdges, denominators, t);
         //Filling the scanline
         for(int j = screenBounds[0][0]; j < screenBounds[0][1]; j++){
           int pixelPos = wid*i+j;
@@ -895,10 +943,10 @@ public class Rasterizer{
             //Plotting the pixel
             float z = (poses[0][2]*alpha + poses[1][2]*beta + poses[2][2]*gamma); //Barycentric z
             float tempZ = z;
-            if(Math.abs(tempZ) > 0.0000001f)
+            if(tempZ < -EPSILON || tempZ > EPSILON)
               tempZ = 1/tempZ;
             else
-              tempZ = 0.0000001f*(((flags & 4) >>> 1)-1);
+              tempZ = EPSILON*(((flags & 4) >>> 1)-1);
             //if(!depthWrite)
             //z*=(((flags & 4) >>> 1)-1);
 
@@ -907,7 +955,7 @@ public class Rasterizer{
                                   (frame[pixelPos] >>> 8) & 0xFF, 
                                   frame[pixelPos] & 0xFF};
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if((((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]) || Float.isNaN(zBuff[pixelPos]))){
+            if(Float.isNaN(zBuff[pixelPos]) || (((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]))){
               computeLighting(tempZ, poses[0][2], poses[1][2], poses[2][2], vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
@@ -930,8 +978,9 @@ public class Rasterizer{
      }
      //Drawing the outline
      if((flags & 8) == 8){
-       for(byte i = 0; i < 3; i++)
-         drawLine(new IntWrapper(Math.round(triangle.getVertices()[i][0])), new IntWrapper(Math.round(triangle.getVertices()[i][1])), triangle.getVertices()[i][2]+0.0004f, new IntWrapper(Math.round(triangle.getVertices()[(i+1)%3][0])), new IntWrapper(Math.round(triangle.getVertices()[(i+1)%3][1])), triangle.getVertices()[(i+1)%3][2]+0.0004f, stroke, (flags & 4) == 0);
+      drawLine(new IntWrapper(Math.round(triangle.getVertices()[0][0])), new IntWrapper(Math.round(triangle.getVertices()[0][1])), triangle.getVertices()[0][2]+0.0004f, new IntWrapper(Math.round(triangle.getVertices()[1][0])), new IntWrapper(Math.round(triangle.getVertices()[1][1])), triangle.getVertices()[1][2]+0.0004f, stroke, (flags & 4) == 0);
+      drawLine(new IntWrapper(Math.round(triangle.getVertices()[1][0])), new IntWrapper(Math.round(triangle.getVertices()[1][1])), triangle.getVertices()[1][2]+0.0004f, new IntWrapper(Math.round(triangle.getVertices()[2][0])), new IntWrapper(Math.round(triangle.getVertices()[2][1])), triangle.getVertices()[2][2]+0.0004f, stroke, (flags & 4) == 0);
+      drawLine(new IntWrapper(Math.round(triangle.getVertices()[2][0])), new IntWrapper(Math.round(triangle.getVertices()[2][1])), triangle.getVertices()[2][2]+0.0004f, new IntWrapper(Math.round(triangle.getVertices()[0][0])), new IntWrapper(Math.round(triangle.getVertices()[0][1])), triangle.getVertices()[0][2]+0.0004f, stroke, (flags & 4) == 0);
     }
   }
 
@@ -1337,7 +1386,7 @@ public class Rasterizer{
   //Weight contributed by the first vertex
   public static float returnAlpha(float x1, float y1, float x2, float y2, float x3, float y3, float pX, float pY){
     float denominator = (y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3);
-    if(Math.abs(denominator) <= 0.00000001){
+    if(Math.abs(denominator) <= EPSILON){
       System.out.println("ERROR: DIV BY 0");
       System.exit(1);
     }
@@ -1347,7 +1396,7 @@ public class Rasterizer{
   //Weight contributed by the second vertex
   public static float returnBeta(float x1, float y1, float x2, float y2, float x3, float y3, float pX, float pY){
     float denominator = (y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3);
-    if(Math.abs(denominator) <= 0.000000001){
+    if(Math.abs(denominator) <= EPSILON){
       System.out.println("ERROR: DIV BY 0");
       System.exit(1);
     }
@@ -1362,7 +1411,7 @@ public class Rasterizer{
   public static float[] returnCoords(float x1, float y1, float x2, float y2, float x3, float y3, float x, float y){
     //Alpha weight
     float denominator = (y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3);
-    if(Math.abs(denominator) <= 0.000000001){
+    if(Math.abs(denominator) <= EPSILON){
       System.out.println("ERROR: DIV BY 0");
       System.exit(1);
     }
@@ -1430,7 +1479,7 @@ public class Rasterizer{
     float t1 = -1;
     float t2 = -1;
     float denom = oldOppP2 - oldOppP1;
-    if(Math.abs(denom) > 0.000000001){
+    if(Math.abs(denom) > EPSILON){
       t1 = -oldOppP1/denom;
       t2 = (farEdge - 1 - oldOppP1)/denom;
       if(t1 >= 0 && t1 <= 1){
@@ -1507,7 +1556,7 @@ public class Rasterizer{
     int dx = Math.abs(x2.val-x1.val); //Difference between x2 and x1
     int dy = -Math.abs(y2.val-y1.val); //Difference between y2 and y1 (negated to account for how down is positive and up is negative)
     int error = dx+dy; //Sum of the differences between x2 and x1 and y2 and y1
-    float vectorMag = (Math.abs(x2.val-x1.val) > 0.0001) ? (x2.val-x1.val) : (y2.val-y1.val); //Calculating the length of the line as if it were 2D
+    float vectorMag = (Math.abs(x2.val-x1.val) > EPSILON) ? (x2.val-x1.val) : (y2.val-y1.val); //Calculating the length of the line as if it were 2D
     float oldX = Math.abs(x2.val-x1.val);
     if((x1.val < 0 && x2.val < 0) || (y1.val < 0 && y2.val < 0) || (x1.val >= wid && x2.val >= wid) || (y1.val >= heig && y2.val >= heig))
       return;
@@ -1525,7 +1574,7 @@ public class Rasterizer{
       y2.val = Math.max(0, (Math.min(y2.val, heig-1)));
     }
     float z = z1;
-    if(Math.abs(vectorMag) > 0.000000001){
+    if(Math.abs(vectorMag) > EPSILON){
       vectorMag = 1/vectorMag;
       while(true){
         if(noDepth)
@@ -1565,8 +1614,8 @@ public class Rasterizer{
           y1.val+=edgeDirY;
         }
         //Calculating the depth of the line at a particular pixel
-        float numerator = (oldX > 0.0001) ? (x2.val-x1.val) : (y2.val-y1.val);
-        z = ((z1 - z2)*(numerator*vectorMag) + z2)-0.0001f;
+        float numerator = (oldX > EPSILON) ? (x2.val-x1.val) : (y2.val-y1.val);
+        z = ((z1 - z2)*(numerator*vectorMag) + z2)-EPSILON;
       }
     }
   }
@@ -1596,10 +1645,9 @@ public class Rasterizer{
   }
 
   //Finds the left and right edges of a triangle at a given scanline
-  private static void computeEdges(float y, int minX, int maxX, int[][] screenBounds, float[][] poses, float[] interpolatedEdges, float[] invDenominators){
+  private static void computeEdges(float y, int minX, int maxX, int[][] screenBounds, float[][] poses, float[] interpolatedEdges, float[] invDenominators, float[] t){
     byte currentEdge = 1;
-    //Holds how far along each edge the function is at the current scanline
-    float[] t = {-1, -1, -1};
+
     //Computes time t for the two edges that go to the middle vertex at the current scanline
     t[2] = (poses[1][1]-y)*invDenominators[0];
     t[0] = (poses[2][1]-y)*invDenominators[1];
@@ -1607,17 +1655,27 @@ public class Rasterizer{
     
     //Uses the times to interpolate along the edges
     if(t[2] >= 0f && t[2] <= 1f){
-      interpolatedEdges[currentEdge] = (poses[0][0]-poses[1][0])*t[2]+poses[1][0]-0.0000001f;
+      interpolatedEdges[currentEdge] = (poses[0][0]-poses[1][0])*t[2]+poses[1][0]-EPSILON;
       currentEdge--;
     }
     if(t[0] >= 0f && t[0] <= 1f){
-      interpolatedEdges[currentEdge] = (poses[1][0]-poses[2][0])*t[0]+poses[2][0]-0.0000001f;
+      interpolatedEdges[currentEdge] = (poses[1][0]-poses[2][0])*t[0]+poses[2][0]-EPSILON;
       currentEdge--;
     }
     if(t[1] >= 0f && t[1] <= 1f)
-      interpolatedEdges[0] = (poses[0][0]-poses[2][0])*t[1]+poses[2][0]-0.0000001f;
+      interpolatedEdges[0] = (poses[0][0]-poses[2][0])*t[1]+poses[2][0]-EPSILON;
     //Determines the min and max x-positions of the current scanline
-    screenBounds[0][0] = Math.round(Math.max(minX, Math.min(interpolatedEdges[0], interpolatedEdges[1])));
-    screenBounds[0][1] = Math.round(Math.min(maxX, Math.max(interpolatedEdges[0], interpolatedEdges[1])));
+    if(interpolatedEdges[0] <= interpolatedEdges[1]){
+      screenBounds[0][0] = Math.round(interpolatedEdges[0]);
+      screenBounds[0][1] = Math.round(interpolatedEdges[1]);
+    }
+    else{
+      screenBounds[0][0] = Math.round(interpolatedEdges[1]);
+      screenBounds[0][1] = Math.round(interpolatedEdges[0]);
+    }
+    if(screenBounds[0][0] <= minX)
+      screenBounds[0][0] = minX;
+    if(screenBounds[0][1] >= maxX)
+      screenBounds[0][1] = maxX;
   }
 }

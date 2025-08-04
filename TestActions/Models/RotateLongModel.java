@@ -6,7 +6,6 @@ public class RotateLongModel extends ModelAction{
     public void perform(){
       matrixTransform();
       float[] modelForward = getForward();
-      System.out.println(mouseOffScreen());
       if(keyPressed()){
         switch(key()){
           case 'w':
