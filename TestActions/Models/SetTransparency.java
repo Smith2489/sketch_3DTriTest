@@ -1,6 +1,6 @@
 package TestActions.Models;
 import Actions.ObjectActions.*;
-import Renderer.Objects.SceneEntities.Camera;
+import Renderer.Objects.SceneEntities.SceneObjects.Camera;
 public class SetTransparency extends ModelAction{
     private Camera object;
     //ORIGINALS: 360, 1800

@@ -1,6 +1,6 @@
 package TestActions.Lights;
 import Actions.ObjectActions.*;
-import Renderer.Objects.SceneEntities.*;
+import Renderer.Objects.SceneEntities.SceneObjects.*;
 public class CopyLight extends LightAction{
     private Light tempLight;
     public CopyLight(Light newLight){

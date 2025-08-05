@@ -1,6 +1,7 @@
 package Renderer.ScreenDraw;
 import Wrapper.*;
-import Renderer.Objects.SceneEntities.*;
+import Renderer.Objects.SceneEntities.DrawnObjects.*;
+import Renderer.Objects.SceneEntities.SceneObjects.*;
 import Actions.BufferActions.StencilAction;
 //Draws triangles to a frame buffer
 public class Rasterizer{
@@ -592,14 +593,14 @@ public class Rasterizer{
     //Setting up the colour
     if(triangle.getHasStroke()){
       flags|=8;
-      stroke = triangle.getStroke();
+      stroke = triangle.returnStroke();
     }
     else
       flags&=-9;
 
     if(triangle.getHasFill()){
       flags|=16;
-      fill = triangle.getFill();
+      fill = triangle.returnFill();
     }
     else
       flags&=-17;
@@ -853,14 +854,14 @@ public class Rasterizer{
     tempAction = triangle.returnStencilActionPtr();
     if(triangle.getHasStroke()){
       flags|=8;
-      stroke = triangle.getStroke();
+      stroke = triangle.returnStroke();
     }
     else
       flags&=-9;
 
     if(triangle.getHasFill()){
       flags|=16;
-      fill = triangle.getFill();
+      fill = triangle.returnFill();
     }
     else
       flags&=-17;

@@ -1,4 +1,4 @@
-package Renderer.Objects.SceneEntities;
+package Renderer.Objects.SceneEntities.SceneObjects;
 import Renderer.ModelDataHandler.LineModel;
 import Renderer.Objects.Parents.*;
 //Class for abstracting away line mesh object data

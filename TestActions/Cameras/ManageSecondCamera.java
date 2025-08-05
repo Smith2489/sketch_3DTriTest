@@ -1,6 +1,6 @@
 package TestActions.Cameras;
 import Actions.ObjectActions.*;
-import Renderer.Objects.SceneEntities.*;
+import Renderer.Objects.SceneEntities.SceneObjects.*;
 public class ManageSecondCamera extends CameraAction{
     private boolean cPressed = false;
     private Camera other;

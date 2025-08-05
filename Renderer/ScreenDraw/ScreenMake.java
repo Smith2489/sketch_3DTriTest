@@ -2,7 +2,8 @@ package Renderer.ScreenDraw;
 import Wrapper.*;
 import java.util.*;
 import Maths.LinearAlgebra.*;
-import Renderer.Objects.SceneEntities.*;
+import Renderer.Objects.SceneEntities.DrawnObjects.*;
+import Renderer.Objects.SceneEntities.SceneObjects.*;
 import Renderer.Objects.Parents.SceneEntity;
 public class ScreenMake{
 
@@ -45,8 +46,8 @@ public class ScreenMake{
     private static LinkedList<Billboard> billboardDisplayTranslucent = new LinkedList<Billboard>(); //List of translucent billboards
     private static LinkedList<LineDisp> lineDisplayOpaque = new LinkedList<LineDisp>();
     private static LinkedList<LineDisp> lineDisplayTranslucent = new LinkedList<LineDisp>();
-    private static LinkedList<Dot> dotDisplayOpaque = new LinkedList<Dot>();
-    private static LinkedList<Dot> dotDisplayTranslucent = new LinkedList<Dot>();
+    private static LinkedList<DotDraw> dotDisplayOpaque = new LinkedList<DotDraw>();
+    private static LinkedList<DotDraw> dotDisplayTranslucent = new LinkedList<DotDraw>();
     private static LinkedList<SceneEntity> noDraw = new LinkedList<SceneEntity>();
     private static LinkedList<Model> modelList = new LinkedList<Model>(); //List of models
     private static LinkedList<Billboard> billboardList = new LinkedList<Billboard>(); //List of billboards
@@ -65,6 +66,7 @@ public class ScreenMake{
     private static Billboard tempBillboard = new Billboard();
     private static LineDisp tempLine = new LineDisp();
     private static Dot tempDot = new Dot();
+    private static DotDraw tempDotDraw = new DotDraw();
     private static SceneEntity tempInvis = new SceneEntity();
     private static Light tempLight = new Light();
 
@@ -739,19 +741,19 @@ public class ScreenMake{
                         triListTranslucent.add(new Triangle(secondPoints, colour[0] , colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                         triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                         triListTranslucent.getLast().setVertexBrightness(finalBrightness);
-                        triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
-                        triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
+                        triListTranslucent.getLast().setAlphaStroke(alpha[0]);
+                        triListTranslucent.getLast().setAlphaFill(alpha[1]);
                         triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
                         triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
-                        translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
+                        translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().returnZ(), tempModel.returnDepthWrite(), translusentCount));
                         translusentCount++;
                         translucentCounter++;
                       }
                       else{
                         triListOpaque.add(new Triangle(secondPoints, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                         triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
-                        triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
-                        triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
+                        triListOpaque.getLast().setAlphaStroke(alpha[0]);
+                        triListOpaque.getLast().setAlphaFill(alpha[1]);
                         triListOpaque.getLast().setVertexBrightness(finalBrightness);
                         triListOpaque.getLast().setStencilAction(tempModel.returnStencilActionPtr());
                         triListOpaque.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
@@ -767,11 +769,11 @@ public class ScreenMake{
                     triListTranslucent.add(new Triangle(points, colour[0] , colour[1] , tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                     triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                     triListTranslucent.getLast().setVertexBrightness(vertexBrightness);
-                    triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
-                    triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
+                    triListTranslucent.getLast().setAlphaStroke(alpha[0]);
+                    triListTranslucent.getLast().setAlphaFill(alpha[1]);
                     triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
                     triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
-                    translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
+                    translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().returnZ(), tempModel.returnDepthWrite(), translusentCount));
                     translusentCount++;
                     translucentCounter++;
                   }
@@ -779,8 +781,8 @@ public class ScreenMake{
                     triListOpaque.add(new Triangle(points, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                     triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                     triListOpaque.getLast().setVertexBrightness(vertexBrightness);
-                    triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
-                    triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
+                    triListOpaque.getLast().setAlphaStroke(alpha[0]);
+                    triListOpaque.getLast().setAlphaFill(alpha[1]);
                     triListOpaque.getLast().setStencilAction(tempModel.returnStencilActionPtr());
                     triListOpaque.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
                   }
@@ -943,12 +945,12 @@ public class ScreenMake{
       
 
       while(!dotDisplayOpaque.isEmpty()){
-        tempDot = dotDisplayOpaque.removeFirst();
-        Rasterizer.setPixel(tempDot.returnStroke(), (int)tempDot.returnPosition()[0], (int)tempDot.returnPosition()[1], tempDot.returnPosition()[2], tempDot.returnDepthWrite());
+        tempDotDraw = dotDisplayOpaque.removeFirst();
+        Rasterizer.setPixel(tempDotDraw.returnStroke(), (int)tempDotDraw.returnPosition()[0], (int)tempDotDraw.returnPosition()[1], tempDotDraw.returnPosition()[2], tempDotDraw.getHasDepthWrite());
       }
       while(!lineDisplayOpaque.isEmpty()){
         tempLine = lineDisplayOpaque.removeFirst();
-        Rasterizer.drawLine(new IntWrapper(Math.round(tempLine.returnEndPoints()[0][0])), new IntWrapper(Math.round(tempLine.returnEndPoints()[0][1])), tempLine.returnEndPoints()[0][2], new IntWrapper(Math.round(tempLine.returnEndPoints()[1][0])), new IntWrapper(Math.round(tempLine.returnEndPoints()[1][1])), tempLine.returnEndPoints()[1][2], tempLine.returnStroke(), tempLine.returnDepthDisable());
+        Rasterizer.drawLine(new IntWrapper(Math.round(tempLine.returnEndPoints()[0][0])), new IntWrapper(Math.round(tempLine.returnEndPoints()[0][1])), tempLine.returnEndPoints()[0][2], new IntWrapper(Math.round(tempLine.returnEndPoints()[1][0])), new IntWrapper(Math.round(tempLine.returnEndPoints()[1][1])), tempLine.returnEndPoints()[1][2], tempLine.returnStroke(), tempLine.getHasDepthWrite());
       }
       while(!billboardDisplayOpaque.isEmpty()){
         tempBillboard = billboardDisplayOpaque.removeFirst();
@@ -1452,19 +1454,19 @@ public class ScreenMake{
                     triListTranslucent.add(new Triangle(secondPoints, colour[0] , colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                     triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                     triListTranslucent.getLast().setVertexBrightness(finalBrightness);
-                    triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
-                    triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
+                    triListTranslucent.getLast().setAlphaStroke(alpha[0]);
+                    triListTranslucent.getLast().setAlphaFill(alpha[1]);
                     triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
                     triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
-                    translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
+                    translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().returnZ(), tempModel.returnDepthWrite(), translusentCount));
                     translusentCount++;
                     translucentCounter++;
                   }
                   else{
                     triListOpaque.add(new Triangle(secondPoints, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                     triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
-                    triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
-                    triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
+                    triListOpaque.getLast().setAlphaStroke(alpha[0]);
+                    triListOpaque.getLast().setAlphaFill(alpha[1]);
                     triListOpaque.getLast().setVertexBrightness(finalBrightness);
                     triListOpaque.getLast().setStencilAction(tempModel.returnStencilActionPtr());
                     triListOpaque.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
@@ -1481,17 +1483,17 @@ public class ScreenMake{
                   triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                   triListTranslucent.getLast().setVertexBrightness(vertexBrightness);
                   triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
-                  triListTranslucent.getLast().setAlpha(alpha[0], (byte)0);
-                  triListTranslucent.getLast().setAlpha(alpha[1], (byte)1);
+                  triListTranslucent.getLast().setAlphaStroke(alpha[0]);
+                  triListTranslucent.getLast().setAlphaFill(alpha[1]);
                   triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
-                  translucentData.add(new TranslucentData((byte)1, triListTranslucent.peekLast().getAverageZ(), tempModel.returnDepthWrite(), translusentCount));
+                  translucentData.add(new TranslucentData((byte)1, triListTranslucent.peekLast().returnZ(), tempModel.returnDepthWrite(), translusentCount));
                   translusentCount++;
                   translucentCounter++;
                 }
                 else{
                   triListOpaque.add(new Triangle(points, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
-                  triListOpaque.getLast().setAlpha(alpha[0], (byte)0);
-                  triListOpaque.getLast().setAlpha(alpha[1], (byte)1);
+                  triListOpaque.getLast().setAlphaStroke(alpha[0]);
+                  triListOpaque.getLast().setAlphaFill(alpha[1]);
                   triListOpaque.getLast().setVertexBrightness(vertexBrightness);
                   triListOpaque.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                   triListOpaque.getLast().setStencilAction(tempModel.returnStencilActionPtr());
@@ -1682,12 +1684,12 @@ public class ScreenMake{
               }
               if((alpha & 0xFF) == 255){
                 lineDisplayOpaque.add(new LineDisp(points, colour));
-                lineDisplayOpaque.getLast().setAlpha(alpha);
+                lineDisplayOpaque.getLast().setAlphaStroke(alpha);
                 lineDisplayOpaque.getLast().setDepthWrite(tempLineObj.returnDepthWrite());
               }
               else{
                 lineDisplayTranslucent.add(new LineDisp(points, colour));
-                lineDisplayTranslucent.getLast().setAlpha(alpha);
+                lineDisplayTranslucent.getLast().setAlphaStroke(alpha);
                 lineDisplayTranslucent.getLast().setDepthWrite(tempLineObj.returnDepthWrite());
                 translucentData.add(new TranslucentData((byte)3, (points[1][2]+points[0][2])*0.5f, tempLineObj.returnDepthWrite(), lineCountTranslucent));
                 translucentCounter++;
@@ -1730,14 +1732,14 @@ public class ScreenMake{
         short alpha = (short)((tempDot.returnStroke() >>> 24)*tempDot.returnModelTint());
         if(alpha > Rasterizer.getMinTransparency()){
           if((alpha & 0xFF) == 255){
-            dotDisplayOpaque.add(new Dot(point, colour));
-            dotDisplayOpaque.getLast().setAlpha(alpha);
+            dotDisplayOpaque.add(new DotDraw(point, colour));
+            dotDisplayOpaque.getLast().setAlphaStroke(alpha);
             dotDisplayOpaque.getLast().setDepthWrite(tempDot.returnDepthWrite());
           }
           else{
-            dotDisplayTranslucent.add(new Dot(point, colour));
+            dotDisplayTranslucent.add(new DotDraw(point, colour));
             dotDisplayTranslucent.getLast().setDepthWrite(tempDot.returnDepthWrite());
-            dotDisplayTranslucent.getLast().setAlpha(alpha);
+            dotDisplayTranslucent.getLast().setAlphaStroke(alpha);
             translucentData.add(new TranslucentData((byte)4, point[2], tempDot.returnDepthWrite(), dotCountTranslucent));
             translucentCounter++;
             dotCountTranslucent++;
@@ -1753,7 +1755,7 @@ public class ScreenMake{
     Triangle[] tempTris = new Triangle[0];
     Billboard[] tempBillboards = new Billboard[0];
     LineDisp[] tempLines = new LineDisp[0];
-    Dot[] tempDots = new Dot[0];
+    DotDraw[] tempDots = new DotDraw[0];
 
     tempData = translucentData.toArray(tempData);
     tempTris = triListTranslucent.toArray(tempTris);
@@ -1781,10 +1783,10 @@ public class ScreenMake{
           break;
         case 3:
           float[][] endPoints = tempLines[j].returnEndPoints();
-          Rasterizer.drawLine(new IntWrapper(Math.round(endPoints[0][0])), new IntWrapper(Math.round(endPoints[0][1])), endPoints[0][2], new IntWrapper(Math.round(endPoints[1][0])), new IntWrapper(Math.round(endPoints[1][1])), endPoints[1][2], tempLines[j].returnStroke(), tempLines[j].returnDepthDisable());
+          Rasterizer.drawLine(new IntWrapper(Math.round(endPoints[0][0])), new IntWrapper(Math.round(endPoints[0][1])), endPoints[0][2], new IntWrapper(Math.round(endPoints[1][0])), new IntWrapper(Math.round(endPoints[1][1])), endPoints[1][2], tempLines[j].returnStroke(), tempLines[j].getHasDepthWrite());
           break;
         case 4:
-          Rasterizer.setPixel(tempDots[j].returnStroke(), tempDots[j].returnPosition()[0], tempDots[j].returnPosition()[1], tempDots[j].returnPosition()[2], tempDots[j].returnDepthWrite());
+          Rasterizer.setPixel(tempDots[j].returnStroke(), tempDots[j].returnPosition()[0], tempDots[j].returnPosition()[1], tempDots[j].returnPosition()[2], tempDots[j].getHasDepthWrite());
           break;
       }
     }

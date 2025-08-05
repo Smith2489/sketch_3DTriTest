@@ -1,4 +1,4 @@
-package Renderer.Objects.SceneEntities;
+package Renderer.Objects.SceneEntities.SceneObjects;
 import Renderer.Objects.Parents.*;
 //A class for defining single-pixel objects which exist in 3-dimensional space
 public class Dot extends SceneObject{
@@ -12,7 +12,7 @@ public class Dot extends SceneObject{
         if((rgba >>> 24) == 0){
             if(rgba <= 0xFF)
                 stroke = 0xFF000000 | (rgba << 16) | (rgba << 8) | rgba;
-            else if(rgba <= 0xFFFF)
+            else if(rgba <= 0xFF00)
                 stroke = ((rgba & 0xFF00) << 16) | ((rgba & 0xFF) << 16) | ((rgba & 0xFF) << 8) | (rgba & 0xFF);
             else
                 stroke = 0xFF000000 | rgba;
@@ -37,7 +37,7 @@ public class Dot extends SceneObject{
         if((rgba >>> 24) == 0){
             if(rgba <= 0xFF)
                 stroke = 0xFF000000 | (rgba << 16) | (rgba << 8) | rgba;
-            else if(rgba <= 0xFFFF)
+            else if(rgba <= 0xFF00)
                 stroke = ((rgba & 0xFF00) << 16) | ((rgba & 0xFF) << 16) | ((rgba & 0xFF) << 8) | (rgba & 0xFF);
             else
                 stroke = 0xFF000000 | rgba;

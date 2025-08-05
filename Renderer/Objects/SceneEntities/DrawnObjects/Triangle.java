@@ -1,16 +1,17 @@
-package Renderer.Objects.SceneEntities;
+package Renderer.Objects.SceneEntities.DrawnObjects;
 import Actions.BufferActions.StencilAction;
 //Class for abstracting triangles
-public class Triangle{
+public class Triangle extends DispParent{
   private float[][] vertices = new float[3][3];
-  private byte flags = 0; //bit 0 = hasStroke; bit 1 = hasFill
-  private int[] colour = {0xFFFFFFFF, 0xFFFFFFFF};
+  //Flag bits: bit 1 = hasStroke; bit 2 = hasFill
+  private int fill = 0xFFFFFFFF;
   private float[][] vertexBrightness = {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}};
   private float maxFizzel = 1;
   private float fizzelThreshold = 1.1f;
   private StencilAction stencil = new StencilAction();
   //Default constructor
   public Triangle(){
+    super((byte)6);
     for(byte i = 0; i < 3; i++){
        vertices[i][0] = 0;
        vertices[i][1] = 0;
@@ -30,13 +31,12 @@ public class Triangle{
     vertexBrightness[2][3] = 1;
     maxFizzel = 1;
     fizzelThreshold = 1.1f;
-    flags = 3;
-    colour[0] = 0xFFFFFFFF;
-    colour[1] = 0xFFFFFFFF;
+    fill = 0xFFFFFFFF;
     stencil = new StencilAction();
   }
   //Constructor made with 9 points
-  public Triangle(float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3, int stroke, int fill, boolean hasStroke, boolean hasFill){
+  public Triangle(float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3, int newStroke, int newFill, boolean hasStroke, boolean hasFill){
+    super(newStroke, (byte)(((hasStroke) ? 2 : 0)|((hasFill) ? 4: 0)));
     vertices[0][0] = x1;
     vertices[0][1] = y1;
     vertices[0][2] = z1;
@@ -60,31 +60,22 @@ public class Triangle{
     vertexBrightness[2][3] = 1;
     maxFizzel = 1;
     fizzelThreshold = 1.1f;
-    flags = (byte)(((hasStroke) ? 1 : 0)|((hasFill) ? 2 : 0));
-    if((stroke >>> 24) == 0){
-      if(stroke <= 0xFF)
-        colour[0] = (0xFF000000) | (stroke << 16) | (stroke << 8) | stroke;
-      else if(stroke <= 0xFF00)
-        colour[0] = ((fill & 0xFF00) << 16) | (stroke << 16) | (stroke << 8) | stroke;
+
+    if((newFill >>> 24) == 0){
+      if(newFill <= 0xFF)
+        fill = (0xFF000000) | (newFill << 16) | (newFill << 8) | newFill;
+      else if(newFill <= 0xFF00)
+        fill = ((newFill & 0xFF00) << 16) | ((newFill & 0xFF) << 16) | ((newFill & 0xFF) << 8) | (newFill & 0xFF);
       else
-        colour[0] = 0xFF000000 | stroke;
+        fill = 0xFF000000 | newFill;
     }
     else
-      colour[0] = stroke;
-    if((fill >>> 24) == 0){
-      if(fill <= 0xFF)
-        colour[1] = (0xFF000000) | (fill << 16) | (fill << 8) | fill;
-      else if(fill <= 0xFF00)
-        colour[1] = ((fill & 0xFF00) << 16) | (fill << 16) | (fill << 8) | fill;
-      else
-        colour[1] = 0xFF000000 | fill;
-    }
-    else
-      colour[1] = fill;
+      fill = newFill;
     stencil = new StencilAction();
   }
   //Constructor with 2D array
-  public Triangle(float[][] positions, int stroke, int fill, boolean hasStroke, boolean hasFill){
+  public Triangle(float[][] positions, int newStroke, int newFill, boolean hasStroke, boolean hasFill){
+    super(newStroke, (byte)(((hasStroke) ? 2 : 0)|((hasFill) ? 4 : 0)));
     for(byte i = 0; i < 3; i++){
        for(byte j = 0; j < 3; j++)
          vertices[i][j] = positions[i][j];
@@ -104,27 +95,17 @@ public class Triangle{
     vertexBrightness[2][3] = 1;
     maxFizzel = 1;
     fizzelThreshold = 1.1f;
-    flags = (byte)(((hasStroke) ? 1 : 0)|((hasFill) ? 2 : 0));
-    if((stroke >>> 24) == 0){
-      if(stroke <= 0xFF)
-        colour[0] = (0xFF000000) | (stroke << 16) | (stroke << 8) | stroke;
-      else if(stroke <= 0xFF00)
-        colour[0] = ((fill & 0xFF00) << 16) | (stroke << 16) | (stroke << 8) | stroke;
+
+    if((newFill >>> 24) == 0){
+      if(newFill <= 0xFF)
+        fill = (0xFF000000) | (newFill << 16) | (newFill << 8) | newFill;
+      else if(newFill <= 0xFF00)
+        fill = ((newFill & 0xFF00) << 16) | ((newFill & 0xFF) << 16) | ((newFill & 0xFF) << 8) | (newFill & 0xFF);
       else
-        colour[0] = 0xFF000000 | stroke;
+        fill = 0xFF000000 | newFill;
     }
     else
-      colour[0] = stroke;
-    if((fill >>> 24) == 0){
-      if(fill <= 0xFF)
-        colour[1] = (0xFF000000) | (fill << 16) | (fill << 8) | fill;
-      else if(fill <= 0xFF00)
-        colour[1] = ((fill & 0xFF00) << 16) | (fill << 16) | (fill << 8) | fill;
-      else
-        colour[1] = 0xFF000000 | fill;
-    }
-    else
-      colour[1] = fill;
+      fill = newFill;
     stencil = new StencilAction();
   }
 
@@ -155,84 +136,51 @@ public class Triangle{
     vertices[2][1] = y3;
     vertices[2][2] = z3;
   }
-  //Stores the stroke
-  public void setStroke(int stroke){
-    if((stroke >>> 24) == 0){
-      if(stroke <= 0xFF)
-        colour[0] = (0xFF000000) | (stroke << 16) | (stroke << 8) | stroke;
-      else if(stroke <= 0xFF00)
-        colour[0] = ((stroke & 0xFF00) << 16) | (stroke << 16) | (stroke << 8) | stroke;
-      else
-        colour[0] = 0xFF000000 | stroke;
-    }
-    else
-      colour[0] = stroke;
-  }
-  public void setStroke(int stroke, short alpha){
-    stroke&=0xFFFFFF;
-    alpha&=0xFF;
-    if(stroke <= 0xFF)
-      colour[0] = (stroke << 16) | (stroke << 8) | stroke;
-    else
-      colour[0] = stroke;
-    colour[0]|=(alpha << 24);
-  }
-  public void setStroke(short r, short g, short b){
-    r = (short)Math.min(Math.max(0, r), 0xFF);
-    g = (short)Math.min(Math.max(0, g), 0xFF);
-    b = (short)Math.min(Math.max(0, b), 0xFF);
-    colour[0] = 0xFF000000|(r << 16)|(g << 8)|b;
-  }
-  public void setStroke(short r, short g, short b, short alpha){
-    r = (short)Math.min(Math.max(0, r), 0xFF);
-    g = (short)Math.min(Math.max(0, g), 0xFF);
-    b = (short)Math.min(Math.max(0, b), 0xFF);
-    alpha = (short)Math.min(Math.max(0, alpha), 0xFF);
-    colour[0] = (alpha << 24)|(r << 16)|(g << 8)|b;
-  }
+
+
   //Stores the fill
-  public void setFill(int fill){
-    if((fill >>> 24) == 0){
-      if(fill <= 0xFF)
-        colour[1] = (0xFF000000) | (fill << 16) | (fill << 8) | fill;
-      else if(fill <= 0xFF00)
-        colour[1] = ((fill & 0xFF00) << 16) | (fill << 16) | (fill << 8) | fill;
+  public void fill(int rgba){
+    if((rgba >>> 24) == 0){
+      if(rgba <= 0xFF)
+        fill = (0xFF000000) | (rgba << 16) | (rgba << 8) | rgba;
+      else if(rgba <= 0xFF00)
+        fill = ((rgba & 0xFF00) << 16) | ((rgba & 0xFF) << 16) | ((rgba & 0xFF) << 8) | (rgba & 0xFF);
       else
-        colour[1] = 0xFF000000 | fill;
+        fill = 0xFF000000 | rgba;
     }
     else
-      colour[1] = fill;
+      fill = rgba;
   }
-  public void setFill(int fill, short alpha){
+  public void fill(int rgb, short alpha){
     fill&=0xFFFFFF;
     alpha&=0xFF;
-    if(fill <= 0xFF)
-      colour[1] = (fill << 16) | (fill << 8) | fill;
+    if(rgb <= 0xFF)
+      fill = (rgb << 16) | (rgb << 8) | rgb;
     else
-      colour[1] = fill;
-    colour[1]|=(alpha << 24);
-
-    
+      fill = rgb;
+    fill|=(alpha << 24);
   }
-  public void setFill(short r, short g, short b){
+
+  public void setAlphaFill(short alpha){
+      fill&=0xFFFFFF;
+      alpha&=0xFF;
+      fill = (alpha << 24)|fill;
+  }
+
+  public void fill(short r, short g, short b){
     r = (short)Math.min(Math.max(0, r), 0xFF);
     g = (short)Math.min(Math.max(0, g), 0xFF);
     b = (short)Math.min(Math.max(0, b), 0xFF);
-    colour[1] = 0xFF000000|(r << 16)|(g << 8)|b;
+    fill = 0xFF000000|(r << 16)|(g << 8)|b;
   }
-  public void setFill(short r, short g, short b, short alpha){
+  public void fill(short r, short g, short b, short alpha){
     r = (short)Math.min(Math.max(0, r), 0xFF);
     g = (short)Math.min(Math.max(0, g), 0xFF);
     b = (short)Math.min(Math.max(0, b), 0xFF);
     alpha = (short)Math.min(Math.max(0, alpha), 0xFF);
-    colour[1] = (alpha << 24)|(r << 16)|(g << 8)|b;
+    fill = (alpha << 24)|(r << 16)|(g << 8)|b;
   }
   
-  public void setAlpha(short alpha, byte index){
-    colour[index]&=0xFFFFFF;
-    alpha&=0xFF;
-    colour[index] = (alpha << 24) | colour[index];
-  }
 
   public void setFizzel(float newMax, float newThreshold){
     maxFizzel = newMax;
@@ -248,23 +196,18 @@ public class Triangle{
   //Sets if the triangle has a stroke
   public void setHasStroke(boolean hasStroke){
      if(hasStroke)
-       flags|=1;
-     else
-       flags&=-2;
-  }
-  //Sets if the triangle has a fill
-  public void setHasFill(boolean hasFill){
-     if(hasFill)
        flags|=2;
      else
        flags&=-3;
   }
-  public void setDepthWrite(boolean depthWrite){
-    if(depthWrite)
-      flags|=4;
-    else
-      flags&=-5;
+  //Sets if the triangle has a fill
+  public void setHasFill(boolean hasFill){
+     if(hasFill)
+       flags|=4;
+     else
+       flags&=-5;
   }
+
   public void setVertexBrightness(float r, float g, float b, byte index){
     vertexBrightness[index][0] = 1;
     vertexBrightness[index][1] = r;
@@ -332,46 +275,40 @@ public class Triangle{
   }
 
   //Returns centre position
-  public float getAverageX(){
+  public float returnX(){
     return (vertices[0][0]+vertices[1][0]+vertices[2][0])*0.33333333333333333333333333333333333333f; 
   }
   
-  public float getAverageY(){
+  public float returnY(){
     return (vertices[0][1]+vertices[1][1]+vertices[2][1])*0.33333333333333333333333333333333333333f;
   }
   
-  public float getAverageZ(){
+  public float returnZ(){
     return (vertices[0][2]+vertices[1][2]+vertices[2][2])*0.33333333333333333333333333333333333333f;
   }
 
-  public float[] getCentroid(){
+  public float[] returnPosition(){
     float[] centroid = {(vertices[0][0]+vertices[1][0]+vertices[2][0])*0.33333333333333333333333333333333333333f,
                         (vertices[0][1]+vertices[1][1]+vertices[2][1])*0.33333333333333333333333333333333333333f,
                         (vertices[0][2]+vertices[1][2]+vertices[2][2])*0.33333333333333333333333333333333333333f};
     return centroid;
   }
   
-  //Returns stroke
-  public int getStroke(){
-    return colour[0];
-  }
   //Returns fill
-  public int getFill(){
-    return colour[1]; 
+  public int returnFill(){
+    return fill; 
   }
   
   //Returns if the triangle has a stroke
   public boolean getHasStroke(){
-    return (flags & 1) == 1;
+    return (flags & 2) == 2;
   }
   
   //Returns if the triangle has a fill
   public boolean getHasFill(){
-    return (flags & 2) == 2;
-  }
-  public boolean getHasDepthWrite(){
     return (flags & 4) == 4;
   }
+
   //Returns vertices as a 2D array
   public float[][] getVertices(){
     return vertices;
@@ -381,7 +318,7 @@ public class Triangle{
   public boolean equals(Object o){
     if(o instanceof Triangle){
       Triangle t = (Triangle)o;
-      boolean isEqual = true;
+      boolean isEqual = super.equals(t);
       for(byte i = 0; i < 3; i++){
         for(byte j = 0; j < 3; j++){
           isEqual&=(Math.abs(vertices[i][j] - t.vertices[i][j]) <= 0.0001);
@@ -391,9 +328,7 @@ public class Triangle{
         isEqual&=(Math.abs(vertexBrightness[i][2]-t.vertexBrightness[i][2]) <= 0.0001);
         isEqual&=(Math.abs(vertexBrightness[i][3]-t.vertexBrightness[i][3]) <= 0.0001);
       }
-      isEqual&=(colour[0] == t.colour[0]);
-      isEqual&=(colour[1] == t.colour[1]);
-      isEqual&=(flags == t.flags);
+      isEqual&=(fill == t.fill);
       isEqual&=(Math.abs(maxFizzel - t.maxFizzel) <= 0.0001);
       isEqual&=(Math.abs(fizzelThreshold - t.fizzelThreshold) <= 0.0001);
       isEqual&=(stencil == t.stencil);
@@ -406,6 +341,7 @@ public class Triangle{
   public void copy(Object o){
     if(o instanceof Triangle){
       Triangle t = (Triangle)o;
+      super.copy(t);
       for(byte i = 0; i < 3; i++){
         for(byte j = 0; j < 3; j++){
           vertices[i][j] = t.vertices[i][j];
@@ -415,17 +351,15 @@ public class Triangle{
         vertexBrightness[i][2] = t.vertexBrightness[i][2];
         vertexBrightness[i][3] = t.vertexBrightness[i][3];
       }
-      colour[0] = t.colour[0];
-      colour[1] = t.colour[1];
+      fill = t.fill;
       maxFizzel = t.maxFizzel;
       fizzelThreshold = t.fizzelThreshold;
-      flags = t.flags;
       stencil = t.stencil;
     }
   }
 
   public boolean equals(Triangle t){
-    boolean isEqual = true;
+    boolean isEqual = super.equals(t);
     for(byte i = 0; i < 3; i++){
       for(byte j = 0; j < 3; j++){
         isEqual&=(Math.abs(vertices[i][j] - t.vertices[i][j]) <= 0.0001);
@@ -435,9 +369,7 @@ public class Triangle{
       isEqual&=(Math.abs(vertexBrightness[i][2]-t.vertexBrightness[i][2]) <= 0.0001);
       isEqual&=(Math.abs(vertexBrightness[i][0]-t.vertexBrightness[i][0]) <= 0.0001);
     }
-    isEqual&=(colour[0] == t.colour[0]);
-    isEqual&=(colour[1] == t.colour[1]);
-    isEqual&=(flags == t.flags);
+    isEqual&=(fill == t.fill);
     isEqual&=(Math.abs(maxFizzel - t.maxFizzel) <= 0.0001);
     isEqual&=(Math.abs(fizzelThreshold - t.fizzelThreshold) <= 0.0001);
     isEqual&=(stencil == t.stencil);
@@ -445,6 +377,7 @@ public class Triangle{
   }
   //Copies one triangle's data to another
   public void copy(Triangle t){
+    super.copy(t);
     for(byte i = 0; i < 3; i++){
       for(byte j = 0; j < 3; j++){
         vertices[i][j] = t.vertices[i][j];
@@ -454,18 +387,16 @@ public class Triangle{
       vertexBrightness[i][2] = t.vertexBrightness[i][2];
       vertexBrightness[i][3] = t.vertexBrightness[i][3];
     }
-    colour[0] = t.colour[0];
-    colour[1] = t.colour[1];
+    fill = t.fill;
     maxFizzel = t.maxFizzel;
     fizzelThreshold = t.fizzelThreshold;
-    flags = t.flags;
     stencil = t.stencil;
   }
   public String toString(){
     String verticesString = "Vertices: ("+vertices[0][0]+", "+vertices[0][1]+", "+vertices[0][2]+")\n";
     verticesString+="          ("+vertices[1][0]+", "+vertices[1][1]+", "+vertices[1][2]+")\n";
     verticesString+="          ("+vertices[2][0]+", "+vertices[2][1]+", "+vertices[2][2]+")\n";
-    String coloursString = "Stroke: "+colour[0]+", Fill: "+colour[1];
+    String coloursString = "Stroke: "+stroke+", Fill: "+fill;
     return verticesString+coloursString;
   }
 }
