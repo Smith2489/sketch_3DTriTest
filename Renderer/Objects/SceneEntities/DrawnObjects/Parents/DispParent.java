@@ -1,6 +1,7 @@
-package Renderer.Objects.SceneEntities.DrawnObjects;
+package Renderer.Objects.SceneEntities.DrawnObjects.Parents;
 
 public abstract class DispParent{
+    protected static final float EPSILON = 0.0000001f;
     protected byte flags = 0; //Bit 0 = depthWrite
     protected int stroke = 0xFF000000;
 

@@ -1,13 +1,11 @@
 package Actions.ObjectActions;
 import Wrapper.*;
-public class CameraAction extends ObjectAction{
+public abstract class CameraAction extends ObjectAction{
     private IntWrapper colour = new IntWrapper(0xFFFFFF);
     private float[] invColour = {1, 1, 1};
     private FloatWrapper drawDistance = new FloatWrapper();
     private BooleanWrapper alwaysMultiply = new BooleanWrapper(false);
-    public void perform(){
-        System.out.println("NO CAMERA ACTION ATTACHED. PLEASE OVERIDE METHOD perform() IN CLASS (OR CLASSES) WHICH EXTEND(S) THIS CLASS");
-    }
+    
     public void setColour(IntWrapper newColour, float[] newInvColour){
         colour = newColour;
         invColour = newInvColour;

@@ -1,4 +1,5 @@
 package Renderer.Objects.SceneEntities.DrawnObjects;
+import Renderer.Objects.SceneEntities.DrawnObjects.Parents.DispParent;
 //A class for defining lines that get drawn
 public class LineDisp extends DispParent{
     private float[][] endPoints = {{-0.5f, 0, 0}, {0.5f, 0, 0}}; //The endpoints of the line
@@ -79,12 +80,12 @@ public class LineDisp extends DispParent{
         if(o instanceof LineDisp){
             LineDisp l = (LineDisp)o;
             boolean isEquals = super.equals(l);
-            isEquals&=(Math.abs(endPoints[0][0] - l.endPoints[0][0]) > 0.0001);
-            isEquals&=(Math.abs(endPoints[0][1] - l.endPoints[0][2]) > 0.0001);
-            isEquals&=(Math.abs(endPoints[0][2] - l.endPoints[0][2]) > 0.0001);
-            isEquals&=(Math.abs(endPoints[1][0] - l.endPoints[1][0]) > 0.0001);
-            isEquals&=(Math.abs(endPoints[1][1] - l.endPoints[1][2]) > 0.0001);
-            isEquals&=(Math.abs(endPoints[1][2] - l.endPoints[1][2]) > 0.0001);
+            isEquals&=(Math.abs(endPoints[0][0] - l.endPoints[0][0]) <= EPSILON);
+            isEquals&=(Math.abs(endPoints[0][1] - l.endPoints[0][2]) <= EPSILON);
+            isEquals&=(Math.abs(endPoints[0][2] - l.endPoints[0][2]) <= EPSILON);
+            isEquals&=(Math.abs(endPoints[1][0] - l.endPoints[1][0]) <= EPSILON);
+            isEquals&=(Math.abs(endPoints[1][1] - l.endPoints[1][2]) <= EPSILON);
+            isEquals&=(Math.abs(endPoints[1][2] - l.endPoints[1][2]) <= EPSILON);
             return isEquals;
         }
         else
@@ -92,12 +93,12 @@ public class LineDisp extends DispParent{
     }
     public boolean equals(LineDisp l){
         boolean isEquals = super.equals(l);
-        isEquals&=(Math.abs(endPoints[0][0] - l.endPoints[0][0]) > 0.0001);
-        isEquals&=(Math.abs(endPoints[0][1] - l.endPoints[0][2]) > 0.0001);
-        isEquals&=(Math.abs(endPoints[0][2] - l.endPoints[0][2]) > 0.0001);
-        isEquals&=(Math.abs(endPoints[1][0] - l.endPoints[1][0]) > 0.0001);
-        isEquals&=(Math.abs(endPoints[1][1] - l.endPoints[1][2]) > 0.0001);
-        isEquals&=(Math.abs(endPoints[1][2] - l.endPoints[1][2]) > 0.0001);
+        isEquals&=(Math.abs(endPoints[0][0] - l.endPoints[0][0]) <= EPSILON);
+        isEquals&=(Math.abs(endPoints[0][1] - l.endPoints[0][2]) <= EPSILON);
+        isEquals&=(Math.abs(endPoints[0][2] - l.endPoints[0][2]) <= EPSILON);
+        isEquals&=(Math.abs(endPoints[1][0] - l.endPoints[1][0]) <= EPSILON);
+        isEquals&=(Math.abs(endPoints[1][1] - l.endPoints[1][2]) <= EPSILON);
+        isEquals&=(Math.abs(endPoints[1][2] - l.endPoints[1][2]) <= EPSILON);
         return isEquals;
     }
     //Copies a line object into the current object

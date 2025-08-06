@@ -8,7 +8,6 @@ public abstract class Action extends PInputHandler{
     protected static final double HALF_PI = Math.PI*0.5;
     protected static final double QUARTER_PI = Math.PI*0.25;
     protected static float speed = 0;
-    private static int counter = 0;
     private float[] pos = {0, 0, 0};
     private float[] rot = {0, 0, 0};
     protected Physics physics = new Physics(pos, rot);
@@ -24,6 +23,7 @@ public abstract class Action extends PInputHandler{
     private float[] oldPos = {0, 0, 0};
     private float[] oldRot = {0, 0, 0};
 
+    public abstract void init();
     public abstract void perform();
 
     public static void setRatePerFrame(float newSpeed){
@@ -140,11 +140,6 @@ public abstract class Action extends PInputHandler{
         down[1]-=0.0001f;
         down[2]-=0.0001f;
         return down;
-    }
-
-    public void init(){
-        System.out.println(counter+": NO INITIALIZATION METHOD SET");
-        counter++;
     }
 
     public void setPos(float[] newPos){

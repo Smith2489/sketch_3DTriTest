@@ -1,10 +1,8 @@
 package Actions.ObjectActions;
-public class LightAction extends Action {
+public abstract class LightAction extends Action {
     protected float[] intensities = {1, 1, 1};
     private float[][] colour = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
-    public void perform(){
-        System.out.println("NO LIGHT ACTION ATTACHED. PLEASE OVERIDE METHOD perform() IN CLASS (OR CLASSES) WHICH EXTEND(S) THIS CLASS");
-    }
+    
     public void setIntensities(float[] newIntensities){
         intensities = newIntensities;
     }

@@ -1,5 +1,5 @@
 package Renderer.Objects.SceneEntities.DrawnObjects;
-
+import Renderer.Objects.SceneEntities.DrawnObjects.Parents.DispParent;
 public class DotDraw extends DispParent{
     private float[] pos = {0, 0, 0};
     public DotDraw(){
@@ -44,18 +44,18 @@ public class DotDraw extends DispParent{
         if(o instanceof DotDraw){
             DotDraw d = (DotDraw)o;
             boolean isEquals = super.equals(d);
-            isEquals&=(Math.abs(pos[0] - d.pos[0]) <= 0.000001);
-            isEquals&=(Math.abs(pos[1] - d.pos[1]) <= 0.000001);
-            isEquals&=(Math.abs(pos[2] - d.pos[2]) <= 0.000001);
+            isEquals&=(Math.abs(pos[0] - d.pos[0]) <= EPSILON);
+            isEquals&=(Math.abs(pos[1] - d.pos[1]) <= EPSILON);
+            isEquals&=(Math.abs(pos[2] - d.pos[2]) <= EPSILON);
             return isEquals;
         }
         return false;
     }
     public boolean equals(DotDraw d){
         boolean isEquals = super.equals(d);
-        isEquals&=(Math.abs(pos[0] - d.pos[0]) <= 0.000001);
-        isEquals&=(Math.abs(pos[1] - d.pos[1]) <= 0.000001);
-        isEquals&=(Math.abs(pos[2] - d.pos[2]) <= 0.000001);
+        isEquals&=(Math.abs(pos[0] - d.pos[0]) <= EPSILON);
+        isEquals&=(Math.abs(pos[1] - d.pos[1]) <= EPSILON);
+        isEquals&=(Math.abs(pos[2] - d.pos[2]) <= EPSILON);
         return isEquals;
     }
 
