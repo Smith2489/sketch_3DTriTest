@@ -244,7 +244,7 @@ public class Triangle extends FilledParent{
     }
     return isEqual;
   }
-  
+
   //Copies one triangle's data to another
   public void copy(Triangle t){
     super.copy(t);

@@ -3,6 +3,8 @@ import Wrapper.*;
 import Renderer.Objects.SceneEntities.DrawnObjects.*;
 import Renderer.Objects.SceneEntities.SceneObjects.*;
 import Actions.BufferActions.StencilAction;
+import java.util.*;
+import java.io.*;
 //Draws triangles to a frame buffer
 public class Rasterizer{
   private static final float EPSILON = 0.0000001f;
@@ -16,7 +18,6 @@ public class Rasterizer{
   private static int heig = 100; //Height
   private static byte stencilMask = -1; //A mask for the stencil test
   private static int background = 0xFF000000; //Background colour
-  private static float maxProbability = 1;
   private static float threshold = 1.1f;
   //Weights contributed to a pixel by the vertices
   private static float alpha = 0;
@@ -28,6 +29,8 @@ public class Rasterizer{
   private static int[] brokenUpFill = {0, 0, 0, 0};
   private static float alphaNorm = 0;
   private static StencilAction tempAction = new StencilAction();
+  private static int meshSize = 2;
+  private static boolean[] mesh = {true, false, false, true}; 
   /*
     bit 0 = stencil test results
     bit 1 = anti aliasing 
@@ -35,6 +38,8 @@ public class Rasterizer{
     bit 3 = has stroke
     bit 4 = has fill
     bit 5 = lerpBrightness
+    bit 6 = lerpTransparency
+    bit 7 = meshTransparency
   */
   private static byte flags = 0b0001110;
 
@@ -47,7 +52,7 @@ public class Rasterizer{
 
   //Sets the brightness of each vertex
   public static void setVertexBrightness(float[][] brightnessLevels){
-    flags&=-33;
+    flags&=-97;
     if(brightnessLevels[0].length <= 3){
       vertexBrightness[0][0] = 1;
       vertexBrightness[0][1] = brightnessLevels[0][0];
@@ -76,7 +81,9 @@ public class Rasterizer{
       vertexBrightness[2][2] = brightnessLevels[2][2];
       vertexBrightness[2][3] = brightnessLevels[2][3];
     }
-    for(byte i = 0; i < 4; i++)
+    if(Math.abs(vertexBrightness[0][0]-vertexBrightness[1][0]) > EPSILON || Math.abs(vertexBrightness[1][0]-vertexBrightness[2][0]) > EPSILON)
+      flags|=64;
+    for(byte i = 1; i < 4; i++)
       if(Math.abs(vertexBrightness[0][i]-vertexBrightness[1][i]) > EPSILON || Math.abs(vertexBrightness[1][i]-vertexBrightness[2][i]) > EPSILON)
         flags|=32;
   }
@@ -118,8 +125,10 @@ public class Rasterizer{
     frame = newFrameBuff;
   }
   public static void setProbabilities(float newMax, float newThreshold){
-    maxProbability = newMax;
-    threshold = newThreshold;
+    if(newMax < -EPSILON || newMax > EPSILON)
+      threshold = Math.abs(newThreshold/newMax);
+    else
+      threshold = 1;
   }
 
   public static int halfWidth(){
@@ -378,6 +387,84 @@ public class Rasterizer{
     return minTransparency;
   }
 
+  public static boolean loadTransparencyMesh(String file){
+    boolean failed = false;
+    File newMesh = new File(file);
+    try{
+      Scanner fileReader = new Scanner(newMesh);
+      while(!failed){
+        if(fileReader.hasNextLine()){
+          Scanner stringReader = new Scanner(fileReader.nextLine());
+          if(stringReader.hasNextInt()){
+            meshSize = stringReader.nextInt();
+            stringReader.close();
+            break;
+          }
+          else if(stringReader.hasNext() && stringReader.next().charAt(0) != '#')
+            failed = true;
+          stringReader.close();
+        }
+        else
+          failed = true;
+      }
+      if(meshSize < 2)
+        failed = true;
+      if(!failed){
+        int meshIndex = 0;
+        mesh = new boolean[meshSize*meshSize];
+        while(!failed && fileReader.hasNext() && meshIndex < mesh.length){
+          if(fileReader.hasNextInt()){
+            switch(fileReader.nextInt()){
+              case 0:
+                mesh[meshIndex] = false;
+                break;
+              case 1:
+                mesh[meshIndex] = true;
+                break;
+              default:
+                failed = true;
+            }
+            meshIndex++;
+          }
+          else{
+            if(fileReader.next().contains("#"))
+              fileReader.nextLine();
+            else
+              failed = true;
+          }
+        }
+        for(; meshIndex < mesh.length; meshIndex++)
+          mesh[meshIndex] = true;
+      }
+      fileReader.close();
+    }
+    catch(Exception e){
+      System.out.println("ERROR: FILE "+file+" NOT FOUND OR IS INVALID");
+      e.printStackTrace();
+      failed = true;
+    }
+    if(failed){
+      meshSize = 2;
+      mesh = new boolean[4];
+      mesh[0] = true;
+      mesh[1] = false;
+      mesh[2] = false;
+      mesh[3] = true;
+    }
+    return !failed;
+  }
+
+  public static void useMeshTransparency(){
+    flags|=-128;
+  }
+  public static void useAlphaTransparency(){
+    flags&=127;
+  }
+
+  public static boolean isMeshTransparency(){
+    return (flags & -128) == -128;
+  }
+
   //Modifies the stencil mask
   public static void setStencilMask(byte newMask){
     stencilMask = newMask;
@@ -398,8 +485,6 @@ public class Rasterizer{
     screenBounds[1][1] = Math.round(Math.min(heig, Math.max(poses[0][1], Math.max(poses[1][1], poses[2][1]))));
     int minX = screenBounds[0][0];
     int maxX = screenBounds[0][1];
-
-  
       
     //Used for centring a pixel
     float y = 0;
@@ -428,7 +513,12 @@ public class Rasterizer{
     float[] t = {-1, -1, -1};
     //Filling in the triangle
     if((flags & 16) == 16){
-      
+      boolean alwaysDraw = (flags & -128) == 0 || brokenUpFill[0] >= 0xFF;
+      int tempStroke = stroke;
+      if((flags & -128) == -128){
+        brokenUpFill[0] = 0xFF;
+        stroke|=0xFF000000;
+      }
       //Iterating over the BB
       for(int i = screenBounds[1][0]; i < screenBounds[1][1]; i++){
         y = i+0.5f;
@@ -436,7 +526,7 @@ public class Rasterizer{
 
         //Filling the scanline
         for(int j = screenBounds[0][0]; j < screenBounds[0][1]; j++){
-          if(maxProbability <= threshold || Math.random()*maxProbability < threshold){
+          if((alwaysDraw || mesh[(j%meshSize)+meshSize*(i%meshSize)]) && 1 <= threshold || Math.random() < threshold){
             int pixelPos = wid*i+j;
             int[] brokenUpFrame = {frame[pixelPos] >>> 24, 
                                   (frame[pixelPos] >>> 16) & 0xFF, 
@@ -453,6 +543,8 @@ public class Rasterizer{
           }
          }
        }
+       brokenUpFill[0] = (fill >>> 24);
+       stroke = tempStroke;
      }
      //Drawing the outline
      if((flags & 8) == 8){
@@ -523,7 +615,14 @@ public class Rasterizer{
 
     //Filling in the triangle
     if((flags & 16) == 16){
-      
+      boolean alwaysDraw = (flags & -128) == 0 || brokenUpFill[0] >= 0xFF;
+      float vertexCopy = vertexBrightness[0][0];
+      int tempStroke = stroke;
+      if((flags & -128) == -128){
+        brokenUpFill[0] = 0xFF;
+        vertexBrightness[0][0] = 1;
+        stroke|=0xFF000000;
+      }
       //Iterating over the BB
       for(int i = screenBounds[1][0]; i < screenBounds[1][1]; i++){
         y = i+0.5f;
@@ -531,7 +630,7 @@ public class Rasterizer{
         //Filling the scanline
         for(int j = screenBounds[0][0]; j < screenBounds[0][1]; j++){
           int pixelPos = wid*i+j;
-          if(stencil[pixelPos] == 0 && (maxProbability <= threshold || Math.random()*maxProbability < threshold)){
+          if((alwaysDraw || mesh[(j%meshSize)+meshSize*(i%meshSize)]) && stencil[pixelPos] == 0 && (1 <= threshold || Math.random() < threshold)){
             //Centring the pixel
             x = j+0.5f;
             //Calculating the weight each vertex contributes to the pixel
@@ -552,7 +651,7 @@ public class Rasterizer{
                                   (frame[pixelPos] >>> 8) & 0xFF, 
                                   frame[pixelPos] & 0xFF};
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if(Float.isNaN(zBuff[pixelPos]) || (((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]))){
+            if(Float.isNaN(zBuff[pixelPos]) || (((flags & 4) == 0 && z <= zBuff[pixelPos]) || (zBuff[pixelPos] >= 0 && z > zBuff[pixelPos]))){
               computeLighting(tempZ, p1Z, p2Z, p3Z, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
@@ -572,6 +671,9 @@ public class Rasterizer{
           }
          }
        }
+       brokenUpFill[0] = fill >>> 24;
+       vertexBrightness[0][0] = vertexCopy;
+       stroke = tempStroke;
      }
      //Drawing the outline
      if((flags & 8) == 8){
@@ -590,6 +692,7 @@ public class Rasterizer{
   }
   
   public static void triangleDraw3D(Triangle triangle){
+    setVertexBrightness(triangle.returnVertexBrightness());
     //Setting up the colour
     if(triangle.getHasStroke()){
       flags|=8;
@@ -667,7 +770,12 @@ public class Rasterizer{
 
     //Filling in the triangle
     if((flags & 16) == 16){
-      
+      boolean alwaysDraw = (flags & -128) == 0 || brokenUpFill[0] >= 0;
+      if((flags & -128) == -128){
+        brokenUpFill[0] = 0xFF;
+        vertexBrightness[0][0] = 1;
+        stroke|=0xFF000000;
+      }
       //Iterating over the BB
       for(int i = screenBounds[1][0]; i < screenBounds[1][1]; i++){
         y = i+0.5f;
@@ -675,7 +783,7 @@ public class Rasterizer{
         //Filling the scanline
         for(int j = screenBounds[0][0]; j < screenBounds[0][1]; j++){
           int pixelPos = wid*i+j;
-          if(stencil[pixelPos] == 0 && (maxProbability <= threshold || Math.random()*maxProbability < threshold)){
+          if((alwaysDraw || mesh[(j%meshSize)+meshSize*(i%meshSize)]) && stencil[pixelPos] == 0 && (1 <= threshold || Math.random() < threshold)){
             //Centring the pixel
             x = j+0.5f;
             //Calculating the weight each vertex contributes to the pixel
@@ -694,7 +802,7 @@ public class Rasterizer{
                                    (frame[pixelPos] >>> 8) & 0xFF, 
                                    frame[pixelPos] & 0xFF};
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if(Float.isNaN(zBuff[pixelPos]) || (((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]))){
+            if(Float.isNaN(zBuff[pixelPos]) || (((flags & 4) == 0 && z <= zBuff[pixelPos]) || (zBuff[pixelPos] >= 0 && z > zBuff[pixelPos]))){
               computeLighting(tempZ, poses[0][2], poses[1][2], poses[2][2], vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
@@ -780,7 +888,14 @@ public class Rasterizer{
 
     //Filling in the triangle
     if((flags & 16) == 16){
-
+      boolean alwaysDraw = (flags & -128) == 0 || brokenUpFill[0] >= 0xFF;
+      float vertexCopy = vertexBrightness[0][0];
+      int tempStroke = stroke;
+      if((flags & -128) == -128){
+        brokenUpFill[0] = 0xFF;
+        vertexBrightness[0][0] = 1;
+        stroke|=0xFF000000;
+      }
       //Iterating over the BB
       for(int i = screenBounds[1][0]; i < screenBounds[1][1]; i++){
         y = i+0.5f;
@@ -791,7 +906,7 @@ public class Rasterizer{
           int pixelPos = wid*i+j;
 
           stencilTest(pixelPos, compVal, testType);
-          if((flags & 1) == 1 && (maxProbability <= threshold || Math.random()*maxProbability < threshold)){
+          if((alwaysDraw || mesh[(j%meshSize)+meshSize*(i%meshSize)]) && (flags & 1) == 1 && (1 <= threshold || Math.random() < threshold)){
             //Centring the pixel
             x = j+0.5f;
             //Calculating the weight each vertex contributes to the pixel
@@ -812,7 +927,7 @@ public class Rasterizer{
                                    (frame[pixelPos] >>> 8) & 0xFF, 
                                    frame[pixelPos] & 0xFF};
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if(Float.isNaN(zBuff[pixelPos]) || (((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]))){
+            if(Float.isNaN(zBuff[pixelPos]) || (((flags & 4) == 0 && z <= zBuff[pixelPos]) || (zBuff[pixelPos] >= 0 && z > zBuff[pixelPos]))){
               computeLighting(tempZ, p1Z, p2Z, p3Z, vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
@@ -832,6 +947,9 @@ public class Rasterizer{
           }
         }
        }
+       brokenUpFill[0] = fill >>> 24;
+       vertexBrightness[0][0] = vertexCopy;
+       stroke = tempStroke;
      }
      //Drawing the outline
      if((flags & 8) == 8){
@@ -851,6 +969,8 @@ public class Rasterizer{
   
   public static void triangleDraw3D(Triangle triangle, byte compVal, char testType){
     //Setting up the colour
+    setVertexBrightness(triangle.returnVertexBrightness());
+
     tempAction = triangle.returnStencilActionPtr();
     if(triangle.getHasStroke()){
       flags|=8;
@@ -877,8 +997,8 @@ public class Rasterizer{
     int[][] screenBounds = {{0x80000000, 0x7FFFFFF}, {0x80000000, 0x7FFFFFF}};
     //Makes forming the BB and rasterizing the triangle easier
     float[][] poses = {{triangle.getVertices()[0][0], triangle.getVertices()[0][1], triangle.getVertices()[0][2]}, 
-                        {triangle.getVertices()[1][0], triangle.getVertices()[1][1], triangle.getVertices()[1][2]}, 
-                        {triangle.getVertices()[2][0], triangle.getVertices()[2][1], triangle.getVertices()[2][2]}};
+                       {triangle.getVertices()[1][0], triangle.getVertices()[1][1], triangle.getVertices()[1][2]}, 
+                       {triangle.getVertices()[2][0], triangle.getVertices()[2][1], triangle.getVertices()[2][2]}};
     poses[0][2]*=(((flags & 4) >>> 1)-1);
     poses[1][2]*=(((flags & 4) >>> 1)-1);
     poses[2][2]*=(((flags & 4) >>> 1)-1);
@@ -926,6 +1046,12 @@ public class Rasterizer{
 
     //Filling in the triangle
     if((flags & 16) == 16){
+      boolean alwaysDraw = (flags & -128) == 0 || brokenUpFill[0] >= 0xFF;
+      if((flags & -128) == -128){
+        brokenUpFill[0] = 0xFF;
+        vertexBrightness[0][0] = 1;
+        stroke|=0xFF000000;
+      }
       //Iterating over the BB
       for(int i = screenBounds[1][0]; i < screenBounds[1][1]; i++){
         y = i+0.5f;
@@ -934,7 +1060,7 @@ public class Rasterizer{
         for(int j = screenBounds[0][0]; j < screenBounds[0][1]; j++){
           int pixelPos = wid*i+j;
           stencilTest(pixelPos, compVal, testType);
-          if((flags & 1) == 1 && (maxProbability <= threshold || Math.random()*maxProbability < threshold)){
+          if((alwaysDraw || mesh[(j%meshSize)+meshSize*(i%meshSize)]) && (flags & 1) == 1 && (1 <= threshold || Math.random() < threshold)){
             //Centring the pixel
             x = j+0.5f;
             //Calculating the weight each vertex contributes to the pixel
@@ -956,7 +1082,7 @@ public class Rasterizer{
                                   (frame[pixelPos] >>> 8) & 0xFF, 
                                   frame[pixelPos] & 0xFF};
             //For when the current triangle is closest at the current pixel than any previous triangle
-            if(Float.isNaN(zBuff[pixelPos]) || (((flags & 4) == 0 && z <= zBuff[pixelPos]) || ((flags & 4) == 4 && z > zBuff[pixelPos]))){
+            if(Float.isNaN(zBuff[pixelPos]) || (((flags & 4) == 0 && z <= zBuff[pixelPos]) || (zBuff[pixelPos] >= 0 && z > zBuff[pixelPos]))){
               computeLighting(tempZ, poses[0][2], poses[1][2], poses[2][2], vertexBrightness);
               //Interpolating the current pixel and the fill if the fill's alpha is less than 255. Otherwise, overwrite the current pixel's data with the fill
               if(brokenUpColour[0] < 0xFF)
@@ -1017,7 +1143,7 @@ public class Rasterizer{
             int imgPixel = (int)(scY)*sprite.returnWidth()+(int)(scX); //Determining where in the image the current desired pixel is
             //Checks if a pixel is not a specific colour defined in the Billboard object and if there is nothing already in front of where the sprite is being drawn
             //If it passes, it draws the sprite's pixel to the new location
-            if((maxProbability <= threshold || Math.random()*maxProbability < threshold) && stencil[pixelPos] == 0 && (sprite.shouldDrawPixel(imgPixel) || sprite.hasRemoval())){
+            if((1 <= threshold || Math.random() < threshold) && stencil[pixelPos] == 0 && (sprite.shouldDrawPixel(imgPixel) || sprite.hasRemoval())){
               //Adjusting the brightness level of each pixel
               int colour = (sprite.returnFill() & 0xFF000000);
               colour|=((int)Math.min(((sprite.returnPixels()[imgPixel] >>> 16) & 255)*((sprite.returnFill() >>> 16) & 255)*0.003921568f, 255)) << 16;
@@ -1150,7 +1276,7 @@ public class Rasterizer{
             stencilTest(pixelPos, compVal, testType);
             //Checks if a pixel is not a specific colour defined in the Billboard object and if there is nothing already in front of where the sprite is being drawn
             //If it passes, it draws the sprite's pixel to the new location
-            if((maxProbability <= threshold || Math.random()*maxProbability < threshold) && (flags & 1) == 1 && (sprite.shouldDrawPixel(imgPixel) || sprite.hasRemoval())){
+            if((1 <= threshold || Math.random() < threshold) && (flags & 1) == 1 && (sprite.shouldDrawPixel(imgPixel) || sprite.hasRemoval())){
               //Adjusting the brightness level of each pixel
               int colour = (sprite.returnFill() & 0xFF000000);
               colour|=((int)Math.min(((sprite.returnPixels()[imgPixel] >>> 16) & 255)*((sprite.returnFill() >>> 16) & 255)*0.003921568f, 255)) << 16;
@@ -1626,14 +1752,16 @@ public class Rasterizer{
     float adjustedBeta = invZ2*beta;
     float adjustedGamma = invZ3*gamma;
     float[] overallBrightness = new float[4];
-    if((flags & 32) == 32){
+    if((flags & -64) == 64)
       overallBrightness[0] = Math.max(0, z*(vertexBrightness[0][0]*adjustedAlpha+vertexBrightness[1][0]*adjustedBeta+vertexBrightness[2][0]*adjustedGamma));
+    else
+      overallBrightness[0] = Math.max(0, vertexBrightness[0][0]);
+    if((flags & 32) == 32){
       overallBrightness[1] = Math.max(0, z*(vertexBrightness[0][1]*adjustedAlpha+vertexBrightness[1][1]*adjustedBeta+vertexBrightness[2][1]*adjustedGamma));                  
       overallBrightness[2] = Math.max(0, z*(vertexBrightness[0][2]*adjustedAlpha+vertexBrightness[1][2]*adjustedBeta+vertexBrightness[2][2]*adjustedGamma));                  
       overallBrightness[3] = Math.max(0, z*(vertexBrightness[0][3]*adjustedAlpha+vertexBrightness[1][3]*adjustedBeta+vertexBrightness[2][3]*adjustedGamma));
     }
     else{
-      overallBrightness[0] = Math.max(0, vertexBrightness[0][0]);
       overallBrightness[1] = Math.max(0, vertexBrightness[0][1]);
       overallBrightness[2] = Math.max(0, vertexBrightness[0][2]);
       overallBrightness[3] = Math.max(0, vertexBrightness[0][3]);

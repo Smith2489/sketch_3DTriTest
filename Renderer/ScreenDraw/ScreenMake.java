@@ -69,6 +69,7 @@ public class ScreenMake{
     private static DotDraw tempDotDraw = new DotDraw();
     private static SceneEntity tempInvis = new SceneEntity();
     private static Light tempLight = new Light();
+    private static float[] ambientColour = {0, 0, 0};
 
     private static float ditherIntensity = 0;
     private static float ditherRange = 0;
@@ -258,6 +259,12 @@ public class ScreenMake{
       flags&=127;
     }
 
+    public static void useMeshTransparency(){
+      Rasterizer.useMeshTransparency();
+    }
+    public static void useAlphaTransparency(){
+      Rasterizer.useAlphaTransparency();
+    }
 
 
 
@@ -424,9 +431,12 @@ public class ScreenMake{
       }
       float[][] lightPos = new float[lights.size()][3];
       float[][] lightAngle = new float[lights.size()][3];
-      float[][][] lightColour = new float[lights.size()][3][3];
-
+      float[][][] lightColour = new float[lights.size()][2][3];
       float[] invCamColour = eye.returnInvColour(lights.getFirst().returnLightColour((byte)0));
+      ambientColour = Light.returnAmbientColour();
+      ambientColour[0]*=invCamColour[0];
+      ambientColour[1]*=invCamColour[1];
+      ambientColour[2]*=invCamColour[2];
       //Matrices for projection
       Matrix4x4 mvp = MatrixOperations.matrixMultiply(proj, view);
       Matrix4x4 mvpFull = new Matrix4x4();
@@ -447,12 +457,13 @@ public class ScreenMake{
           lightPos[i] = dropW(MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(tempLight.returnPosition()))));
           lightAngle[i] = dropW(MatrixOperations.matrixMultiply(view, MatrixOperations.matrixMultiply(uniTransform, from3DVecTo4DVec(tempLight.returnLightDirection(), 0))));
         }
-        lightColour[i] = tempLight.returnLightColour();
-        for(int j = 0; j < 3; j++){
-          lightColour[i][j][0]*=invCamColour[0];
-          lightColour[i][j][1]*=invCamColour[1];
-          lightColour[i][j][2]*=invCamColour[2];
-        }
+        lightColour[i] = tempLight.returnDiffuseAndSpecularColour();
+        lightColour[i][0][0]*=invCamColour[0];
+        lightColour[i][0][1]*=invCamColour[1];
+        lightColour[i][0][2]*=invCamColour[2];
+        lightColour[i][1][0]*=invCamColour[0];
+        lightColour[i][1][1]*=invCamColour[1];
+        lightColour[i][1][2]*=invCamColour[2];
         lightAngle[i] = VectorOperations.vectorNormalization3D(lightAngle[i]);
       }
 
@@ -471,8 +482,6 @@ public class ScreenMake{
         float[] position = {tempModel.returnPosition()[0], tempModel.returnPosition()[1], tempModel.returnPosition()[2]};
         //Sets up the matrices for the current model
         faceDirection = 1;
-        if(tempModel.returnAttachedToCamera())
-          attachObjectToCamera(tempModel.returnPosition(), eye);
         tempModel.setModelMatrix();
         Matrix4x4 model;
         Matrix4x4 transform = tempModel.transform(true);
@@ -737,7 +746,7 @@ public class ScreenMake{
                     //Adding the new triangle to the list to account for the clipped triangle being a quad
                     edgeDir = returnEdgeDir(tempModel, secondPoints, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
                     if(edgeDir > 0){
-                      if((alpha[1] & 0xFF) < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1){
+                      if(!Rasterizer.isMeshTransparency() && (alpha[1] < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1)){
                         triListTranslucent.add(new Triangle(secondPoints, colour[0] , colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                         triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                         triListTranslucent.getLast().setVertexBrightness(finalBrightness);
@@ -765,7 +774,7 @@ public class ScreenMake{
                 //Adding the triangle to the list
                 edgeDir = returnEdgeDir(tempModel, points, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
                 if(edgeDir > 0){
-                  if((alpha[1] & 0xFF) < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1){
+                  if(!Rasterizer.isMeshTransparency() && (alpha[1]< 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1)){
                     triListTranslucent.add(new Triangle(points, colour[0] , colour[1] , tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                     triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                     triListTranslucent.getLast().setVertexBrightness(vertexBrightness);
@@ -804,8 +813,6 @@ public class ScreenMake{
         float distCamToBillboard = (float)Math.sqrt(fromCamToBillboard[0]*fromCamToBillboard[0]+fromCamToBillboard[1]*fromCamToBillboard[1]+fromCamToBillboard[2]*fromCamToBillboard[2]);
         float[] position = {tempBillboard.returnPosition()[0], tempBillboard.returnPosition()[1], tempBillboard.returnPosition()[2]};
         //Sets up the model matrix and the MVP matrices
-        if(tempBillboard.returnAttachedToCamera())
-          attachObjectToCamera(tempBillboard.returnPosition(), eye);
         tempBillboard.setModelMatrix();
         if(distCamToBillboard <= eye.getDrawDistance() && tempBillboard.returnModelTint() > Rasterizer.getMinTransparency()*Colour.INV_255){
           
@@ -961,7 +968,6 @@ public class ScreenMake{
       while(!triListOpaque.isEmpty()){
         tempTri = triListOpaque.removeFirst();
         Rasterizer.setProbabilities(tempTri.returnMaxFizzel(), tempTri.returnFizzelThreshold());
-        Rasterizer.setVertexBrightness(tempTri.returnVertexBrightness());
         Rasterizer.setDepthWrite(tempTri.getHasDepthWrite());
         Rasterizer.triangleDraw3D(tempTri, stencilComp, testType);
       }
@@ -1182,14 +1188,6 @@ public class ScreenMake{
   }
 
 
-  private static void attachObjectToCamera(float[] modelPos, Camera eye){
-    float[] tempPos = from3DVecTo4DVec(modelPos);
-    Matrix4x4 rotation = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(MVP.returnRotation(0,0, eye.returnRotation()[2]), MVP.returnRotation(0,eye.returnRotation()[1],0)), MVP.returnRotation(eye.returnRotation()[0],0, 0));
-    float[] offset = MatrixOperations.matrixMultiply(MatrixOperations.matrixMultiply(MVP.returnTranslation(eye.returnPosition()), rotation), tempPos);
-    modelPos[0] = offset[0];
-    modelPos[1] = offset[1];
-    modelPos[2] = offset[2];
-  }
   //Iterates through the triangles in each model and transforms them into a list of tris that can be drawn to the screen
   //This version does not account for lighting
   private static void setupTrisNoLight(Matrix4x4 mvp, Matrix4x4 mvpFull, Camera eye, float drawDist){
@@ -1214,8 +1212,6 @@ public class ScreenMake{
       //Sets up the matrices for the current model
       faceDirection = 1;
       float[] position = {tempModel.returnPosition()[0], tempModel.returnPosition()[1], tempModel.returnPosition()[2]};
-      if(tempModel.returnAttachedToCamera())
-        attachObjectToCamera(tempModel.returnPosition(), eye);
       tempModel.setModelMatrix();
       Matrix4x4 transform = tempModel.transform(true);
       Matrix4x4 model = MatrixOperations.matrixMultiply(transform, tempModel.returnModelMatrix());
@@ -1450,7 +1446,7 @@ public class ScreenMake{
                 //Adding the new triangle to the list to account for the clipped triangle being a quad
                 edgeDir = returnEdgeDir(tempModel, secondPoints, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
                 if(edgeDir > 0){
-                  if((alpha[1] & 0xFF) < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1){
+                  if(!Rasterizer.isMeshTransparency() && (alpha[1] < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1)){
                     triListTranslucent.add(new Triangle(secondPoints, colour[0] , colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                     triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                     triListTranslucent.getLast().setVertexBrightness(finalBrightness);
@@ -1478,7 +1474,7 @@ public class ScreenMake{
               //Adding the triangle to the list
               edgeDir = returnEdgeDir(tempModel, points, colour, alpha, backIndex, faceDirection, (flags & 8) == 8, (flags & 4) == 4);
               if(edgeDir > 0){
-                if((alpha[1] & 0xFF) < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1){
+                if(!Rasterizer.isMeshTransparency() && (alpha[1] < 0xFF || vertexBrightness[0][0] < 1 || vertexBrightness[1][0] < 1 || vertexBrightness[2][0] < 1)){
                   triListTranslucent.add(new Triangle(points, colour[0], colour[1], tempModel.returnHasStroke() || (flags & 12) != 8, tempModel.returnHasFill() && (flags & 8) == 8));
                   triListTranslucent.getLast().setDepthWrite(!tempModel.returnDepthWrite());
                   triListTranslucent.getLast().setVertexBrightness(vertexBrightness);
@@ -1520,8 +1516,6 @@ public class ScreenMake{
       float distCamToBillboard = (float)Math.sqrt(fromCamToBillboard[0]*fromCamToBillboard[0]+fromCamToBillboard[1]*fromCamToBillboard[1]+fromCamToBillboard[2]*fromCamToBillboard[2]);
       float[] position = {tempBillboard.returnPosition()[0], tempBillboard.returnPosition()[1], tempBillboard.returnPosition()[2]};
       //Sets up the model matrix and the MVP matrices
-      if(tempBillboard.returnAttachedToCamera())
-        attachObjectToCamera(tempBillboard.returnPosition(), eye);
       tempBillboard.setModelMatrix();
       if(distCamToBillboard <= drawDist && tempBillboard.returnModelTint() > Rasterizer.getMinTransparency()*Colour.INV_255){
         //Constructs the transformation matrix for the point
@@ -1608,8 +1602,6 @@ public class ScreenMake{
                                 (tempLineObj.returnModelCentre()[2]+tempLineObj.returnPosition()[2])-eye.returnPosition()[2]};
       float distCamToModel = (float)Math.sqrt(fromCamToModel[0]*fromCamToModel[0]+fromCamToModel[1]*fromCamToModel[1]+fromCamToModel[2]*fromCamToModel[2]);
       float[] position = {tempLineObj.returnPosition()[0], tempLineObj.returnPosition()[1], tempLineObj.returnPosition()[2]};
-      if(tempLineObj.returnAttachedToCamera())
-        attachObjectToCamera(tempLineObj.returnPosition(), eye);
       tempLineObj.setModelMatrix();
       //Constructs the transformation matrix for the point
       mvpFull.copy(MatrixOperations.matrixMultiply(mvp, MatrixOperations.matrixMultiply(tempLineObj.transform(), tempLineObj.returnModelMatrix())));
@@ -1711,8 +1703,6 @@ public class ScreenMake{
       dotList.add(tempDot);
       tempDot.setModelMatrix();
       float[] position = {tempDot.returnPosition()[0], tempDot.returnPosition()[1], tempDot.returnPosition()[2]};
-      if(tempDot.returnAttachedToCamera())
-        attachObjectToCamera(tempDot.returnPosition(), eye);
       tempDot.setPosition(position);
       float[] point = from3DVecTo4DVec(tempDot.returnPosition());
       boolean isInside = ((flags & 64) == 64);
@@ -1750,6 +1740,8 @@ public class ScreenMake{
   }
 
   private static void sortAndDrawTranslucent(int[] screen){
+    if(translucentData.size() <= 0)
+      return;
     //Copying the items in the translucent linked lists into temporary arrays
     TranslucentData[] tempData = new TranslucentData[0];
     Triangle[] tempTris = new Triangle[0];
@@ -1773,7 +1765,6 @@ public class ScreenMake{
       switch(tempData[i].returnID()){
         case 1:
           Rasterizer.setDepthWrite(tempTris[j].getHasDepthWrite());
-          Rasterizer.setVertexBrightness(tempTris[j].returnVertexBrightness());
           Rasterizer.setProbabilities(tempTris[j].returnMaxFizzel(), tempTris[j].returnFizzelThreshold());
           Rasterizer.triangleDraw3D(tempTris[j], stencilComp, testType);
           break;
@@ -1793,7 +1784,9 @@ public class ScreenMake{
   }
   private static float[] computeLighting(LinkedList<Light> lights, float[][] lightPos, float[][] lightAngle, float[][][] lightColour, float[] homogeneousPoint, float[] normal, float luster, float overallBrightness, Matrix4x4 model, Model tempModel, int polygonIndex, boolean alreadyComputed){
     float[] normalizedVec = {0, 0, -1};
-    float[] brightness = {0, 0, 0};
+    float[] brightness = {ambientColour[0]*Light.returnAmbientIntensity(),
+                          ambientColour[1]*Light.returnAmbientIntensity(),
+                          ambientColour[2]*Light.returnAmbientIntensity()};
     if(!alreadyComputed)
       points = dropW(MatrixOperations.matrixMultiply(model, homogeneousPoint));
     else{
@@ -1858,9 +1851,9 @@ public class ScreenMake{
       }
       diffuse*=(tempLight.returnDiffuseIntensity()*r2);
       specular = ((float)Math.pow(specular, luster)*tempLight.returnSpecularIntensity()*r2);
-      brightness[0]+=((lightColour[i][0][0]*tempLight.returnAmbientIntensity()) + ((lightColour[i][1][0]*diffuse) + (lightColour[i][2][0]*specular)))*overallBrightness;
-      brightness[1]+=((lightColour[i][0][1]*tempLight.returnAmbientIntensity()) + ((lightColour[i][1][1]*diffuse) + (lightColour[i][2][1]*specular)))*overallBrightness;
-      brightness[2]+=((lightColour[i][0][2]*tempLight.returnAmbientIntensity()) + ((lightColour[i][1][2]*diffuse) + (lightColour[i][2][2]*specular)))*overallBrightness;
+      brightness[0]+=(((lightColour[i][0][0]*diffuse) + (lightColour[i][1][0]*specular)))*overallBrightness;
+      brightness[1]+=(((lightColour[i][0][1]*diffuse) + (lightColour[i][1][1]*specular)))*overallBrightness;
+      brightness[2]+=(((lightColour[i][0][2]*diffuse) + (lightColour[i][1][2]*specular)))*overallBrightness;
     }
     return brightness;
   

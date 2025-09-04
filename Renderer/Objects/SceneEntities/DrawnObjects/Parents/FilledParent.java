@@ -78,7 +78,7 @@ public abstract class FilledParent extends DispParent{
             fill = (rgb << 16) | (rgb << 8) | rgb;
         else
             fill = rgb;
-            fill|=(alpha << 24);
+        fill|=(alpha << 24);
     }
 
     public void fill(short r, short g, short b){

@@ -88,6 +88,8 @@ public class sketch_3DTriTest extends PApplet{
 
 
   public void setup(){
+    // ScreenMake.useMeshTransparency();
+    // Rasterizer.loadTransparencyMesh("testGrid.txt");
     MVP.returnRotation(0, 0, 90);
     Action.setPApplet(this);
     //LoadModelFile.disableMessages();
@@ -101,23 +103,22 @@ public class sketch_3DTriTest extends PApplet{
     light[0].setLightColour(0x55AAFF, (byte)0);
     light[0].setLightColour(0x55, (byte)1);
     light[0].setLightColour(0xFF00FF, (byte)2);
-    light[0].setAmbientIntensity(0.03f);
+    Light.setAmbientIntensity(0.1f);
     light[0].setDiffuseIntensity(4000);
     light[0].setSpecularIntensity(16000);
     light[0].addAction(new MoveLight());
     light[0].setType('p');
     light[1] = new Light(10, 0, 40);
-    light[1].setAmbientIntensity(0.03f);
     light[1].setDiffuseIntensity(1000);
     light[1].setSpecularIntensity(2000);
-    light[1].setLightColour(0x00BBBB);
+    light[1].setLightColour(0x00BBBB, (byte)1);
+    light[1].setLightColour(0x00BBBB, (byte)2);
     light[1].setInnerSpread(45);
     light[1].setOuterSpread(90);
     light[1].setType('s');
     light[1].addAction(new RotateLight());
     light[1].addAction(new ColonThree());
     light[2] = new Light(100, 0, 1500);
-    light[2].setAmbientIntensity(0);
     light[2].setDiffuseIntensity(10000000);
     light[2].setSpecularIntensity(20000000);
     light[2].setType('s');
@@ -215,6 +216,7 @@ public class sketch_3DTriTest extends PApplet{
     testModels[1].setPosition(0, 0, 8);
     testModels[1].setScale(2, 2, 2);
     testModels[1].addAction(new RotateTetrahedron());
+    //testModels[1].setDepthWrite(true);
     //testModels[1].setAttachedToCamera(true);
     
     //Tris that are copied from Computer Graphics homework from Spring 2024 semester
@@ -229,6 +231,7 @@ public class sketch_3DTriTest extends PApplet{
     testModels[3].setShininess(100);
     testModels[3].addAction(new RotateLongModel());
     testModels[3].setGauroud(false);
+    //testModels[3].setDepthWrite(true);
     //testModels[3].addAction(new ColonThree());
     //testModels[3].addAction(new Action());
     
@@ -364,7 +367,7 @@ public class sketch_3DTriTest extends PApplet{
     //eye.setScale(10, 10, 10);
     ScreenMake.setLineList(testLineLinked);
     ScreenMake.setStencilTest((byte)0, 'p');
-    ScreenMake.setDitherIntensity(0.25f);
+    ScreenMake.setDitherIntensity(0f);
   }
 
   private static LinkedList<Model> arrayToLinkedList(Model[] arr){
@@ -504,9 +507,9 @@ public class sketch_3DTriTest extends PApplet{
     ScreenMake.isInteractive();
     ScreenMake.ditherAll();
     //ScreenMake.drawScene(output.pixels, eye);
-
+    Light.setAmbientColour(0x55AAFF);
     ScreenMake.drawScene(output.pixels, eye, lightsPrimary, 1.5f);
-    
+    Light.setAmbientColour(0xFFFFFF);
     ScreenMake.ditherOnlyObjects();
     // float[][] testColours = {{0, 0, 1}, {0, 1, 0}, {1, 0, 0}};
     // Rasterizer.fill(0xFF);
