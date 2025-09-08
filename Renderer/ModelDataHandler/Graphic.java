@@ -93,6 +93,12 @@ public class Graphic {
       public int[] returnPixels(){
         return img;
       }
+
+      public int[] returnPixel(int x, int y){
+        int pixelPos = x+width*y;
+        int[] out = {(img[pixelPos] >>> 16) & 0xFF, (img[pixelPos] >>> 8) & 0xFF, img[pixelPos] & 0xFF};
+        return out;
+      }
       public int returnWidth(){
         return width;
       }
@@ -102,7 +108,8 @@ public class Graphic {
       public int returnInvisColour(byte index){
         return removalColour[index];
       }
-      public boolean shouldDrawPixel(int pixelIndex){
+      public boolean shouldDrawPixel(int x, int y){
+        int pixelIndex = x+width*y;
         int[] tempR = {(removalColour[0] >>> 16) & 0xFF, (removalColour[1] >>> 16) & 0xFF, (img[pixelIndex] >>> 16) & 0xFF};
         int[] edgeR = {Math.min(tempR[0], tempR[1]), Math.max(tempR[0], tempR[1])};
         int[] tempG = {(removalColour[0] >>> 8) & 0xFF, (removalColour[1] >>> 8) & 0xFF, (img[pixelIndex] >>> 8) & 0xFF};

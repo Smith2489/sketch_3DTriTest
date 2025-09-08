@@ -7,6 +7,8 @@ import Maths.LinearAlgebra.*;
 import Renderer.ScreenDraw.MVP;
 //Root superclass for all entities that define a scene (lights, cameras, etc.)
 public class SceneEntity{
+    protected static final float DEGS_TO_RADS = (float)(Math.PI/180);
+    protected static final float RADS_TO_DEGS = (float)(180/Math.PI);
     //A list of parent objects that have already been transformed
     //The idea is to prevent infinite recursion in the event that one parent object links to another
     //in such a way that they form a loop
@@ -98,9 +100,9 @@ public class SceneEntity{
         pos[0] = newPosition[0];
         pos[1] = newPosition[1];
         pos[2] = newPosition[2];
-        rot[0] = newRotation[0];
-        rot[1] = newRotation[1];
-        rot[2] = newRotation[2];
+        rot[0] = newRotation[0]*DEGS_TO_RADS-EPSILON;
+        rot[1] = newRotation[1]*DEGS_TO_RADS-EPSILON;
+        rot[2] = newRotation[2]*DEGS_TO_RADS-EPSILON;
         flags = 0;
         physics = new Physics(pos, rot);
         actionList = new LinkedList<Action>();
@@ -110,9 +112,9 @@ public class SceneEntity{
         pos[0] = x;
         pos[1] = y;
         pos[2] = z;
-        rot[0] = alpha;
-        rot[1] = beta;
-        rot[2] = gamma;
+        rot[0] = alpha*DEGS_TO_RADS-EPSILON;
+        rot[1] = beta*DEGS_TO_RADS-EPSILON;
+        rot[2] = gamma*DEGS_TO_RADS-EPSILON;
         flags = 0;
         physics = new Physics(pos, rot);
         actionList = new LinkedList<Action>();
@@ -327,27 +329,47 @@ public class SceneEntity{
 
     //Sets an object's rotation
     public void setRotation(float[] newRot){
-        rot[0] = newRot[0];
-        rot[1] = newRot[1];
-        rot[2] = newRot[2];
+        rot[0] = newRot[0]*DEGS_TO_RADS-EPSILON;
+        rot[1] = newRot[1]*DEGS_TO_RADS-EPSILON;
+        rot[2] = newRot[2]*DEGS_TO_RADS-EPSILON;
     }
     public void setRotation(float alpha, float beta, float gamma){
-        rot[0] = alpha;
-        rot[1] = beta;
-        rot[2] = gamma;
+        rot[0] = alpha*DEGS_TO_RADS-EPSILON;
+        rot[1] = beta*DEGS_TO_RADS-EPSILON;
+        rot[2] = gamma*DEGS_TO_RADS-EPSILON;
     }
     public void setRotationX(float rotX){
-        rot[0] = rotX;
+        rot[0] = rotX*DEGS_TO_RADS-EPSILON;
     }
     public void setRotationY(float rotY){
-        rot[1] = rotY;
+        rot[1] = rotY*DEGS_TO_RADS-EPSILON;
     }
     public void setRotationZ(float rotZ){
-        rot[2] = rotZ;
+        rot[2] = rotZ*DEGS_TO_RADS-EPSILON;
     }
 
     public float[] returnRotation(){
         return rot;
+    }
+
+    public float[] returnRotationDegrees(){
+        float[] out = {rot[0]*RADS_TO_DEGS-EPSILON, rot[1]*RADS_TO_DEGS-EPSILON, rot[2]*RADS_TO_DEGS-EPSILON};
+        return out;
+    }
+    public float returnXRotation(boolean degrees){
+        if(degrees)
+            return rot[0]*RADS_TO_DEGS-EPSILON;
+        return rot[0];
+    }
+    public float returnYRotation(boolean degrees){
+        if(degrees)
+            return rot[1]*RADS_TO_DEGS-EPSILON;
+        return rot[1];
+    }
+    public float returnZRotation(boolean degrees){
+        if(degrees)
+            return rot[2]*RADS_TO_DEGS-EPSILON;
+        return rot[2];
     }
 
     public void copy(Object o){

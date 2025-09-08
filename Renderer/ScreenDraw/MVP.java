@@ -188,10 +188,6 @@ public class MVP{
   
   //Rotation Matrix for Model (M)
   public static Matrix4x4 returnRotation(float alpha, float beta, float gamma){
-    //Degrees to radians conversion
-    alpha = alpha*DEG_TO_RADS-0.0001f;
-    beta = beta*DEG_TO_RADS-0.0001f;
-    gamma = gamma*DEG_TO_RADS-0.0001f;
     //Rotation matrices
     Matrix4x4 xRotation = new Matrix4x4();
     xRotation.setData((float)Math.cos(alpha), 1, 1);
@@ -216,10 +212,6 @@ public class MVP{
   }
   //Rotation Matrix for Model (M)
   private static Matrix4x4 reverseRotation(float alpha, float beta, float gamma){
-    //Degrees to radians conversion
-    alpha = alpha*DEG_TO_RADS-0.0001f;
-    beta = beta*DEG_TO_RADS-0.0001f;
-    gamma = gamma*DEG_TO_RADS-0.0001f;
 
     //Rotation matrices
     Matrix4x4 xRotation = new Matrix4x4();
@@ -244,11 +236,11 @@ public class MVP{
     return MatrixOperations.matrixMultiply(firstStep, zRotation);
   }
   public static Matrix4x4 returnRotation(float[] angles){
-    //Degrees to radians conversion
+    //Making a deep copy of the angles array
     float[] anglesRad = new float[3];
-    anglesRad[0] = angles[0]*DEG_TO_RADS-0.0001f;
-    anglesRad[1] = angles[1]*DEG_TO_RADS-0.0001f;
-    anglesRad[2] = angles[2]*DEG_TO_RADS-0.0001f;
+    anglesRad[0] = angles[0];
+    anglesRad[1] = angles[1];
+    anglesRad[2] = angles[2];
     //Rotation matrices
     Matrix4x4 xRotation = new Matrix4x4();
     xRotation.setData((float)Math.cos(anglesRad[0]), 1, 1);
@@ -272,11 +264,11 @@ public class MVP{
     return MatrixOperations.matrixMultiply(firstStep, xRotation);
   }
   public static Matrix4x4 reverseRotation(float[] angles){
-    //Degrees to radians conversion
+    //Making a deep copy of the angles array
     float[] anglesRad = new float[3];
-    anglesRad[0] = angles[0]*DEG_TO_RADS-0.0001f;
-    anglesRad[1] = angles[1]*DEG_TO_RADS-0.0001f;
-    anglesRad[2] = angles[2]*DEG_TO_RADS-0.0001f;
+    anglesRad[0] = angles[0];
+    anglesRad[1] = angles[1];
+    anglesRad[2] = angles[2];
 
     //Rotation matrices
     Matrix4x4 xRotation = new Matrix4x4();

@@ -7,6 +7,8 @@ public abstract class Action extends PInputHandler{
     protected static final double TAU = 2*Math.PI;
     protected static final double HALF_PI = Math.PI*0.5;
     protected static final double QUARTER_PI = Math.PI*0.25;
+    protected static final float DEGS_TO_RADS = (float)(Math.PI/180);
+    protected static final float RADS_TO_DEGS = (float)(180/Math.PI);
     protected static float speed = 0;
     private float[] pos = {0, 0, 0};
     private float[] rot = {0, 0, 0};
@@ -55,7 +57,7 @@ public abstract class Action extends PInputHandler{
             oldRot[1] = rot[1];
             oldRot[2] = rot[2];
             timerRot = time;
-            rotationShakeRadius = radius;
+            rotationShakeRadius = radius*DEGS_TO_RADS;
             rotationShakeStarted = true;
         }
     }
@@ -181,6 +183,7 @@ public abstract class Action extends PInputHandler{
     }
 
     protected void addToRotation(float rate, byte axis){
+        rate*=DEGS_TO_RADS;
         if(axis >= 0 && axis < 3){
             if(timerRot == 0)
                 rot[axis]+=rate;
@@ -190,14 +193,14 @@ public abstract class Action extends PInputHandler{
     }
 
     protected void hardSetRotation(float alpha, float beta, float gamma){
-        rot[0] = alpha;
-        rot[1] = beta;
-        rot[2] = gamma;
+        rot[0] = alpha*DEGS_TO_RADS;
+        rot[1] = beta*DEGS_TO_RADS;
+        rot[2] = gamma*DEGS_TO_RADS;
     }
     protected void hardSetRotation(float[] newRot){
-        rot[0] = newRot[0];
-        rot[1] = newRot[1];
-        rot[2] = newRot[2];
+        rot[0] = newRot[0]*DEGS_TO_RADS;
+        rot[1] = newRot[1]*DEGS_TO_RADS;
+        rot[2] = newRot[2]*DEGS_TO_RADS;
     }
 
     protected float[] getRot(){
@@ -211,6 +214,21 @@ public abstract class Action extends PInputHandler{
             rotCopy[0] = oldRot[0];
             rotCopy[1] = oldRot[1];
             rotCopy[2] = oldRot[2];
+        }
+        return rotCopy;
+    }
+
+    protected float[] getRotDegrees(){
+        float[] rotCopy = new float[3];
+        if(timerRot == 0){
+            rotCopy[0] = rot[0]*RADS_TO_DEGS;
+            rotCopy[1] = rot[1]*RADS_TO_DEGS;
+            rotCopy[2] = rot[2]*RADS_TO_DEGS;
+        }
+        else{
+            rotCopy[0] = oldRot[0]*RADS_TO_DEGS;
+            rotCopy[1] = oldRot[1]*RADS_TO_DEGS;
+            rotCopy[2] = oldRot[2]*RADS_TO_DEGS;
         }
         return rotCopy;
     }
@@ -288,8 +306,8 @@ public abstract class Action extends PInputHandler{
     
                     rotVec[oppDown] = VectorOperations.vectorNormalization3D(rotVec[oppDown]);
                     rotVec[1] = VectorOperations.vectorNormalization3D(rotVec[1]);
-                    float[] camToPointAngles = {VectorOperations.returnAngleUnit(rotVec[oppDown], useVec, true),
-                                                VectorOperations.returnAngleUnit(rotVec[1], VectorOperations.ELEM_K, true)};
+                    float[] camToPointAngles = {VectorOperations.returnAngleUnit(rotVec[oppDown], useVec, false),
+                                                VectorOperations.returnAngleUnit(rotVec[1], VectorOperations.ELEM_K, false)};
                     
                     if(reverseVertical)
                         camToPointAngles[0]*=-1;
@@ -299,13 +317,13 @@ public abstract class Action extends PInputHandler{
                     if(axis != 0){
                         if(camToPoint[2] > 0.0001){
                             if(camToPoint[0] <= 0.0001)
-                                add = -90;
+                                add = -(float)(HALF_PI);
                         }
                         else{
                             if(camToPoint[0] > 0.0001)
-                                add = 90;
+                                add = (float)(HALF_PI);
                             else
-                                add = 180;
+                                add = (float)PI;
                         }
                     }
                     else{
@@ -314,9 +332,9 @@ public abstract class Action extends PInputHandler{
                     }
                     rot[axis] = camToPointAngles[axis]+add;
                     if(rot[axis] < 0)
-                        rot[axis]+=360;
-                    else if(rot[axis] > 360)
-                        rot[axis]-=360;
+                        rot[axis]+=(float)TAU;
+                    else if(rot[axis] > TAU)
+                        rot[axis]-=TAU;
                 }
             }
         }
@@ -358,8 +376,8 @@ public abstract class Action extends PInputHandler{
     
                     rotVec[oppDown] = VectorOperations.vectorNormalization3D(rotVec[oppDown]);
                     rotVec[1] = VectorOperations.vectorNormalization3D(rotVec[1]);
-                    float[] camToPointAngles = {VectorOperations.returnAngleUnit(rotVec[oppDown], useVec, true),
-                                                VectorOperations.returnAngleUnit(rotVec[1], VectorOperations.ELEM_K, true)};
+                    float[] camToPointAngles = {VectorOperations.returnAngleUnit(rotVec[oppDown], useVec, false),
+                                                VectorOperations.returnAngleUnit(rotVec[1], VectorOperations.ELEM_K, false)};
                     if(reverseVertical)
                         camToPointAngles[0]*=-1;
                     if(reverseHorizontal)
@@ -368,13 +386,13 @@ public abstract class Action extends PInputHandler{
                     if(axis != 0){
                         if(camToPoint[2] > 0.0001){
                             if(camToPoint[0] <= 0.0001)
-                                add = -90;
+                                add = -(float)HALF_PI;
                         }
                         else{
                         if(camToPoint[0] > 0.0001)
-                            add = 90;
+                            add = (float)HALF_PI;
                         else
-                            add = 180;
+                            add = (float)PI;
                     }
                 }
                 else{
@@ -383,9 +401,9 @@ public abstract class Action extends PInputHandler{
                 }
                 rot[axis] = camToPointAngles[axis]+add;
                 if(rot[axis] < 0)
-                    rot[axis]+=360;
-                else if(rot[axis] > 360)
-                    rot[axis]-=360;
+                    rot[axis]+=TAU;
+                else if(rot[axis] > TAU)
+                    rot[axis]-=TAU;
                 }
             }
         }
@@ -428,8 +446,8 @@ public abstract class Action extends PInputHandler{
                     }
                 rotVec[oppDown] = VectorOperations.vectorNormalization3D(rotVec[oppDown]);
                 rotVec[1] = VectorOperations.vectorNormalization3D(rotVec[1]);
-                float[] camToPointAngles = {VectorOperations.returnAngleUnit(rotVec[oppDown], useVec, true),
-                                            VectorOperations.returnAngleUnit(rotVec[1], VectorOperations.ELEM_K, true)};
+                float[] camToPointAngles = {VectorOperations.returnAngleUnit(rotVec[oppDown], useVec, false),
+                                            VectorOperations.returnAngleUnit(rotVec[1], VectorOperations.ELEM_K, false)};
     
                 if(reverseVertical)
                     camToPointAngles[0]*=-1;
@@ -440,26 +458,26 @@ public abstract class Action extends PInputHandler{
                     add = -camToPointAngles[0]*2;
                 rot[0] = camToPointAngles[0]+add;
                 if(rot[0] < 0)
-                    rot[0]+=360;
-                else if(rot[0] > 360)
-                    rot[0]-=360;
+                    rot[0]+=TAU;
+                else if(rot[0] > TAU)
+                    rot[0]-=TAU;
                 add = 0;
     
                 if(camToPoint[2] > 0.0001){
                     if(camToPoint[0] <= 0.0001)
-                        add = -90;
+                        add = -(float)HALF_PI;
                 }
                 else{
                     if(camToPoint[0] > 0.0001)
-                        add = 90;
+                        add = (float)HALF_PI;
                     else
-                        add = 180;
+                        add = (float)PI;
                 }
                 rot[1] = camToPointAngles[1]+add;
                 if(rot[1] < 0)
-                    rot[1]+=360;
-                else if(rot[1] > 360)
-                    rot[1]-=360;
+                    rot[1]+=TAU;
+                else if(rot[1] > TAU)
+                    rot[1]-=TAU;
     
                 }
             }
@@ -503,8 +521,8 @@ public abstract class Action extends PInputHandler{
                 }
                 rotVec[oppDown] = VectorOperations.vectorNormalization3D(rotVec[oppDown]);
                 rotVec[1] = VectorOperations.vectorNormalization3D(rotVec[1]);
-                float[] camToPointAngles = {VectorOperations.returnAngleUnit(rotVec[oppDown], useVec, true),
-                                            VectorOperations.returnAngleUnit(rotVec[1], VectorOperations.ELEM_K, true)};
+                float[] camToPointAngles = {VectorOperations.returnAngleUnit(rotVec[oppDown], useVec, false),
+                                            VectorOperations.returnAngleUnit(rotVec[1], VectorOperations.ELEM_K, false)};
     
                 if(reverseVertical)
                     camToPointAngles[0]*=-1;
@@ -515,26 +533,26 @@ public abstract class Action extends PInputHandler{
                     add = -camToPointAngles[0]*2;
                 rot[0] = camToPointAngles[0]+add;
                 if(rot[0] < 0)
-                    rot[0]+=360;
-                else if(rot[0] > 360)
-                    rot[0]-=360;
+                    rot[0]+=TAU;
+                else if(rot[0] > TAU)
+                    rot[0]-=TAU;
                 add = 0;
     
                 if(camToPoint[2] > 0.0001){
                     if(camToPoint[0] <= 0.0001)
-                        add = -90;
+                        add = -(float)HALF_PI;
                 }
                 else{
                     if(camToPoint[0] > 0.0001)
-                        add = 90;
+                        add = (float)HALF_PI;
                     else
-                        add = 180;
+                        add = (float)PI;
                 }
                 rot[1] = camToPointAngles[1]+add;
                 if(rot[1] < 0)
-                    rot[1]+=360;
-                else if(rot[1] > 360)
-                    rot[1]-=360;
+                    rot[1]+=TAU;
+                else if(rot[1] > TAU)
+                    rot[1]-=TAU;
     
                 }
             }

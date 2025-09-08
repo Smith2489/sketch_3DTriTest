@@ -30,15 +30,19 @@ public class Texture{
         return img.returnPixels();
     }
 
+    public int[] returnPixel(int x, int y){
+        return img.returnPixel(x, y);
+    }
+
     public int returnInvisColour(){
         return img.returnInvisColour((byte)0);
     }
 
-    public boolean shouldDrawPixel(int pixelIndex){
-        return img.shouldDrawPixel(pixelIndex);
+    public boolean shouldDrawPixel(int x, int y){
+        return img.shouldDrawPixel(x, y);
     }
     public void setMode(char newMode){
-        if(newMode >= 65 && newMode <= 90)
+        if(newMode >= 'A' && newMode <= 'Z')
             newMode+=32;
         if(newMode == 'm' || newMode == 'k' || newMode == 'u')
             pixelMode = newMode;

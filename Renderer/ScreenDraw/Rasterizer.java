@@ -1134,31 +1134,27 @@ public class Rasterizer{
       int[] start = {Math.round(Math.min(Math.max(0, Math.min(x, x+sizeX)), wid)), Math.round(Math.min(Math.max(0, Math.min(y, y+sizeY)), heig))};
       int[] end = {Math.round(Math.min(Math.max(0, Math.max(x, x+sizeX)), wid)), Math.round(Math.min(Math.max(0, Math.max(y, y+sizeY)), heig))};
       if(sprite.hasImage()){
-        alphaNorm = (sprite.returnFill() >>> 24)*0.003921568f;
+        alphaNorm = sprite.fill()[0]*0.003921568f;
         //Actually drawing the sprite
         for(int i = start[0]; i < end[0] && scX > -1 && scX < sprite.returnWidth(); i++){
           scY = oldScY; //Resetting scY
           for(int j = start[1]; j < end[1] && scY > -1 && scY < sprite.returnHeight(); j++){
             int pixelPos = j*wid+i; //Determining a pixel's index
-            int imgPixel = (int)(scY)*sprite.returnWidth()+(int)(scX); //Determining where in the image the current desired pixel is
             //Checks if a pixel is not a specific colour defined in the Billboard object and if there is nothing already in front of where the sprite is being drawn
             //If it passes, it draws the sprite's pixel to the new location
-            if((1 <= threshold || Math.random() < threshold) && stencil[pixelPos] == 0 && (sprite.shouldDrawPixel(imgPixel) || sprite.hasRemoval())){
+            if((1 <= threshold || Math.random() < threshold) && stencil[pixelPos] == 0 && sprite.shouldDrawPixel((int)scX, (int)scY)){
               //Adjusting the brightness level of each pixel
-              int colour = (sprite.returnFill() & 0xFF000000);
-              colour|=((int)Math.min(((sprite.returnPixels()[imgPixel] >>> 16) & 255)*((sprite.returnFill() >>> 16) & 255)*0.003921568f, 255)) << 16;
-              colour|=((int)Math.min(((sprite.returnPixels()[imgPixel] >>> 8) & 255)*((sprite.returnFill() >>> 8) & 255)*0.003921568f, 255)) << 8;
-              colour|=((int)Math.min((sprite.returnPixels()[imgPixel] & 255)*(sprite.returnFill() & 255)*0.003921568f, 255));
+              int colour = sprite.fillWithTexelSingleColour((int)scX, (int)scY);
               if((sprite.returnDepthWrite() && (z < zBuff[pixelPos] || zBuff[pixelPos] <= 0) || !sprite.returnDepthWrite() && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
                 //Copying the image's pixel to the frame buffer
-                if((sprite.returnFill() >>> 24) == 255)
+                if(sprite.fill()[0] == 255)
                   frame[pixelPos] = 0xFF000000|colour;
                 else
                   frame[pixelPos] = Colour.interpolateColours(colour, frame[pixelPos], alphaNorm);
                 zBuff[pixelPos] = z;//Copying the z-position of the image to the depth buffer
               }
               else
-                if((sprite.returnFill() >>> 24) < 255 && (frame[pixelPos] >>> 24) < 255)
+                if(sprite.fill()[0] < 255 && (frame[pixelPos] >>> 24) < 255)
                   frame[pixelPos] = Colour.interpolateColours(frame[pixelPos], colour);
               }
               scY+=scaleY;
@@ -1173,35 +1169,35 @@ public class Rasterizer{
         //Doing the vertical sides
         int side = 0;
         if(start[0] >= 0 && start[0] < wid){
-          if((sprite.returnStroke() >>> 24) < 255){
-            alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
+          if((sprite.stroke() >>> 24) < 255){
+            alphaNorm = ((sprite.stroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[1]; i < end[1]; i++){
                 side = i*wid+start[0];
                 if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                  frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
+                  frame[side] = Colour.interpolateColours(sprite.stroke(), frame[side], alphaNorm);
               }
             }
           else
            for(int i = start[1]; i < end[1]; i++){
               side = i*wid+start[0];
               if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                frame[side] = sprite.returnStroke();
+                frame[side] = sprite.stroke();
             }
         }
         if(end[0] < wid && end[0] >= 0){
-          if((sprite.returnStroke() >>> 24) < 255){
-            alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
+          if((sprite.stroke() >>> 24) < 255){
+            alphaNorm = ((sprite.stroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[1]; i < end[1]; i++){
               side = i*wid+end[0];
               if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
+                frame[side] = Colour.interpolateColours(sprite.stroke(), frame[side], alphaNorm);
             }
           }
           else
             for(int i = start[1]; i < end[1]; i++){
               side = i*wid+end[0];
               if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                frame[side] = sprite.returnStroke();
+                frame[side] = sprite.stroke();
            }
         }
         start[0] = Math.max(0, (Math.min(start[0], wid)));
@@ -1210,35 +1206,35 @@ public class Rasterizer{
         end[1] = Math.round(Math.max(y, y+sizeY))-1;
         //Doing the horizontal sides
         if(start[1] >= 0 && start[1] < heig){
-          if((sprite.returnStroke() >>> 24) < 255){
-            alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
+          if((sprite.stroke() >>> 24) < 255){
+            alphaNorm = ((sprite.stroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[0]; i < end[0]; i++){
               side = start[1]*wid+i;
               if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
+                frame[side] = Colour.interpolateColours(sprite.stroke(), frame[side], alphaNorm);
             }
         }
         else
            for(int i = start[0]; i < end[0]; i++){
               side = start[1]*wid+i;
               if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                frame[side] = sprite.returnStroke();
+                frame[side] = sprite.stroke();
             }
         }
         if(end[1] < heig && end[1] >= 0){
-          if((sprite.returnStroke() >>> 24) < 255){
-            alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
+          if((sprite.stroke() >>> 24) < 255){
+            alphaNorm = ((sprite.stroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[0]; i < end[0]; i++){
               side = end[1]*wid+i;
               if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
+                frame[side] = Colour.interpolateColours(sprite.stroke(), frame[side], alphaNorm);
             }
           }
           else
             for(int i = start[0]; i < end[0]; i++){
               side = end[1]*wid+i;
               if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                frame[side] = sprite.returnStroke();
+                frame[side] = sprite.stroke();
            }
         }
       }
@@ -1266,25 +1262,21 @@ public class Rasterizer{
       int[] start = {Math.round(Math.min(Math.max(0, Math.min(x, x+sizeX)), wid)), Math.round(Math.min(Math.max(0, Math.min(y, y+sizeY)), heig))};
       int[] end = {Math.round(Math.min(Math.max(0, Math.max(x, x+sizeX)), wid)), Math.round(Math.min(Math.max(0, Math.max(y, y+sizeY)), heig))};
       if(sprite.hasImage()){
-        alphaNorm = (sprite.returnFill() >>> 24)*0.003921568f;
+        alphaNorm = sprite.fill()[0]*0.003921568f;
         //Actually drawing the sprite
         for(int i = start[0]; i < end[0] && scX > -1 && scX < sprite.returnWidth(); i++){
           scY = oldScY; //Resetting scY
           for(int j = start[1]; j < end[1] && scY > -1 && scY < sprite.returnHeight(); j++){
             int pixelPos = j*wid+i; //Determining a pixel's index
-            int imgPixel = (int)(scY)*sprite.returnWidth()+(int)(scX); //Determining where in the image the current desired pixel is
             stencilTest(pixelPos, compVal, testType);
             //Checks if a pixel is not a specific colour defined in the Billboard object and if there is nothing already in front of where the sprite is being drawn
             //If it passes, it draws the sprite's pixel to the new location
-            if((1 <= threshold || Math.random() < threshold) && (flags & 1) == 1 && (sprite.shouldDrawPixel(imgPixel) || sprite.hasRemoval())){
+            if((1 <= threshold || Math.random() < threshold) && (flags & 1) == 1 && sprite.shouldDrawPixel((int)scX, (int)scY)){
               //Adjusting the brightness level of each pixel
-              int colour = (sprite.returnFill() & 0xFF000000);
-              colour|=((int)Math.min(((sprite.returnPixels()[imgPixel] >>> 16) & 255)*((sprite.returnFill() >>> 16) & 255)*0.003921568f, 255)) << 16;
-              colour|=((int)Math.min(((sprite.returnPixels()[imgPixel] >>> 8) & 255)*((sprite.returnFill() >>> 8) & 255)*0.003921568f, 255)) << 8;
-              colour|=((int)Math.min((sprite.returnPixels()[imgPixel] & 255)*(sprite.returnFill() & 255)*0.003921568f, 255));
+              int colour = sprite.fillWithTexelSingleColour((int)scX, (int)scY);
               if((sprite.returnDepthWrite() && (z < zBuff[pixelPos] || zBuff[pixelPos] <= 0) || !sprite.returnDepthWrite() && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
                 //Copying the image's pixel to the frame buffer
-                if((sprite.returnFill() >>> 24) == 255){
+                if(sprite.fill()[0] == 255){
                   float stencilNorm = ((~stencil[pixelPos]) & 255)*0.003921568f;
                   int[] tempColours = {(int)(((colour >>> 16) & 255)*stencilNorm) << 16,
                                        (int)(((colour >>> 8) & 255)*stencilNorm) << 8,
@@ -1296,7 +1288,7 @@ public class Rasterizer{
                 zBuff[pixelPos] = z;//Copying the z-position of the image to the depth buffer
               }
               else
-                if((sprite.returnFill() >>> 24) < 255 && (frame[pixelPos] >>> 24) < 255)
+                if(sprite.fill()[0] < 255 && (frame[pixelPos] >>> 24) < 255)
                   frame[pixelPos] = interpolatePixels(frame[pixelPos], colour, pixelPos);
               }
               scY+=scaleY;
@@ -1313,35 +1305,35 @@ public class Rasterizer{
         //Doing the vertical sides
         int side = 0;
         if(start[0] >= 0 && start[0] < wid){
-          if((sprite.returnStroke() >>> 24) < 255){
-            alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
+          if((sprite.stroke() >>> 24) < 255){
+            alphaNorm = ((sprite.stroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[1]; i < end[1]; i++){
                 side = i*wid+start[0];
                 if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                  frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
+                  frame[side] = Colour.interpolateColours(sprite.stroke(), frame[side], alphaNorm);
               }
             }
           else
            for(int i = start[1]; i < end[1]; i++){
               side = i*wid+start[0];
               if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                frame[side] = sprite.returnStroke();
+                frame[side] = sprite.stroke();
             }
         }
         if(end[0] < wid && end[0] >= 0){
-          if((sprite.returnStroke() >>> 24) < 255){
-            alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
+          if((sprite.stroke() >>> 24) < 255){
+            alphaNorm = ((sprite.stroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[1]; i < end[1]; i++){
               side = i*wid+end[0];
               if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
+                frame[side] = Colour.interpolateColours(sprite.stroke(), frame[side], alphaNorm);
             }
           }
           else
             for(int i = start[1]; i < end[1]; i++){
               side = i*wid+end[0];
               if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                frame[side] = sprite.returnStroke();
+                frame[side] = sprite.stroke();
            }
         }
         start[0] = Math.max(0, (Math.min(start[0], wid)));
@@ -1350,35 +1342,35 @@ public class Rasterizer{
         end[1] = Math.round(Math.max(y, y+sizeY))-1;
         //Doing the horizontal sides
         if(start[1] >= 0 && start[1] < heig){
-          if((sprite.returnStroke() >>> 24) < 255){
-            alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
+          if((sprite.stroke() >>> 24) < 255){
+            alphaNorm = ((sprite.stroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[0]; i < end[0]; i++){
               side = start[1]*wid+i;
               if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
+                frame[side] = Colour.interpolateColours(sprite.stroke(), frame[side], alphaNorm);
             }
         }
         else
            for(int i = start[0]; i < end[0]; i++){
               side = start[1]*wid+i;
               if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                frame[side] = sprite.returnStroke();
+                frame[side] = sprite.stroke();
             }
         }
         if(end[1] < heig && end[1] >= 0){
-          if((sprite.returnStroke() >>> 24) < 255){
-            alphaNorm = ((sprite.returnStroke() >>> 24) & 255)*0.003921568f;
+          if((sprite.stroke() >>> 24) < 255){
+            alphaNorm = ((sprite.stroke() >>> 24) & 255)*0.003921568f;
             for(int i = start[0]; i < end[0]; i++){
               side = end[1]*wid+i;
               if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                frame[side] = Colour.interpolateColours(sprite.returnStroke(), frame[side], alphaNorm);
+                frame[side] = Colour.interpolateColours(sprite.stroke(), frame[side], alphaNorm);
             }
           }
           else
             for(int i = start[0]; i < end[0]; i++){
               side = end[1]*wid+i;
               if((!sprite.returnDepthWrite() && z >= zBuff[side]) || (sprite.returnDepthWrite() && (z <= zBuff[side] || zBuff[side] >= 0)) || Float.isNaN(zBuff[side]))
-                frame[side] = sprite.returnStroke();
+                frame[side] = sprite.stroke();
            }
         }
       }
