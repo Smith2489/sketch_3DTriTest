@@ -7,8 +7,10 @@ public abstract class Action extends PInputHandler{
     protected static final double TAU = 2*Math.PI;
     protected static final double HALF_PI = Math.PI*0.5;
     protected static final double QUARTER_PI = Math.PI*0.25;
+    protected static final double E = Math.E;
     protected static final float DEGS_TO_RADS = (float)(Math.PI/180);
     protected static final float RADS_TO_DEGS = (float)(180/Math.PI);
+    protected static final float EPSILON = 0.0001f;
     protected static float speed = 0;
     private float[] pos = {0, 0, 0};
     private float[] rot = {0, 0, 0};
@@ -57,7 +59,7 @@ public abstract class Action extends PInputHandler{
             oldRot[1] = rot[1];
             oldRot[2] = rot[2];
             timerRot = time;
-            rotationShakeRadius = radius*DEGS_TO_RADS;
+            rotationShakeRadius = radius*DEGS_TO_RADS-EPSILON;
             rotationShakeStarted = true;
         }
     }
@@ -98,49 +100,49 @@ public abstract class Action extends PInputHandler{
     protected float[] getForward(){
         float[] forward = {model.returnData(0, 2), model.returnData(1, 2), model.returnData(2, 2)};
         forward =  VectorOperations.vectorNormalization3D(forward);
-        forward[0]-=0.0001f;
-        forward[1]-=0.0001f;
-        forward[2]-=0.0001f;
+        forward[0]-=EPSILON;
+        forward[1]-=EPSILON;
+        forward[2]-=EPSILON;
         return forward;
     }
     protected float[] getBackward(){
         float[] backward = {-model.returnData(0, 2), -model.returnData(1, 2), -model.returnData(2, 2)};
         backward = VectorOperations.vectorNormalization3D(backward);
-        backward[0]-=0.0001f;
-        backward[1]-=0.0001f;
-        backward[2]-=0.0001f;
+        backward[0]-=EPSILON;
+        backward[1]-=EPSILON;
+        backward[2]-=EPSILON;
         return backward;
     }
     protected float[] getRight(){
         float[] right = {model.returnData(0, 0), model.returnData(1, 0), model.returnData(2, 0)};
         right =  VectorOperations.vectorNormalization3D(right);
-        right[0]-=0.0001f;
-        right[1]-=0.0001f;
-        right[2]-=0.0001f;
+        right[0]-=EPSILON;
+        right[1]-=EPSILON;
+        right[2]-=EPSILON;
         return right;
     }
     protected float[] getLeft(){
         float[] left = {-model.returnData(0, 0), -model.returnData(1, 0), -model.returnData(2, 0)};
         left =  VectorOperations.vectorNormalization3D(left);
-        left[0]-=0.0001f;
-        left[1]-=0.0001f;
-        left[2]-=0.0001f;
+        left[0]-=EPSILON;
+        left[1]-=EPSILON;
+        left[2]-=EPSILON;
         return left;
     }
     protected float[] getUp(){
         float[] up = {-model.returnData(0, 1), -model.returnData(1, 1), -model.returnData(2, 1)};
         up =  VectorOperations.vectorNormalization3D(up);
-        up[0]-=0.0001f;
-        up[1]-=0.0001f;
-        up[2]-=0.0001f;
+        up[0]-=EPSILON;
+        up[1]-=EPSILON;
+        up[2]-=EPSILON;
         return up;
     }
     protected float[] getDown(){
         float[] down = {model.returnData(0, 1), model.returnData(1, 1), model.returnData(2, 1)};
         down =  VectorOperations.vectorNormalization3D(down);
-        down[0]-=0.0001f;
-        down[1]-=0.0001f;
-        down[2]-=0.0001f;
+        down[0]-=EPSILON;
+        down[1]-=EPSILON;
+        down[2]-=EPSILON;
         return down;
     }
 
@@ -183,7 +185,7 @@ public abstract class Action extends PInputHandler{
     }
 
     protected void addToRotation(float rate, byte axis){
-        rate*=DEGS_TO_RADS;
+        rate = rate*DEGS_TO_RADS-EPSILON;
         if(axis >= 0 && axis < 3){
             if(timerRot == 0)
                 rot[axis]+=rate;
@@ -193,14 +195,14 @@ public abstract class Action extends PInputHandler{
     }
 
     protected void hardSetRotation(float alpha, float beta, float gamma){
-        rot[0] = alpha*DEGS_TO_RADS;
-        rot[1] = beta*DEGS_TO_RADS;
-        rot[2] = gamma*DEGS_TO_RADS;
+        rot[0] = alpha*DEGS_TO_RADS-EPSILON;
+        rot[1] = beta*DEGS_TO_RADS-EPSILON;
+        rot[2] = gamma*DEGS_TO_RADS-EPSILON;
     }
     protected void hardSetRotation(float[] newRot){
-        rot[0] = newRot[0]*DEGS_TO_RADS;
-        rot[1] = newRot[1]*DEGS_TO_RADS;
-        rot[2] = newRot[2]*DEGS_TO_RADS;
+        rot[0] = newRot[0]*DEGS_TO_RADS-EPSILON;
+        rot[1] = newRot[1]*DEGS_TO_RADS-EPSILON;
+        rot[2] = newRot[2]*DEGS_TO_RADS-EPSILON;
     }
 
     protected float[] getRot(){
@@ -221,14 +223,14 @@ public abstract class Action extends PInputHandler{
     protected float[] getRotDegrees(){
         float[] rotCopy = new float[3];
         if(timerRot == 0){
-            rotCopy[0] = rot[0]*RADS_TO_DEGS;
-            rotCopy[1] = rot[1]*RADS_TO_DEGS;
-            rotCopy[2] = rot[2]*RADS_TO_DEGS;
+            rotCopy[0] = rot[0]*RADS_TO_DEGS-EPSILON;
+            rotCopy[1] = rot[1]*RADS_TO_DEGS-EPSILON;
+            rotCopy[2] = rot[2]*RADS_TO_DEGS-EPSILON;
         }
         else{
-            rotCopy[0] = oldRot[0]*RADS_TO_DEGS;
-            rotCopy[1] = oldRot[1]*RADS_TO_DEGS;
-            rotCopy[2] = oldRot[2]*RADS_TO_DEGS;
+            rotCopy[0] = oldRot[0]*RADS_TO_DEGS-EPSILON;
+            rotCopy[1] = oldRot[1]*RADS_TO_DEGS-EPSILON;
+            rotCopy[2] = oldRot[2]*RADS_TO_DEGS-EPSILON;
         }
         return rotCopy;
     }
@@ -275,7 +277,7 @@ public abstract class Action extends PInputHandler{
 
     protected void lookAt(float[] point, float maxDist, byte axis){
         if(point.length >= 3){
-            if(Math.abs(pos[0]-point[0]) > 0.0001 && Math.abs(point[1]-pos[1]) > 0.0001 && Math.abs(pos[2]-point[2]) > 0.0001){
+            if(Math.abs(pos[0]-point[0]) > EPSILON && Math.abs(point[1]-pos[1]) > EPSILON && Math.abs(pos[2]-point[2]) > EPSILON){
                 float[] camToPoint = {point[0]-pos[0], point[1]-pos[1], point[2]-pos[2]};
                 float dist = VectorOperations.vectorMagnitude(camToPoint);
                 if(dist >= 1 && dist <= maxDist){
@@ -288,8 +290,8 @@ public abstract class Action extends PInputHandler{
                     if(rotVec[oppDown][down] <= 0)
                         useVec[down] = -1;
     
-                    if(camToPoint[0] <= 0.0001){
-                        if(camToPoint[2] > 0.0001){
+                    if(camToPoint[0] <= EPSILON){
+                        if(camToPoint[2] > EPSILON){
                             rotVec[1][0] = camToPoint[2];
                             rotVec[1][2] = -camToPoint[0];
                         }
@@ -299,7 +301,7 @@ public abstract class Action extends PInputHandler{
                         }
                     }
                     else
-                        if(camToPoint[2] <= 0.0001){
+                        if(camToPoint[2] <= EPSILON){
                             rotVec[1][0] = -camToPoint[2];
                             rotVec[1][2] = camToPoint[0];
                         }
@@ -315,19 +317,19 @@ public abstract class Action extends PInputHandler{
                         camToPointAngles[1]*=-1;
                     float add = 0;
                     if(axis != 0){
-                        if(camToPoint[2] > 0.0001){
-                            if(camToPoint[0] <= 0.0001)
+                        if(camToPoint[2] > EPSILON){
+                            if(camToPoint[0] <= EPSILON)
                                 add = -(float)(HALF_PI);
                         }
                         else{
-                            if(camToPoint[0] > 0.0001)
+                            if(camToPoint[0] > EPSILON)
                                 add = (float)(HALF_PI);
                             else
                                 add = (float)PI;
                         }
                     }
                     else{
-                        if(camToPoint[1] <= 0.0001)
+                        if(camToPoint[1] <= EPSILON)
                             add = -camToPointAngles[0]*2;
                     }
                     rot[axis] = camToPointAngles[axis]+add;
@@ -345,7 +347,7 @@ public abstract class Action extends PInputHandler{
     }
     protected void lookAt(float[] point, byte axis){
         if(point.length >= 3){
-            if(Math.abs(pos[0]-point[0]) > 0.0001 && Math.abs(point[1]-pos[1]) > 0.0001 && Math.abs(pos[2]-point[2]) > 0.0001){
+            if(Math.abs(pos[0]-point[0]) > EPSILON && Math.abs(point[1]-pos[1]) > EPSILON && Math.abs(pos[2]-point[2]) > EPSILON){
                 float[] camToPoint = {point[0]-pos[0], point[1]-pos[1], point[2]-pos[2]};
                 float dist = VectorOperations.vectorMagnitude(camToPoint);
                 if(dist >= 1){
@@ -358,8 +360,8 @@ public abstract class Action extends PInputHandler{
                     if(rotVec[oppDown][down] <= 0)
                         useVec[down] = -1;
     
-                    if(camToPoint[0] <= 0.0001){
-                        if(camToPoint[2] > 0.0001){
+                    if(camToPoint[0] <= EPSILON){
+                        if(camToPoint[2] > EPSILON){
                             rotVec[1][0] = camToPoint[2];
                             rotVec[1][2] = -camToPoint[0];
                         }
@@ -369,7 +371,7 @@ public abstract class Action extends PInputHandler{
                         }
                     }
                     else
-                        if(camToPoint[2] <= 0.0001){
+                        if(camToPoint[2] <= EPSILON){
                             rotVec[1][0] = -camToPoint[2];
                             rotVec[1][2] = camToPoint[0];
                         }
@@ -384,19 +386,19 @@ public abstract class Action extends PInputHandler{
                         camToPointAngles[1]*=-1;
                     float add = 0;
                     if(axis != 0){
-                        if(camToPoint[2] > 0.0001){
-                            if(camToPoint[0] <= 0.0001)
+                        if(camToPoint[2] > EPSILON){
+                            if(camToPoint[0] <= EPSILON)
                                 add = -(float)HALF_PI;
                         }
                         else{
-                        if(camToPoint[0] > 0.0001)
+                        if(camToPoint[0] > EPSILON)
                             add = (float)HALF_PI;
                         else
                             add = (float)PI;
                     }
                 }
                 else{
-                    if(camToPoint[1] <= 0.0001)
+                    if(camToPoint[1] <= EPSILON)
                         add = -camToPointAngles[0]*2;
                 }
                 rot[axis] = camToPointAngles[axis]+add;
@@ -414,7 +416,7 @@ public abstract class Action extends PInputHandler{
     }
     protected void lookAt(float[] point, float maxDist){
         if(point.length >= 3){
-            if(Math.abs(point[0]-pos[0]) > 0.0001 && Math.abs(point[1]-pos[1]) > 0.0001 && Math.abs(pos[2]-point[2]) > 0.0001){
+            if(Math.abs(point[0]-pos[0]) > EPSILON && Math.abs(point[1]-pos[1]) > EPSILON && Math.abs(pos[2]-point[2]) > EPSILON){
                 float[] camToPoint = {point[0]-pos[0], point[1]-pos[1], point[2]-pos[2]};
                 float dist = VectorOperations.vectorMagnitude(camToPoint);
                 if(dist >= 1 && dist <= maxDist){
@@ -429,8 +431,8 @@ public abstract class Action extends PInputHandler{
                     useVec[down] = -1;
     
     
-                if(camToPoint[0] <= 0.0001){
-                    if(camToPoint[2] > 0.0001){
+                if(camToPoint[0] <= EPSILON){
+                    if(camToPoint[2] > EPSILON){
                         rotVec[1][0] = camToPoint[2];
                         rotVec[1][2] = -camToPoint[0];
                     }
@@ -440,7 +442,7 @@ public abstract class Action extends PInputHandler{
                     }
                 }
                 else
-                    if(camToPoint[2] <= 0.0001){
+                    if(camToPoint[2] <= EPSILON){
                         rotVec[1][0] = -camToPoint[2];
                         rotVec[1][2] = camToPoint[0];
                     }
@@ -454,7 +456,7 @@ public abstract class Action extends PInputHandler{
                 if(reverseHorizontal)
                     camToPointAngles[1]*=-1;
                 float add = 0;
-                if(camToPoint[1] <= 0.0001)
+                if(camToPoint[1] <= EPSILON)
                     add = -camToPointAngles[0]*2;
                 rot[0] = camToPointAngles[0]+add;
                 if(rot[0] < 0)
@@ -463,12 +465,12 @@ public abstract class Action extends PInputHandler{
                     rot[0]-=TAU;
                 add = 0;
     
-                if(camToPoint[2] > 0.0001){
-                    if(camToPoint[0] <= 0.0001)
+                if(camToPoint[2] > EPSILON){
+                    if(camToPoint[0] <= EPSILON)
                         add = -(float)HALF_PI;
                 }
                 else{
-                    if(camToPoint[0] > 0.0001)
+                    if(camToPoint[0] > EPSILON)
                         add = (float)HALF_PI;
                     else
                         add = (float)PI;
@@ -489,7 +491,7 @@ public abstract class Action extends PInputHandler{
     }
     protected void lookAt(float[] point){
         if(point.length >= 3){
-            if(Math.abs(point[0]-pos[0]) > 0.0001 && Math.abs(point[1]-pos[1]) > 0.0001 && Math.abs(pos[2]-point[2]) > 0.0001){
+            if(Math.abs(point[0]-pos[0]) > EPSILON && Math.abs(point[1]-pos[1]) > EPSILON && Math.abs(pos[2]-point[2]) > EPSILON){
                 float[] camToPoint = {point[0]-pos[0], point[1]-pos[1], point[2]-pos[2]};
                 float dist = VectorOperations.vectorMagnitude(camToPoint);
                 if(dist >= 1){
@@ -504,8 +506,8 @@ public abstract class Action extends PInputHandler{
                     useVec[down] = -1;
     
     
-                if(camToPoint[0] <= 0.0001){
-                    if(camToPoint[2] > 0.0001){
+                if(camToPoint[0] <= EPSILON){
+                    if(camToPoint[2] > EPSILON){
                         rotVec[1][0] = camToPoint[2];
                         rotVec[1][2] = -camToPoint[0];
                     }
@@ -515,7 +517,7 @@ public abstract class Action extends PInputHandler{
                     }
                 }
                 else
-                    if(camToPoint[2] <= 0.0001){
+                    if(camToPoint[2] <= EPSILON){
                         rotVec[1][0] = -camToPoint[2];
                         rotVec[1][2] = camToPoint[0];
                 }
@@ -529,7 +531,7 @@ public abstract class Action extends PInputHandler{
                 if(reverseHorizontal)
                     camToPointAngles[1]*=-1;
                 float add = 0;
-                if(camToPoint[1] <= 0.0001)
+                if(camToPoint[1] <= EPSILON)
                     add = -camToPointAngles[0]*2;
                 rot[0] = camToPointAngles[0]+add;
                 if(rot[0] < 0)
@@ -538,12 +540,12 @@ public abstract class Action extends PInputHandler{
                     rot[0]-=TAU;
                 add = 0;
     
-                if(camToPoint[2] > 0.0001){
-                    if(camToPoint[0] <= 0.0001)
+                if(camToPoint[2] > EPSILON){
+                    if(camToPoint[0] <= EPSILON)
                         add = -(float)HALF_PI;
                 }
                 else{
-                    if(camToPoint[0] > 0.0001)
+                    if(camToPoint[0] > EPSILON)
                         add = (float)HALF_PI;
                     else
                         add = (float)PI;
