@@ -38,7 +38,7 @@ public class ManageSecondCamera extends CameraAction{
     if((outlineControl & 12) == 0){
       model.copy(other.returnModelMatrix());
       hardSetPosition(other.returnPosition());
-      hardSetRotation(other.returnRotation());
+      hardSetRotation(other.returnRotationDegrees());
       hardSetScale(other.returnScale());
       hardSetShear(other.returnShear());
     }

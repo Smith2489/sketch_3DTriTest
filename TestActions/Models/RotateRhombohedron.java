@@ -7,10 +7,10 @@ public class RotateRhombohedron extends ModelAction{
     public void perform(){
       addToRotation(-2*speed, (byte)0);
       addToRotation(2*speed, (byte)1);
-      float[] tempRot = getRot();
+      float[] tempRot = getRotDegrees();
       if(tempRot[0] < 0)
-        addToRotation(360, (byte)0);
+        rotatePlus360((byte)0);
       if(tempRot[1] >= 360)
-        addToRotation(-360, (byte)1);
+        rotateMinus360((byte)1);
     }
   }

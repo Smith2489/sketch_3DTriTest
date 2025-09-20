@@ -61,16 +61,16 @@ public class SpinSlab extends ModelAction{
         }
         addToRotation(spinSpeed*speed, (byte)2);
         addToRotation(spinSpeed*speed+0.0001f, (byte)1);
-        float[] tempRot = getRot();
+        float[] tempRot = getRotDegrees();
         float[] tempPos = getPos();
         if(tempRot[2] > 360)
-          addToRotation(-360, (byte)2);
+          rotateMinus360((byte)2);
         if(tempRot[2] < 0)
-          addToRotation(360, (byte)2);
+          rotatePlus360((byte)2);
         if(tempRot[1] > 360)
-          addToRotation(-360, (byte)1);
+          rotateMinus360((byte)1);
         if(tempRot[1] < 0)
-          addToRotation(360, (byte)1);
+          rotatePlus360((byte)1);
 
         if(tempPos[0] > 100000)
           hardSetPosition(100000, tempPos[1], tempPos[2]);

@@ -8,12 +8,12 @@ public class RotateDefaultModel extends ModelAction{
       addToRotation(0.25f*speed, (byte)0);
       addToRotation(0.25f*speed, (byte)1);
       addToRotation(0.25f*speed, (byte)2);
-      float[] tempRot = getRot();
+      float[] tempRot = getRotDegrees();
       if(tempRot[0] >= 360)
-        addToRotation(-360, (byte)0);
+        rotateMinus360((byte)0);
       if(tempRot[1] >= 360)
-        addToRotation(-360, (byte)1);
+        rotateMinus360((byte)1);
       if(tempRot[2] >= 360)
-        addToRotation(-360, (byte)2);
+        rotateMinus360((byte)2);
     }
   }

@@ -1,6 +1,7 @@
 package TestActions.Cameras;
 import Actions.ObjectActions.*;
 public class MoveCamera extends CameraAction{
+  public float[] lookAtPoint = {0, 3, 9};
     public void init(){
       
     }
@@ -35,7 +36,7 @@ public class MoveCamera extends CameraAction{
             break;
         }
       }
-      
+      //lookAt(lookAtPoint);
       if(mousePressed()){
         if(leftButton()){
           if(mouseX() >= ((width() >>> 1) + 50))
@@ -58,14 +59,15 @@ public class MoveCamera extends CameraAction{
             addToRotation(0.5f*speed, (byte)0);
         }
       }
-      float[] tempRot = getRot();
+      float[] tempRot = getRotDegrees();
       if(tempRot[0] >= 360)
-        addToRotation(-360, (byte)0);
+        rotateMinus360((byte)0);
       else if(tempRot[0] < 0)
-        addToRotation(360, (byte)0);
-      if(tempRot[1] >= 360)
-        addToRotation(-360, (byte)1);
+        rotatePlus360((byte)0);
+      if(tempRot[1] >= 360){
+        rotateMinus360((byte)1);
+      }
       else if(tempRot[1] < 0)
-        addToRotation(360, (byte)1);
+        rotatePlus360((byte)1);
     }
   }

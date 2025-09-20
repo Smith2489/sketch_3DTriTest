@@ -9,10 +9,10 @@ public class SpinTwoTriangles extends ModelAction{
     }
     public void perform(){
       addToRotation(-0.5f*direction*speed, (byte)1);
-      float[] tempRot = getRot();
+      float[] tempRot = getRotDegrees();
       if(tempRot[1] < 0)
-        addToRotation(360, (byte)1);
+        rotatePlus360((byte)1);
       else if(tempRot[1] >= 360)
-        addToRotation(-360, (byte)1);
+        rotateMinus360((byte)1);
     }
   }

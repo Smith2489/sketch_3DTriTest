@@ -1,6 +1,7 @@
 package TestActions.Models;
 import Actions.ObjectActions.*;
 public class RotateLongModel extends ModelAction{
+  public float[] lookAtPoint = {10, 3, 9};
     public void init(){
     }
     public void perform(){
@@ -34,14 +35,15 @@ public class RotateLongModel extends ModelAction{
       }
       shakePosition();
       shakeRotation();
-      float[] tempRot = getRot();
+      lookAt(lookAtPoint);
+      float[] tempRot = getRotDegrees();
       if(tempRot[1] < 0)
-        addToRotation(360, (byte)1);
+        rotatePlus360((byte)1);
       else if(tempRot[1] >= 360)
-        addToRotation(-360, (byte)1);
+        rotateMinus360((byte)1);
       if(tempRot[0] < 0)
-        addToRotation(360, (byte)0);
+        rotatePlus360((byte)0);
       else if(tempRot[0] >= 360)
-        addToRotation(-360, (byte)0);
+        rotateMinus360((byte)0);
     }
   }

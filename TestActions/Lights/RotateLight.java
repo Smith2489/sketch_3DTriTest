@@ -7,12 +7,12 @@ public class RotateLight extends LightAction{
     private float angularVelocity = 1f;
     public void perform(){
       addToRotation(angularVelocity, (byte)1);
-      float[] tempRot = getRot();
+      float[] tempRot = getRotDegrees();
       if(tempRot[1] > 360){
         addToRotation(-360, (byte)1);
       }
       else if(tempRot[1] < 0){
-          addToRotation(360, (byte)1);
+        addToRotation(360, (byte)1);
       }
     }
   }
