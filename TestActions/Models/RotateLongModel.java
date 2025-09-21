@@ -1,10 +1,10 @@
 package TestActions.Models;
 import Actions.ObjectActions.*;
 public class RotateLongModel extends ModelAction{
-  public float[] lookAtPoint = {10, 3, 9};
     public void init(){
     }
     public void perform(){
+
       matrixTransform();
       float[] modelForward = getForward();
       if(keyPressed()){
@@ -35,7 +35,6 @@ public class RotateLongModel extends ModelAction{
       }
       shakePosition();
       shakeRotation();
-      lookAt(lookAtPoint);
       float[] tempRot = getRotDegrees();
       if(tempRot[1] < 0)
         rotatePlus360((byte)1);

@@ -187,10 +187,28 @@ public abstract class Action extends PInputHandler{
     protected void addToRotation(float rate, byte axis){
         rate = rate*DEGS_TO_RADS-EPSILON;
         if(axis >= 0 && axis < 3){
-            if(timerRot == 0)
+            if(timerRot == 0){
                 rot[axis]+=rate;
+            }
             else
                 oldRot[axis]+=rate;
+        }
+    }
+
+    protected void rotatePlus360(byte axis){
+        if(axis >= 0 && axis < 3){
+            if(timerRot == 0)
+                rot[axis]+=TAU;
+            else
+                oldRot[axis]+=TAU;
+        }
+    }
+    protected void rotateMinus360(byte axis){
+        if(axis >= 0 && axis < 3){
+            if(timerRot == 0)
+                rot[axis]-=TAU;
+            else
+                oldRot[axis]-=TAU;
         }
     }
 
@@ -274,294 +292,100 @@ public abstract class Action extends PInputHandler{
         return posCopy;
     }
 
+    private float lockToTau(float angle, boolean degrees){
+        if(!degrees){
+            if(angle < 0)
+                angle+=TAU;
+            else if(angle > TAU)
+                angle-=TAU;
+        }
+        else{
+            if(angle < 0)
+                angle+=360;
+            else if(angle > 360)
+                angle-=360;
+        }
+        return angle;
+    }
 
-    protected void lookAt(float[] point, float maxDist, byte axis){
-        if(point.length >= 3){
-            if(Math.abs(pos[0]-point[0]) > EPSILON && Math.abs(point[1]-pos[1]) > EPSILON && Math.abs(pos[2]-point[2]) > EPSILON){
-                float[] camToPoint = {point[0]-pos[0], point[1]-pos[1], point[2]-pos[2]};
-                float dist = VectorOperations.vectorMagnitude(camToPoint);
-                if(dist >= 1 && dist <= maxDist){
-                    float[][] rotVec = {{0, camToPoint[1], camToPoint[2]}, 
-                                        {camToPoint[0], 0, camToPoint[2]}, 
-                                        {camToPoint[0], camToPoint[1], 0}};
-                    byte down = (byte)((Math.abs(camToPoint[2]) > Math.abs(camToPoint[0])) ? 2 : 0);
-                    byte oppDown = (byte)(down^2);
-                    float[] useVec = {oppDown >>> 1, 0, down >>> 1};
-                    if(rotVec[oppDown][down] <= 0)
-                        useVec[down] = -1;
+    private void setAngle(byte index, float angle, boolean degrees){
+        if(timerRot == 0)
+            rot[index] = lockToTau(angle, degrees);
+        else
+            oldRot[index] = lockToTau(angle, degrees);
+    }
+
+    private void rotateObject(float[] objectToPoint){
+        float[][] rotVec = {{0, objectToPoint[1], objectToPoint[2]}, 
+                            {objectToPoint[0], 0, objectToPoint[2]}, 
+                            {objectToPoint[0], objectToPoint[1], 0}};
+        byte down = (byte)((Math.abs(objectToPoint[2]) > Math.abs(objectToPoint[0])) ? 2 : 0);
+        byte oppDown = (byte)(down^2);
+        float[] useVec = {oppDown >>> 1, 0, down >>> 1};
     
-                    if(camToPoint[0] <= EPSILON){
-                        if(camToPoint[2] > EPSILON){
-                            rotVec[1][0] = camToPoint[2];
-                            rotVec[1][2] = -camToPoint[0];
-                        }
-                        else{
-                            rotVec[1][0] = -camToPoint[0];
-                            rotVec[1][2] = -camToPoint[2];
-                        }
-                    }
-                    else
-                        if(camToPoint[2] <= EPSILON){
-                            rotVec[1][0] = -camToPoint[2];
-                            rotVec[1][2] = camToPoint[0];
-                        }
+        if(rotVec[oppDown][down] <= 0)
+            useVec[down] = -1;
     
-                    rotVec[oppDown] = VectorOperations.vectorNormalization3D(rotVec[oppDown]);
-                    rotVec[1] = VectorOperations.vectorNormalization3D(rotVec[1]);
-                    float[] camToPointAngles = {VectorOperations.returnAngleUnit(rotVec[oppDown], useVec, false),
-                                                VectorOperations.returnAngleUnit(rotVec[1], VectorOperations.ELEM_K, false)};
-                    
-                    if(reverseVertical)
-                        camToPointAngles[0]*=-1;
-                    if(reverseHorizontal)
-                        camToPointAngles[1]*=-1;
-                    float add = 0;
-                    if(axis != 0){
-                        if(camToPoint[2] > EPSILON){
-                            if(camToPoint[0] <= EPSILON)
-                                add = -(float)(HALF_PI);
-                        }
-                        else{
-                            if(camToPoint[0] > EPSILON)
-                                add = (float)(HALF_PI);
-                            else
-                                add = (float)PI;
-                        }
-                    }
-                    else{
-                        if(camToPoint[1] <= EPSILON)
-                            add = -camToPointAngles[0]*2;
-                    }
-                    rot[axis] = camToPointAngles[axis]+add;
-                    if(rot[axis] < 0)
-                        rot[axis]+=(float)TAU;
-                    else if(rot[axis] > TAU)
-                        rot[axis]-=TAU;
-                }
+    
+        if(objectToPoint[0] <= EPSILON){
+            if(objectToPoint[2] > EPSILON){
+                rotVec[1][0] = objectToPoint[2];
+                rotVec[1][2] = -objectToPoint[0];
+            }
+            else{
+                rotVec[1][0] = -objectToPoint[0];
+                rotVec[1][2] = -objectToPoint[2];
             }
         }
-        else{
-            System.out.println("ERROR: TOO FEW DIMENSIONS FOR LOOK-AT POINT");
-            System.exit(-1);
-        }
-    }
-    protected void lookAt(float[] point, byte axis){
-        if(point.length >= 3){
-            if(Math.abs(pos[0]-point[0]) > EPSILON && Math.abs(point[1]-pos[1]) > EPSILON && Math.abs(pos[2]-point[2]) > EPSILON){
-                float[] camToPoint = {point[0]-pos[0], point[1]-pos[1], point[2]-pos[2]};
-                float dist = VectorOperations.vectorMagnitude(camToPoint);
-                if(dist >= 1){
-                    float[][] rotVec = {{0, camToPoint[1], camToPoint[2]}, 
-                                        {camToPoint[0], 0, camToPoint[2]}, 
-                                        {camToPoint[0], camToPoint[1], 0}};
-                    byte down = (byte)((Math.abs(camToPoint[2]) > Math.abs(camToPoint[0])) ? 2 : 0);
-                    byte oppDown = (byte)(down^2);
-                    float[] useVec = {oppDown >>> 1, 0, down >>> 1};
-                    if(rotVec[oppDown][down] <= 0)
-                        useVec[down] = -1;
-    
-                    if(camToPoint[0] <= EPSILON){
-                        if(camToPoint[2] > EPSILON){
-                            rotVec[1][0] = camToPoint[2];
-                            rotVec[1][2] = -camToPoint[0];
-                        }
-                        else{
-                            rotVec[1][0] = -camToPoint[0];
-                            rotVec[1][2] = -camToPoint[2];
-                        }
-                    }
-                    else
-                        if(camToPoint[2] <= EPSILON){
-                            rotVec[1][0] = -camToPoint[2];
-                            rotVec[1][2] = camToPoint[0];
-                        }
-    
-                    rotVec[oppDown] = VectorOperations.vectorNormalization3D(rotVec[oppDown]);
-                    rotVec[1] = VectorOperations.vectorNormalization3D(rotVec[1]);
-                    float[] camToPointAngles = {VectorOperations.returnAngleUnit(rotVec[oppDown], useVec, false),
-                                                VectorOperations.returnAngleUnit(rotVec[1], VectorOperations.ELEM_K, false)};
-                    if(reverseVertical)
-                        camToPointAngles[0]*=-1;
-                    if(reverseHorizontal)
-                        camToPointAngles[1]*=-1;
-                    float add = 0;
-                    if(axis != 0){
-                        if(camToPoint[2] > EPSILON){
-                            if(camToPoint[0] <= EPSILON)
-                                add = -(float)HALF_PI;
-                        }
-                        else{
-                        if(camToPoint[0] > EPSILON)
-                            add = (float)HALF_PI;
-                        else
-                            add = (float)PI;
-                    }
-                }
-                else{
-                    if(camToPoint[1] <= EPSILON)
-                        add = -camToPointAngles[0]*2;
-                }
-                rot[axis] = camToPointAngles[axis]+add;
-                if(rot[axis] < 0)
-                    rot[axis]+=TAU;
-                else if(rot[axis] > TAU)
-                    rot[axis]-=TAU;
-                }
+        else
+            if(objectToPoint[2] <= EPSILON){
+                rotVec[1][0] = -objectToPoint[2];
+                rotVec[1][2] = objectToPoint[0];
             }
-        }
-        else{
-            System.out.println("ERROR: TOO FEW DIMENSIONS FOR LOOK-AT POINT");
-            System.exit(-1);
-        }
-    }
-    protected void lookAt(float[] point, float maxDist){
-        if(point.length >= 3){
-            if(Math.abs(point[0]-pos[0]) > EPSILON && Math.abs(point[1]-pos[1]) > EPSILON && Math.abs(pos[2]-point[2]) > EPSILON){
-                float[] camToPoint = {point[0]-pos[0], point[1]-pos[1], point[2]-pos[2]};
-                float dist = VectorOperations.vectorMagnitude(camToPoint);
-                if(dist >= 1 && dist <= maxDist){
-                float[][] rotVec = {{0, camToPoint[1], camToPoint[2]}, 
-                                    {camToPoint[0], 0, camToPoint[2]}, 
-                                    {camToPoint[0], camToPoint[1], 0}};
-                byte down = (byte)((Math.abs(camToPoint[2]) > Math.abs(camToPoint[0])) ? 2 : 0);
-                byte oppDown = (byte)(down^2);
-                float[] useVec = {oppDown >>> 1, 0, down >>> 1};
+            rotVec[oppDown] = VectorOperations.vectorNormalization3D(rotVec[oppDown]);
+            rotVec[1] = VectorOperations.vectorNormalization3D(rotVec[1]);
+            float[] camToPointAngles = {-VectorOperations.returnAngleUnit(rotVec[oppDown], useVec, false),
+                                        VectorOperations.returnAngleUnit(rotVec[1], VectorOperations.ELEM_K, false)};
+            float add = 0;
+            if(objectToPoint[1] <= EPSILON)
+                add = -camToPointAngles[0]*2;
+            setAngle((byte)0, camToPointAngles[0]+add, false);
+
+
+            add = 0;
     
-                if(rotVec[oppDown][down] <= 0)
-                    useVec[down] = -1;
-    
-    
-                if(camToPoint[0] <= EPSILON){
-                    if(camToPoint[2] > EPSILON){
-                        rotVec[1][0] = camToPoint[2];
-                        rotVec[1][2] = -camToPoint[0];
-                    }
-                    else{
-                        rotVec[1][0] = -camToPoint[0];
-                        rotVec[1][2] = -camToPoint[2];
-                    }
-                }
+            if(objectToPoint[2] > EPSILON){
+                if(objectToPoint[0] <= EPSILON)
+                    add = -(float)HALF_PI;
+            }
+            else{
+                if(objectToPoint[0] > EPSILON)
+                    add = (float)HALF_PI;
                 else
-                    if(camToPoint[2] <= EPSILON){
-                        rotVec[1][0] = -camToPoint[2];
-                        rotVec[1][2] = camToPoint[0];
-                    }
-                rotVec[oppDown] = VectorOperations.vectorNormalization3D(rotVec[oppDown]);
-                rotVec[1] = VectorOperations.vectorNormalization3D(rotVec[1]);
-                float[] camToPointAngles = {VectorOperations.returnAngleUnit(rotVec[oppDown], useVec, false),
-                                            VectorOperations.returnAngleUnit(rotVec[1], VectorOperations.ELEM_K, false)};
-    
-                if(reverseVertical)
-                    camToPointAngles[0]*=-1;
-                if(reverseHorizontal)
-                    camToPointAngles[1]*=-1;
-                float add = 0;
-                if(camToPoint[1] <= EPSILON)
-                    add = -camToPointAngles[0]*2;
-                rot[0] = camToPointAngles[0]+add;
-                if(rot[0] < 0)
-                    rot[0]+=TAU;
-                else if(rot[0] > TAU)
-                    rot[0]-=TAU;
-                add = 0;
-    
-                if(camToPoint[2] > EPSILON){
-                    if(camToPoint[0] <= EPSILON)
-                        add = -(float)HALF_PI;
-                }
-                else{
-                    if(camToPoint[0] > EPSILON)
-                        add = (float)HALF_PI;
-                    else
-                        add = (float)PI;
-                }
-                rot[1] = camToPointAngles[1]+add;
-                if(rot[1] < 0)
-                    rot[1]+=TAU;
-                else if(rot[1] > TAU)
-                    rot[1]-=TAU;
-    
-                }
+                    add = (float)PI;
             }
-        }
-        else{
+            setAngle((byte)1, camToPointAngles[1]+add, false);
+    }
+
+    protected void lookAt(float[] point, float maxDist){
+        if(point.length < 3){
             System.out.println("ERROR: TOO FEW DIMENSIONS FOR LOOK-AT POINT");
             System.exit(-1);
         }
+
+        float[] objectToPoint = {point[0]-pos[0], point[1]-pos[1], point[2]-pos[2]};
+        float dist = VectorOperations.vectorMagnitude(objectToPoint);
+        if(dist >= 1 && dist <= maxDist)
+            rotateObject(objectToPoint);
     }
     protected void lookAt(float[] point){
-        if(point.length >= 3){
-            if(Math.abs(point[0]-pos[0]) > EPSILON && Math.abs(point[1]-pos[1]) > EPSILON && Math.abs(pos[2]-point[2]) > EPSILON){
-                float[] camToPoint = {point[0]-pos[0], point[1]-pos[1], point[2]-pos[2]};
-                float dist = VectorOperations.vectorMagnitude(camToPoint);
-                if(dist >= 1){
-                    float[][] rotVec = {{0, camToPoint[1], camToPoint[2]}, 
-                                        {camToPoint[0], 0, camToPoint[2]}, 
-                                        {camToPoint[0], camToPoint[1], 0}};
-                byte down = (byte)((Math.abs(camToPoint[2]) > Math.abs(camToPoint[0])) ? 2 : 0);
-                byte oppDown = (byte)(down^2);
-                float[] useVec = {oppDown >>> 1, 0, down >>> 1};
-    
-                if(rotVec[oppDown][down] <= 0)
-                    useVec[down] = -1;
-    
-    
-                if(camToPoint[0] <= EPSILON){
-                    if(camToPoint[2] > EPSILON){
-                        rotVec[1][0] = camToPoint[2];
-                        rotVec[1][2] = -camToPoint[0];
-                    }
-                    else{
-                        rotVec[1][0] = -camToPoint[0];
-                        rotVec[1][2] = -camToPoint[2];
-                    }
-                }
-                else
-                    if(camToPoint[2] <= EPSILON){
-                        rotVec[1][0] = -camToPoint[2];
-                        rotVec[1][2] = camToPoint[0];
-                }
-                rotVec[oppDown] = VectorOperations.vectorNormalization3D(rotVec[oppDown]);
-                rotVec[1] = VectorOperations.vectorNormalization3D(rotVec[1]);
-                float[] camToPointAngles = {VectorOperations.returnAngleUnit(rotVec[oppDown], useVec, false),
-                                            VectorOperations.returnAngleUnit(rotVec[1], VectorOperations.ELEM_K, false)};
-    
-                if(reverseVertical)
-                    camToPointAngles[0]*=-1;
-                if(reverseHorizontal)
-                    camToPointAngles[1]*=-1;
-                float add = 0;
-                if(camToPoint[1] <= EPSILON)
-                    add = -camToPointAngles[0]*2;
-                rot[0] = camToPointAngles[0]+add;
-                if(rot[0] < 0)
-                    rot[0]+=TAU;
-                else if(rot[0] > TAU)
-                    rot[0]-=TAU;
-                add = 0;
-    
-                if(camToPoint[2] > EPSILON){
-                    if(camToPoint[0] <= EPSILON)
-                        add = -(float)HALF_PI;
-                }
-                else{
-                    if(camToPoint[0] > EPSILON)
-                        add = (float)HALF_PI;
-                    else
-                        add = (float)PI;
-                }
-                rot[1] = camToPointAngles[1]+add;
-                if(rot[1] < 0)
-                    rot[1]+=TAU;
-                else if(rot[1] > TAU)
-                    rot[1]-=TAU;
-    
-                }
-            }
-        }
-        else{
+        if(point.length < 3){
             System.out.println("ERROR: TOO FEW DIMENSIONS FOR LOOK-AT POINT");
             System.exit(-1);
         }
+        float[] objectToPoint = {point[0]-pos[0], point[1]-pos[1], point[2]-pos[2]};
+        float dist = VectorOperations.vectorMagnitude(objectToPoint);
+        if(dist >= 1)
+            rotateObject(objectToPoint);
     }
 }

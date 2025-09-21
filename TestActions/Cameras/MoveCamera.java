@@ -1,7 +1,6 @@
 package TestActions.Cameras;
 import Actions.ObjectActions.*;
 public class MoveCamera extends CameraAction{
-  public float[] lookAtPoint = {0, 3, 9};
     public void init(){
       
     }
@@ -36,7 +35,6 @@ public class MoveCamera extends CameraAction{
             break;
         }
       }
-      //lookAt(lookAtPoint);
       if(mousePressed()){
         if(leftButton()){
           if(mouseX() >= ((width() >>> 1) + 50))
