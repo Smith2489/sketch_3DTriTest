@@ -24,6 +24,8 @@ public abstract class Action extends PInputHandler{
     private float rotationShakeRadius = 0;
     private boolean positionShakeStarted = false;
     private boolean rotationShakeStarted = false;
+    private boolean positionSaved = false;
+    private boolean rotationSaved = false;
     private float[] oldPos = {0, 0, 0};
     private float[] oldRot = {0, 0, 0};
 
@@ -35,18 +37,15 @@ public abstract class Action extends PInputHandler{
     }
 
 
-    public boolean positionShakeStarted(){
+    protected boolean positionShakeStarted(){
         return positionShakeStarted;
     }
-    public boolean rotationShakeStarted(){
+    protected boolean rotationShakeStarted(){
         return rotationShakeStarted;
     }
 
     protected void initPositionShake(float radius, int time){
         if(!positionShakeStarted){
-            oldPos[0] = pos[0];
-            oldPos[1] = pos[1];
-            oldPos[2] = pos[2];
             timerPos = time;
             positionShakeRadius = radius;
             positionShakeStarted = true;
@@ -55,9 +54,6 @@ public abstract class Action extends PInputHandler{
 
     protected void initRotationShake(float radius, int time){
         if(!rotationShakeStarted){
-            oldRot[0] = rot[0];
-            oldRot[1] = rot[1];
-            oldRot[2] = rot[2];
             timerRot = time;
             rotationShakeRadius = radius*DEGS_TO_RADS-EPSILON;
             rotationShakeStarted = true;
@@ -65,36 +61,36 @@ public abstract class Action extends PInputHandler{
     }
 
     protected void shakePosition(){
-        if(positionShakeStarted){
-            if(timerPos != 0){
-                pos[0] = oldPos[0]+(float)(Math.random()*(positionShakeRadius*2) - positionShakeRadius);
-                pos[1] = oldPos[1]+(float)(Math.random()*(positionShakeRadius*2) - positionShakeRadius);
-                pos[2] = oldPos[2]+(float)(Math.random()*(positionShakeRadius*2) - positionShakeRadius);
-                timerPos--;
-            }
-            else{
-                pos[0] = oldPos[0];
-                pos[1] = oldPos[1];
-                pos[2] = oldPos[2];
-                positionShakeStarted = false;
-            }
+        if(!positionSaved){
+            System.out.println("WARNING: THE POSITION OF THE OBJECT HAS NOT BEEN SAVED");
+            System.out.println("         RUNNING shakePosition() WILL PERMANENTLY LOSE IT");
         }
+        if(!positionShakeStarted)
+            return;
+        if(timerPos != 0){
+            pos[0] = pos[0]+(float)(Math.random()*(positionShakeRadius*2) - positionShakeRadius);
+            pos[1] = pos[1]+(float)(Math.random()*(positionShakeRadius*2) - positionShakeRadius);
+            pos[2] = pos[2]+(float)(Math.random()*(positionShakeRadius*2) - positionShakeRadius);
+            timerPos--;
+        }
+        else
+            positionShakeStarted = false;
     }
     protected void shakeRotation(){
-        if(rotationShakeStarted){
-            if(timerRot != 0){
-                rot[0] = oldRot[0]+(float)(Math.random()*(rotationShakeRadius*2) - rotationShakeRadius);
-                rot[1] = oldRot[1]+(float)(Math.random()*(rotationShakeRadius*2) - rotationShakeRadius);
-                rot[2] = oldRot[2]+(float)(Math.random()*(rotationShakeRadius*2) - rotationShakeRadius);
-                timerRot--;
-            }
-            else{
-                rot[0] = oldRot[0];
-                rot[1] = oldRot[1];
-                rot[2] = oldRot[2];
-                rotationShakeStarted = false;
-            }
+        if(!rotationSaved){
+            System.out.println("WARNING: THE POSITION OF THE OBJECT HAS NOT BEEN SAVED");
+            System.out.println("         RUNNING shakeRotation() WILL PERMANENTLY LOSE IT");
         }
+        if(!rotationShakeStarted)
+            return;
+        if(timerRot != 0){
+            rot[0] = rot[0]+(float)(Math.random()*(rotationShakeRadius*2) - rotationShakeRadius);
+            rot[1] = rot[1]+(float)(Math.random()*(rotationShakeRadius*2) - rotationShakeRadius);
+            rot[2] = rot[2]+(float)(Math.random()*(rotationShakeRadius*2) - rotationShakeRadius);
+            timerRot--;
+        }
+        else
+            rotationShakeStarted = false;
     }
 
     protected float[] getForward(){
@@ -148,9 +144,17 @@ public abstract class Action extends PInputHandler{
 
     public void setPos(float[] newPos){
         pos = newPos;
+        oldPos[0] = pos[0];
+        oldPos[1] = pos[1];
+        oldPos[2] = pos[2];
+        positionSaved = true;
     }
     public void setRot(float[] newRot){
         rot = newRot;
+        oldRot[0] = rot[0];
+        oldRot[1] = rot[1];
+        oldRot[2] = rot[2];
+        rotationSaved = true;
     }
     public void setPhysics(Physics newPhysics){
         physics = newPhysics;
@@ -186,30 +190,17 @@ public abstract class Action extends PInputHandler{
 
     protected void addToRotation(float rate, byte axis){
         rate = rate*DEGS_TO_RADS-EPSILON;
-        if(axis >= 0 && axis < 3){
-            if(timerRot == 0){
-                rot[axis]+=rate;
-            }
-            else
-                oldRot[axis]+=rate;
-        }
+        if(axis >= 0 && axis < 3)
+            rot[axis]+=rate;
     }
 
     protected void rotatePlus360(byte axis){
-        if(axis >= 0 && axis < 3){
-            if(timerRot == 0)
-                rot[axis]+=TAU;
-            else
-                oldRot[axis]+=TAU;
-        }
+        if(axis >= 0 && axis < 3)
+            rot[axis]+=TAU;
     }
     protected void rotateMinus360(byte axis){
-        if(axis >= 0 && axis < 3){
-            if(timerRot == 0)
-                rot[axis]-=TAU;
-            else
-                oldRot[axis]-=TAU;
-        }
+        if(axis >= 0 && axis < 3)
+            rot[axis]-=TAU;
     }
 
     protected void hardSetRotation(float alpha, float beta, float gamma){
@@ -224,46 +215,30 @@ public abstract class Action extends PInputHandler{
     }
 
     protected float[] getRot(){
-        float[] rotCopy = new float[3];
-        if(timerRot == 0){
-            rotCopy[0] = rot[0];
-            rotCopy[1] = rot[1];
-            rotCopy[2] = rot[2];
-        }
-        else{
-            rotCopy[0] = oldRot[0];
-            rotCopy[1] = oldRot[1];
-            rotCopy[2] = oldRot[2];
-        }
+        float[] rotCopy = {rot[0], rot[1], rot[2]};
         return rotCopy;
     }
 
     protected float[] getRotDegrees(){
-        float[] rotCopy = new float[3];
-        if(timerRot == 0){
-            rotCopy[0] = rot[0]*RADS_TO_DEGS-EPSILON;
-            rotCopy[1] = rot[1]*RADS_TO_DEGS-EPSILON;
-            rotCopy[2] = rot[2]*RADS_TO_DEGS-EPSILON;
-        }
-        else{
-            rotCopy[0] = oldRot[0]*RADS_TO_DEGS-EPSILON;
-            rotCopy[1] = oldRot[1]*RADS_TO_DEGS-EPSILON;
-            rotCopy[2] = oldRot[2]*RADS_TO_DEGS-EPSILON;
-        }
+        float[] rotCopy = {rot[0]*RADS_TO_DEGS-EPSILON, rot[1]*RADS_TO_DEGS-EPSILON, rot[2]*RADS_TO_DEGS-EPSILON};
         return rotCopy;
     }
 
+    protected String positionToString(){
+        return "{"+pos[0]+", "+pos[1]+", "+pos[2]+"}";
+    }
+
+    protected String rotationToString(boolean degrees){
+        if(!degrees)
+            return "{"+rot[0]+", "+rot[1]+", "+rot[2]+"}";
+        else
+            return "{"+(rot[0]*RADS_TO_DEGS-EPSILON)+", "+(rot[1]*RADS_TO_DEGS-EPSILON)+", "+(rot[2]*RADS_TO_DEGS-EPSILON)+"}";
+    }
+
     protected void addToPosition(float rate, float[] directional){
-        if(timerPos == 0){
-            pos[0]+=(directional[0]*rate);
-            pos[1]+=(directional[1]*rate);
-            pos[2]+=(directional[2]*rate);
-        }
-        else{
-            oldPos[0]+=(directional[0]*rate);
-            oldPos[1]+=(directional[1]*rate);
-            oldPos[2]+=(directional[2]*rate);
-        }
+        pos[0]+=(directional[0]*rate);
+        pos[1]+=(directional[1]*rate);
+        pos[2]+=(directional[2]*rate);
     }
 
     protected void hardSetPosition(float x, float y, float z){
@@ -278,19 +253,66 @@ public abstract class Action extends PInputHandler{
     }
 
     protected float[] getPos(){
-        float[] posCopy = new float[3];
-        if(timerPos == 0){
-            posCopy[0] = pos[0];
-            posCopy[1] = pos[1];
-            posCopy[2] = pos[2];
-        }
-        else{
-            posCopy[0] = oldPos[0];
-            posCopy[1] = oldPos[1];
-            posCopy[2] = oldPos[2];
-        }
+        float[] posCopy = {pos[0], pos[1], pos[2]};
         return posCopy;
     }
+
+    protected void savePosition(){
+        oldPos[0] = pos[0];
+        oldPos[1] = pos[1];
+        oldPos[2] = pos[2];
+        positionSaved = true;
+    }
+
+    protected void restorePosition(){
+        pos[0] = oldPos[0];
+        pos[1] = oldPos[1];
+        pos[2] = oldPos[2];
+        positionSaved = false;
+    }
+
+    protected void restoreAndSavePosition(){
+        pos[0] = oldPos[0];
+        pos[1] = oldPos[1];
+        pos[2] = oldPos[2];
+        positionSaved = true;
+    }
+
+    protected void saveRotation(){
+        oldRot[0] = rot[0];
+        oldRot[1] = rot[1];
+        oldRot[2] = rot[2];
+        positionSaved = true;
+    }
+
+    protected void restoreRotation(){
+        rot[0] = oldRot[0];
+        rot[1] = oldRot[1];
+        rot[2] = oldRot[2];
+        positionSaved = false;
+    }
+
+    protected void restoreAndSaveRotation(){
+        rot[0] = oldRot[0];
+        rot[1] = oldRot[1];
+        rot[2] = oldRot[2];
+        positionSaved = true;
+    }
+
+    protected void moveAroundPoint(float[] p, float[] angles){
+        if(!positionSaved){
+            System.out.println("WARNING: THE POSITION OF THE OBJECT HAS NOT BEEN SAVED");
+            System.out.println("         RUNNING rotateAroundPoint() WILL PERMANENTLY LOSE IT");
+        }
+        float[] tempAngles = {angles[0]*DEGS_TO_RADS, angles[1]*DEGS_TO_RADS, angles[2]*DEGS_TO_RADS};
+        float[] pDiff = {pos[0]-p[0], pos[1]-p[1], pos[2]-p[2], 0};
+        float[] tempPos = MatrixOperations.matrixMultiply(MVP.returnRotation(tempAngles), pDiff);
+        pos[0] = tempPos[0]+p[0];
+        pos[1] = tempPos[1]+p[1];
+        pos[2] = tempPos[2]+p[2];
+    }
+
+
 
     private float lockToTau(float angle, boolean degrees){
         if(!degrees){
@@ -306,13 +328,6 @@ public abstract class Action extends PInputHandler{
                 angle-=360;
         }
         return angle;
-    }
-
-    private void setAngle(byte index, float angle, boolean degrees){
-        if(timerRot == 0)
-            rot[index] = lockToTau(angle, degrees);
-        else
-            oldRot[index] = lockToTau(angle, degrees);
     }
 
     private void rotateObject(float[] objectToPoint){
@@ -349,7 +364,7 @@ public abstract class Action extends PInputHandler{
             float add = 0;
             if(objectToPoint[1] <= EPSILON)
                 add = -camToPointAngles[0]*2;
-            setAngle((byte)0, camToPointAngles[0]+add, false);
+            rot[0] = lockToTau(camToPointAngles[0]+add, false);
 
 
             add = 0;
@@ -364,7 +379,7 @@ public abstract class Action extends PInputHandler{
                 else
                     add = (float)PI;
             }
-            setAngle((byte)1, camToPointAngles[1]+add, false);
+            rot[1] = lockToTau(camToPointAngles[1]+add, false);
     }
 
     protected void lookAt(float[] point, float maxDist){
