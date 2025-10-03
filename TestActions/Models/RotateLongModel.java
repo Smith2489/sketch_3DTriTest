@@ -13,42 +13,39 @@ public class RotateLongModel extends ModelAction{
       restoreAndSavePosition();
       float[] modelForward = getForward();
       if(keyPressed()){
-        if(key() == 'x'){
-          if(!xPressed){
-            rotatePoint = getPos();
-            rotatePoint[0]-=modelForward[0];
-            rotatePoint[2]-=2*modelForward[2];
-          }
-          moveAroundPoint(rotatePoint, angle);
-          addToRotation(2, (byte)1);
-          xPressed = true;
-        }
-        else{
-          switch(key()){
-            case 'w':
-              addToPosition(0.5f*speed, modelForward);
-              break;
-            case 's':
-              addToPosition(-0.5f*speed, modelForward);
-              break;
-            case 'd':
-              addToRotation(0.5f*speed, (byte)1);
-              break;
-            case 'a':
-              addToRotation(-0.5f*speed, (byte)1);
-              break;
-            case 'g':
-              addToRotation(0.5f*speed, (byte)0);
-              break;
-            case 'h':
-              addToRotation(-0.5f*speed, (byte)0);
-              break;
-            case '=':
-              initPositionShake(0.6f, 50);
-              initRotationShake(15, 50);
-              break;
-              
-          }
+        switch(key()){
+          case 'x':
+            if(!xPressed){
+              rotatePoint = getPos();
+              rotatePoint[0]-=modelForward[0];
+              rotatePoint[2]-=2*modelForward[2];
+            }
+            moveAroundPoint(rotatePoint, angle);
+            addToRotation(2, (byte)1);
+            xPressed = true;
+            break;
+          case 'w':
+            addToPosition(0.5f*speed, modelForward);
+            break;
+          case 's':
+            addToPosition(-0.5f*speed, modelForward);
+            break;
+          case 'd':
+            addToRotation(0.5f*speed, (byte)1);
+            break;
+          case 'a':
+            addToRotation(-0.5f*speed, (byte)1);
+            break;
+          case 'g':
+            addToRotation(0.5f*speed, (byte)0);
+            break;
+          case 'h':
+            addToRotation(-0.5f*speed, (byte)0);
+            break;
+          case '=':
+            initPositionShake(0.6f, 50);
+            initRotationShake(15, 50);
+            break;
         }
       }
       else
