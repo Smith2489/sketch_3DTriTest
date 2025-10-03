@@ -15,10 +15,9 @@ public class RotateLongModel extends ModelAction{
       if(keyPressed()){
         if(key() == 'x'){
           if(!xPressed){
-            float[] forward = getForward();
             rotatePoint = getPos();
-            rotatePoint[0]-=forward[0];
-            rotatePoint[2]-=2*forward[2];
+            rotatePoint[0]-=modelForward[0];
+            rotatePoint[2]-=2*modelForward[2];
           }
           moveAroundPoint(rotatePoint, angle);
           addToRotation(2, (byte)1);
