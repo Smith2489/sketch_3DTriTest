@@ -1,38 +1,63 @@
 package TestActions.Models;
 import Actions.ObjectActions.*;
 public class RotateLongModel extends ModelAction{
+  float[] rotatePoint = {0, 0, 0};
+  float[] angle = {0, 2, 0};
+  boolean xPressed = false;
     public void init(){
+
     }
     public void perform(){
-
       matrixTransform();
+      restoreRotation();
+      restoreAndSavePosition();
       float[] modelForward = getForward();
       if(keyPressed()){
-        switch(key()){
-          case 'w':
-            addToPosition(0.5f*speed, modelForward);
-            break;
-          case 's':
-            addToPosition(-0.5f*speed, modelForward);
-            break;
-          case 'd':
-            addToRotation(0.5f*speed, (byte)1);
-            break;
-          case 'a':
-            addToRotation(-0.5f*speed, (byte)1);
-            break;
-          case 'g':
-            addToRotation(0.5f*speed, (byte)0);
-            break;
-          case 'h':
-            addToRotation(-0.5f*speed, (byte)0);
-            break;
-          case '=':
-            initPositionShake(0.6f, 50);
-            initRotationShake(15, 50);
-            break;
+        if(key() == 'x'){
+          if(!xPressed){
+            float[] forward = getForward();
+            rotatePoint = getPos();
+            rotatePoint[0]-=forward[0];
+            rotatePoint[2]-=2*forward[2];
+          }
+          moveAroundPoint(rotatePoint, angle);
+          addToRotation(2, (byte)1);
+          xPressed = true;
+        }
+        else{
+          switch(key()){
+            case 'w':
+              addToPosition(0.5f*speed, modelForward);
+              break;
+            case 's':
+              addToPosition(-0.5f*speed, modelForward);
+              break;
+            case 'd':
+              addToRotation(0.5f*speed, (byte)1);
+              break;
+            case 'a':
+              addToRotation(-0.5f*speed, (byte)1);
+              break;
+            case 'g':
+              addToRotation(0.5f*speed, (byte)0);
+              break;
+            case 'h':
+              addToRotation(-0.5f*speed, (byte)0);
+              break;
+            case '=':
+              initPositionShake(0.6f, 50);
+              initRotationShake(15, 50);
+              break;
+              
+          }
         }
       }
+      else
+        xPressed = false;
+
+      savePosition();
+      saveRotation();
+
       shakePosition();
       shakeRotation();
       float[] tempRot = getRotDegrees();
