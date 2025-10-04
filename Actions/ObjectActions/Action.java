@@ -184,8 +184,7 @@ public abstract class Action extends PInputHandler{
     }
 
     protected void matrixTransform(){
-        if(timerRot != 0)
-            model.copy(MatrixOperations.matrixMultiply(MVP.returnTranslation(oldPos), MVP.returnRotation(oldRot)));
+        model.copy(MatrixOperations.matrixMultiply(MVP.returnTranslation(pos), MVP.returnRotation(rot)));
     }
 
     protected void addToRotation(float rate, byte axis){
@@ -302,7 +301,7 @@ public abstract class Action extends PInputHandler{
     protected void moveAroundPoint(float[] p, float[] angles){
         if(!positionSaved){
             System.out.println("WARNING: THE POSITION OF THE OBJECT HAS NOT BEEN SAVED");
-            System.out.println("         RUNNING rotateAroundPoint() WILL PERMANENTLY LOSE IT");
+            System.out.println("         RUNNING moveAroundPoint() WILL PERMANENTLY LOSE IT");
         }
         float[] tempAngles = {angles[0]*DEGS_TO_RADS, angles[1]*DEGS_TO_RADS, angles[2]*DEGS_TO_RADS};
         float[] pDiff = {pos[0]-p[0], pos[1]-p[1], pos[2]-p[2], 0};

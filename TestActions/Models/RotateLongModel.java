@@ -8,9 +8,9 @@ public class RotateLongModel extends ModelAction{
 
     }
     public void perform(){
-      matrixTransform();
       restoreRotation();
       restoreAndSavePosition();
+      matrixTransform();
       float[] modelForward = getForward();
       if(keyPressed()){
         switch(key()){
