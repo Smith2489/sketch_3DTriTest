@@ -46,13 +46,13 @@ public class ManageSecondCamera extends CameraAction{
         //Secondary camera
         switch(outlineControl & 12){
           case 4:
-            addToRotation(-speed, (byte)1);
+            addToRotation(-speed(), (byte)1);
             break;
           case 8:
-            addToRotation(0.5f*speed, (byte)0);
+            addToRotation(0.5f*speed(), (byte)0);
             break;
           case 12:
-            addToRotation(-0.5f*speed, (byte)2);
+            addToRotation(-0.5f*speed(), (byte)2);
             break;
         }
         float[] eye2Back = getBackward();

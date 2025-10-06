@@ -25,22 +25,22 @@ public class RotateLongModel extends ModelAction{
             xPressed = true;
             break;
           case 'w':
-            addToPosition(0.5f*speed, modelForward);
+            addToPosition(0.5f*speed(), modelForward);
             break;
           case 's':
-            addToPosition(-0.5f*speed, modelForward);
+            addToPosition(-0.5f*speed(), modelForward);
             break;
           case 'd':
-            addToRotation(0.5f*speed, (byte)1);
+            addToRotation(0.5f*speed(), (byte)1);
             break;
           case 'a':
-            addToRotation(-0.5f*speed, (byte)1);
+            addToRotation(-0.5f*speed(), (byte)1);
             break;
           case 'g':
-            addToRotation(0.5f*speed, (byte)0);
+            addToRotation(0.5f*speed(), (byte)0);
             break;
           case 'h':
-            addToRotation(-0.5f*speed, (byte)0);
+            addToRotation(-0.5f*speed(), (byte)0);
             break;
           case '=':
             initPositionShake(0.6f, 50);

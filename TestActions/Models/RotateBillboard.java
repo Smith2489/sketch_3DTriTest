@@ -5,7 +5,7 @@ public class RotateBillboard extends ModelAction{
       
     }
     public void perform(){
-      addToRotation(0.25f*speed, (byte)2);
+      addToRotation(0.25f*speed(), (byte)2);
       if(getRotDegrees()[2] >= 360)
         rotateMinus360((byte)2);
     }

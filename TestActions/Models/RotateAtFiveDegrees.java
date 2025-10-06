@@ -12,7 +12,7 @@ public class RotateAtFiveDegrees extends ModelAction{
       
     }
     public void perform(){
-      addToRotation(5*direction*speed, (byte)1);
+      addToRotation(5*direction*speed(), (byte)1);
       float[] tempRot = getRotDegrees();
       if(tempRot[1] < 0)
         rotatePlus360((byte)1);

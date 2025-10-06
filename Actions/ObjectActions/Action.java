@@ -11,7 +11,6 @@ public abstract class Action extends PInputHandler{
     protected static final float DEGS_TO_RADS = (float)(Math.PI/180);
     protected static final float RADS_TO_DEGS = (float)(180/Math.PI);
     protected static final float EPSILON = 0.0001f;
-    protected static float speed = 0;
     private float[] pos = {0, 0, 0};
     private float[] rot = {0, 0, 0};
     protected Physics physics = new Physics(pos, rot);
@@ -31,10 +30,6 @@ public abstract class Action extends PInputHandler{
 
     public abstract void init();
     public abstract void perform();
-
-    public static void setRatePerFrame(float newSpeed){
-        speed = newSpeed;
-    }
 
 
     protected boolean positionShakeStarted(){
@@ -314,18 +309,11 @@ public abstract class Action extends PInputHandler{
 
 
     private float lockToTau(float angle, boolean degrees){
-        if(!degrees){
-            if(angle < 0)
-                angle+=TAU;
-            else if(angle > TAU)
-                angle-=TAU;
-        }
-        else{
-            if(angle < 0)
-                angle+=360;
-            else if(angle > 360)
-                angle-=360;
-        }
+        float fullCircle = (degrees) ? 360 : (float)TAU;
+        if(angle < 0)
+            angle+=fullCircle;
+        else if(angle > fullCircle)
+            angle-=fullCircle;
         return angle;
     }
 

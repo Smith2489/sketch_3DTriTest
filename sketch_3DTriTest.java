@@ -88,7 +88,8 @@ public class sketch_3DTriTest extends PApplet{
 
 
   public void setup(){
-    // ScreenMake.useMeshTransparency();
+    PInputHandler.setExpectedFrameRate(30);
+    //ScreenMake.useMeshTransparency();
     // Rasterizer.loadTransparencyMesh("testGrid.txt");
     MVP.returnRotation(0, 0, 90);
     Action.setPApplet(this);
@@ -400,7 +401,6 @@ public class sketch_3DTriTest extends PApplet{
   private float boxX = BOX_SIZE;
   private int boxY = BOX_SIZE;
   private float boxSpeedX = 1;
-  private float speed = 30f/frameRate;
   public void draw(){
     //float[] point = {testModels[3].returnPosition()[0], testModels[3].returnPosition()[1], testModels[3].returnPosition()[2]};
     //eye.lookAt(point);
@@ -449,7 +449,7 @@ public class sketch_3DTriTest extends PApplet{
 
     output.beginDraw();
     output.textSize(RESOLUTIONS[0][resolutionIndex]*24/600);
-    boxX+=((Math.round((RESOLUTIONS[0][resolutionIndex]/240f)*speed*100)*0.01f)*boxSpeedX);
+    boxX+=((Math.round((RESOLUTIONS[0][resolutionIndex]/240f)*PInputHandler.speed()*100)*0.01f)*boxSpeedX);
     //boxX+=(boxSpeedX);
     if(boxX < BOX_SIZE){
       boxX = BOX_SIZE;
@@ -556,8 +556,7 @@ public class sketch_3DTriTest extends PApplet{
     }
 
     output.updatePixels();
-    speed = 60.0f/frameRate;
-    Action.setRatePerFrame(speed);
+    PInputHandler.setSpeed();
     output.endDraw();
     image(output, 0, 0, width, height);
     System.out.println(Math.round(frameRate));

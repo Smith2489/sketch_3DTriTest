@@ -5,8 +5,8 @@ public class RotateMess extends ModelAction{
       
     }
     public void perform(){
-      addToRotation(-1.5f*speed, (byte)0);
-      addToRotation(-1.5f*speed, (byte)2);
+      addToRotation(-1.5f*speed(), (byte)0);
+      addToRotation(-1.5f*speed(), (byte)2);
       float[] tempRot = getRotDegrees();
       if(tempRot[0] < 0)
         rotatePlus360((byte)0);

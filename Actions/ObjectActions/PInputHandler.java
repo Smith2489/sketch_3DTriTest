@@ -21,9 +21,21 @@ public class PInputHandler{
     protected static final char RETURN = PApplet.RETURN;
     protected static final char DELETE = PApplet.DELETE;
 
+    private static float speed = 1;
+    private static float expectedFrameRate = 60;
+
     private static PApplet pApplet = null;
     protected static int width(){
         return pApplet.width;
+    }
+    public static void setExpectedFrameRate(int expected){
+        expectedFrameRate = Math.max(1, expectedFrameRate);
+    }
+    public static void setSpeed(){
+        speed = expectedFrameRate/pApplet.frameRate;
+    }
+    public static float speed(){
+        return speed;
     }
     protected static int height(){
         return pApplet.height;

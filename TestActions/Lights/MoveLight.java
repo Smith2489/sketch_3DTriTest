@@ -8,7 +8,7 @@ public class MoveLight extends LightAction{
       
     }
     public void perform(){
-        addToPosition(velocity*speed, DIR);
+        addToPosition(velocity*speed(), DIR);
         float[] tempPos = getPos();
         if(tempPos[2] > 100){
           hardSetPosition(tempPos[0], tempPos[1], 100);
