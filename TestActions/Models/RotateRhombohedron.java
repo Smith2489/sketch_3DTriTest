@@ -5,8 +5,8 @@ public class RotateRhombohedron extends ModelAction{
       
     }
     public void perform(){
-      addToRotation(-2*speed(), (byte)0);
-      addToRotation(2*speed(), (byte)1);
+      addToRotation(-2*frameRateNorm(), (byte)0);
+      addToRotation(2*frameRateNorm(), (byte)1);
       float[] tempRot = getRotDegrees();
       if(tempRot[0] < 0)
         rotatePlus360((byte)0);

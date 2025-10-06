@@ -8,7 +8,7 @@ public class SpinTwoTriangles extends ModelAction{
         direction = 1;
     }
     public void perform(){
-      addToRotation(-0.5f*direction*speed(), (byte)1);
+      addToRotation(-0.5f*direction*frameRateNorm(), (byte)1);
       float[] tempRot = getRotDegrees();
       if(tempRot[1] < 0)
         rotatePlus360((byte)1);

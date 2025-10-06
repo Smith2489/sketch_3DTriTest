@@ -58,8 +58,8 @@ public class SpinSlab extends ModelAction{
           scale[2] = scale[0];
           hardSetScale(scale);
         }
-        addToRotation(spinSpeed*speed(), (byte)2);
-        addToRotation(spinSpeed*speed()+0.0001f, (byte)1);
+        addToRotation(spinSpeed*frameRateNorm(), (byte)2);
+        addToRotation(spinSpeed*frameRateNorm()+0.0001f, (byte)1);
         float[] tempRot = getRotDegrees();
         float[] tempPos = getPos();
         if(tempRot[2] > 360)

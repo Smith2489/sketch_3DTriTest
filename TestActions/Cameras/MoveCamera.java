@@ -1,6 +1,4 @@
 package TestActions.Cameras;
-import static Actions.ObjectActions.PInputHandler.speed;
-
 import Actions.ObjectActions.*;
 public class MoveCamera extends CameraAction{
     public void init(){
@@ -12,51 +10,51 @@ public class MoveCamera extends CameraAction{
       if(keyPressed()){
         switch(key()){
           case 'i':
-            addToRotation(0.5f*speed(), (byte)0);
+            addToRotation(0.5f*frameRateNorm(), (byte)0);
             break;
           case 'k':
-            addToRotation(-0.5f*speed(), (byte)0);
+            addToRotation(-0.5f*frameRateNorm(), (byte)0);
             break;
           case 'j':
-            addToRotation(-0.5f*speed(), (byte)1);
+            addToRotation(-0.5f*frameRateNorm(), (byte)1);
             break;
           case 'l':
-            addToRotation(0.5f*speed(), (byte)1);
+            addToRotation(0.5f*frameRateNorm(), (byte)1);
             break; 
           case '1':
-            addToPosition(0.05f*speed(), eyeForward);
+            addToPosition(0.05f*frameRateNorm(), eyeForward);
           break;
           case '2':
-            addToPosition(-0.05f*speed(), eyeForward);
+            addToPosition(-0.05f*frameRateNorm(), eyeForward);
             break;
           case '9':
-            addToPosition(-0.05f*speed(), eyeRight);
+            addToPosition(-0.05f*frameRateNorm(), eyeRight);
             break;
           case '0':
-            addToPosition(0.05f*speed(), eyeRight);
+            addToPosition(0.05f*frameRateNorm(), eyeRight);
             break;
         }
       }
       if(mousePressed()){
         if(leftButton()){
           if(mouseX() >= ((width() >>> 1) + 50))
-            addToPosition(0.05f*speed(), eyeRight);
+            addToPosition(0.05f*frameRateNorm(), eyeRight);
           else if(mouseX() <= ((width() >>> 1) - 50))
-            addToPosition(-0.05f*speed(), eyeRight);
+            addToPosition(-0.05f*frameRateNorm(), eyeRight);
           if(mouseY() >= ((height() >>> 1)+50))
-            addToPosition(-0.05f*speed(), eyeForward);
+            addToPosition(-0.05f*frameRateNorm(), eyeForward);
           else if(mouseY() <= ((height() >>> 1)-50))
-            addToPosition(0.05f*speed(), eyeForward);
+            addToPosition(0.05f*frameRateNorm(), eyeForward);
         }
         if(rightButton()){
           if(mouseX() >= ((width() >>> 1) + 50))
-            addToRotation(0.5f*speed(), (byte)1);
+            addToRotation(0.5f*frameRateNorm(), (byte)1);
           else if(mouseX() <= ((width() >>> 1) - 50))
-            addToRotation(-0.5f*speed(), (byte)1);
+            addToRotation(-0.5f*frameRateNorm(), (byte)1);
           if(mouseY() >= ((height() >>> 1)+50))
-            addToRotation(-0.5f*speed(), (byte)0);
+            addToRotation(-0.5f*frameRateNorm(), (byte)0);
           else if(mouseY() <= ((height() >>> 1)-50))
-            addToRotation(0.5f*speed(), (byte)0);
+            addToRotation(0.5f*frameRateNorm(), (byte)0);
         }
       }
       float[] tempRot = getRotDegrees();

@@ -449,7 +449,7 @@ public class sketch_3DTriTest extends PApplet{
 
     output.beginDraw();
     output.textSize(RESOLUTIONS[0][resolutionIndex]*24/600);
-    boxX+=((Math.round((RESOLUTIONS[0][resolutionIndex]/240f)*PInputHandler.speed()*100)*0.01f)*boxSpeedX);
+    boxX+=((Math.round((RESOLUTIONS[0][resolutionIndex]/240f)*PInputHandler.frameRateNorm()*100)*0.01f)*boxSpeedX);
     //boxX+=(boxSpeedX);
     if(boxX < BOX_SIZE){
       boxX = BOX_SIZE;
@@ -556,7 +556,7 @@ public class sketch_3DTriTest extends PApplet{
     }
 
     output.updatePixels();
-    PInputHandler.setSpeed();
+    PInputHandler.setFrameRateNorm();
     output.endDraw();
     image(output, 0, 0, width, height);
     System.out.println(Math.round(frameRate));

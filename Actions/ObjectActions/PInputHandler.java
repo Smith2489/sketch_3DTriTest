@@ -31,10 +31,10 @@ public class PInputHandler{
     public static void setExpectedFrameRate(int expected){
         expectedFrameRate = Math.max(1, expectedFrameRate);
     }
-    public static void setSpeed(){
+    public static void setFrameRateNorm(){
         speed = expectedFrameRate/pApplet.frameRate;
     }
-    public static float speed(){
+    public static float frameRateNorm(){
         return speed;
     }
     protected static int height(){
