@@ -1119,7 +1119,12 @@ public class Rasterizer{
       //Grabs the recipricol of the scale of the image
       float scaleX = sprite.returnWidth()/sizeX;
       float scaleY = sprite.returnHeight()/sizeY;
-
+      int tempStroke = sprite.stroke();
+      int[] tempFill = sprite.fill();
+      if((flags & -128) == -128){
+        sprite.stroke(tempStroke|0xFF000000);
+        sprite.fill(sprite.fillAsInt()|0xFF000000);
+      }
   
       //Determines where the start of the scale indices are (these track which pixel of the original image we are currently looking at)
       float scX = ((sizeX >= 0) ? (x >= 0) ? 0 : -x*scaleX : (x+sizeX >= 0) ? sprite.returnWidth() : -x*scaleX-1f/sprite.returnWidth())-0.0001f;
@@ -1134,6 +1139,8 @@ public class Rasterizer{
       int[] start = {Math.round(Math.min(Math.max(0, Math.min(x, x+sizeX)), wid)), Math.round(Math.min(Math.max(0, Math.min(y, y+sizeY)), heig))};
       int[] end = {Math.round(Math.min(Math.max(0, Math.max(x, x+sizeX)), wid)), Math.round(Math.min(Math.max(0, Math.max(y, y+sizeY)), heig))};
       if(sprite.hasImage()){
+        boolean alwaysDraw = tempFill[0] == 0xFF || (flags & -128) == 0;
+
         alphaNorm = sprite.fill()[0]*0.003921568f;
         //Actually drawing the sprite
         for(int i = start[0]; i < end[0] && scX > -1 && scX < sprite.returnWidth(); i++){
@@ -1142,7 +1149,7 @@ public class Rasterizer{
             int pixelPos = j*wid+i; //Determining a pixel's index
             //Checks if a pixel is not a specific colour defined in the Billboard object and if there is nothing already in front of where the sprite is being drawn
             //If it passes, it draws the sprite's pixel to the new location
-            if((1 <= threshold || Math.random() < threshold) && stencil[pixelPos] == 0 && sprite.shouldDrawPixel((int)scX, (int)scY)){
+            if(stencil[pixelPos] == 0 && (alwaysDraw || mesh[(j%meshSize)*meshSize+(i%meshSize)]) && sprite.shouldDrawPixel((int)scX, (int)scY) && (1 <= threshold || Math.random() < threshold)){
               //Adjusting the brightness level of each pixel
               int colour = sprite.fillWithTexelSingleColour((int)scX, (int)scY);
               if((sprite.returnDepthWrite() && (z < zBuff[pixelPos] || zBuff[pixelPos] <= 0) || !sprite.returnDepthWrite() && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
@@ -1161,6 +1168,7 @@ public class Rasterizer{
             }
             scX+=scaleX;
         }
+        sprite.fill((short)(tempFill[1]), (short)(tempFill[2]), (short)(tempFill[3]), (short)(tempFill[0]));
       }
       if(sprite.returnHasStroke()){
         start[0] = Math.round(Math.min(x, x+sizeX));
@@ -1238,18 +1246,24 @@ public class Rasterizer{
            }
         }
       }
+      sprite.stroke(tempStroke);
     }
   }
   public static void billBoardDraw(Billboard sprite, float x, float y, float z, float sizeX, float sizeY, byte compVal, char testType){
     //Sets the sprite to be drawn in front of everything else
     if(sprite.returnDepthWrite())
       z*=-1;
+    tempAction = sprite.returnStencilActionPtr();
     if(Math.abs(sizeX) > 0.0001 && Math.abs(sizeY) > 0.0001){
       //Grabs the recipricol of the scale of the image
       float scaleX = sprite.returnWidth()/sizeX;
       float scaleY = sprite.returnHeight()/sizeY;
-
-  
+      int tempStroke = sprite.stroke();
+      int[] tempFill = sprite.fill();
+      if((flags & -128) == -128){
+        sprite.stroke(tempStroke|0xFF000000);
+        sprite.fill(sprite.fillAsInt()|0xFF000000);
+      }
       //Determines where the start of the scale indices are (these track which pixel of the original image we are currently looking at)
       float scX = ((sizeX >= 0) ? (x >= 0) ? 0 : -x*scaleX : (x+sizeX >= 0) ? sprite.returnWidth() : -x*scaleX-1f/sprite.returnWidth())-0.0001f;
       float scY = ((sizeY >= 0) ? (y >= 0) ? 0 : -y*scaleY : (y+sizeY >= 0) ? sprite.returnHeight() : -y*scaleY-1f/sprite.returnHeight())-0.0001f;
@@ -1262,6 +1276,7 @@ public class Rasterizer{
       int[] start = {Math.round(Math.min(Math.max(0, Math.min(x, x+sizeX)), wid)), Math.round(Math.min(Math.max(0, Math.min(y, y+sizeY)), heig))};
       int[] end = {Math.round(Math.min(Math.max(0, Math.max(x, x+sizeX)), wid)), Math.round(Math.min(Math.max(0, Math.max(y, y+sizeY)), heig))};
       if(sprite.hasImage()){
+        boolean alwaysDraw = tempFill[0] == 255 || (flags & -128) == 0;
         alphaNorm = sprite.fill()[0]*0.003921568f;
         //Actually drawing the sprite
         for(int i = start[0]; i < end[0] && scX > -1 && scX < sprite.returnWidth(); i++){
@@ -1271,30 +1286,31 @@ public class Rasterizer{
             stencilTest(pixelPos, compVal, testType);
             //Checks if a pixel is not a specific colour defined in the Billboard object and if there is nothing already in front of where the sprite is being drawn
             //If it passes, it draws the sprite's pixel to the new location
-            if((1 <= threshold || Math.random() < threshold) && (flags & 1) == 1 && sprite.shouldDrawPixel((int)scX, (int)scY)){
+            if((alwaysDraw || mesh[(j%meshSize)*meshSize+(i%meshSize)]) && (flags & 1) == 1 && sprite.shouldDrawPixel((int)scX, (int)scY) && (1 <= threshold || Math.random() < threshold)){
+              int[] brokenUpFrame = {frame[pixelPos] >>> 24, (frame[pixelPos] >>> 16) & 0xFF, (frame[pixelPos] >>> 8) & 0xFF, frame[pixelPos] & 0xFF};
               //Adjusting the brightness level of each pixel
-              int colour = sprite.fillWithTexelSingleColour((int)scX, (int)scY);
+              int[] colour = sprite.fillWithTexelChannel((int)scX, (int)scY);
               if((sprite.returnDepthWrite() && (z < zBuff[pixelPos] || zBuff[pixelPos] <= 0) || !sprite.returnDepthWrite() && z > zBuff[pixelPos] || Float.isNaN(zBuff[pixelPos]))){
                 //Copying the image's pixel to the frame buffer
-                if(sprite.fill()[0] == 255){
-                  float stencilNorm = ((~stencil[pixelPos]) & 255)*0.003921568f;
-                  int[] tempColours = {(int)(((colour >>> 16) & 255)*stencilNorm) << 16,
-                                       (int)(((colour >>> 8) & 255)*stencilNorm) << 8,
-                                       (int)((colour & 255)*stencilNorm)};
-                  frame[pixelPos] = 0xFF000000|tempColours[0]|tempColours[1]|tempColours[2];
+                if(colour[0] < 255)
+                  Colour.interpolateColours(colour, brokenUpFrame);
+                if(colour[0] > minTransparency){
+                  frame[pixelPos] = performStencilAction(colour, i, j, compVal, pixelPos);
+                   zBuff[pixelPos] = z;//Copying the z-position of the image to the depth buffer
                 }
-                else
-                  frame[pixelPos] = interpolatePixels(colour, frame[pixelPos], pixelPos, alphaNorm);
-                zBuff[pixelPos] = z;//Copying the z-position of the image to the depth buffer
+
               }
-              else
-                if(sprite.fill()[0] < 255 && (frame[pixelPos] >>> 24) < 255)
-                  frame[pixelPos] = interpolatePixels(frame[pixelPos], colour, pixelPos);
+              else if(brokenUpFrame[0] < 255){
+                Colour.interpolateColours(brokenUpFrame, colour);
+                if(brokenUpFrame[0] > minTransparency)
+                  frame[pixelPos] = performStencilAction(brokenUpFrame, i, j, compVal, pixelPos);
+                }
               }
               scY+=scaleY;
             }
             scX+=scaleX;
         }
+        sprite.fill((short)tempFill[1], (short)tempFill[2], (short)tempFill[3], (short)tempFill[0]);
       }
       if(sprite.returnHasStroke()){
         z = (sprite.returnDepthWrite()) ? z-0.0004f : z+0.0004f;
@@ -1374,6 +1390,7 @@ public class Rasterizer{
            }
         }
       }
+      sprite.stroke(tempStroke);
     }
   }
 

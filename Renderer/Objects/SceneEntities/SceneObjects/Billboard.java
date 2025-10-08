@@ -183,8 +183,8 @@ public class Billboard extends ShadedObject{
         stroke = a|r|g|b;
     }
 
-    public float[] fill(){
-        float[] out = {fill[0]*255, fill[1]*255, fill[2]*255, fill[3]*255};
+    public int[] fill(){
+        int[] out = {Math.round(fill[0]*255), Math.round(fill[1]*255), Math.round(fill[2]*255), Math.round(fill[3]*255)};
         return out;
     }
     public int fillAsInt(){
