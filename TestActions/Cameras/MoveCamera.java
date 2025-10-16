@@ -10,10 +10,10 @@ public class MoveCamera extends CameraAction{
       if(keyPressed()){
         switch(key()){
           case 'i':
-            addToRotation(0.5f*frameRateNorm(), (byte)0);
+            addToRotation(-0.5f*frameRateNorm(), (byte)0);
             break;
           case 'k':
-            addToRotation(-0.5f*frameRateNorm(), (byte)0);
+            addToRotation(0.5f*frameRateNorm(), (byte)0);
             break;
           case 'j':
             addToRotation(-0.5f*frameRateNorm(), (byte)1);

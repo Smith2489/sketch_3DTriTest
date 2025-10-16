@@ -1,12 +1,16 @@
 package Renderer.ScreenDraw;
 import Wrapper.*;
 import java.util.*;
+import Actions.ObjectActions.PInputHandler;
 import Maths.LinearAlgebra.*;
 import Renderer.Objects.SceneEntities.DrawnObjects.*;
 import Renderer.Objects.SceneEntities.SceneObjects.*;
 import Renderer.Objects.Parents.SceneEntity;
 public class ScreenMake{
-
+  private static final byte TRI_ID = 1;
+  private static final byte BILLBOARD_ID = 2;
+  private static final byte LINE_ID = 3;
+  private static final byte DOT_ID = 4;
   private static float[] ditherMatrix = {-0.007936508f, 0.4920635f, 0.11706349f, 0.61706346f, 0.023313493f, 0.52331346f, 0.14831349f, 0.64831346f,
                                           0.74206346f, 0.24206349f, 0.86706346f, 0.3670635f, 0.77331346f, 0.2733135f, 0.89831346f, 0.3983135f,
                                           0.17956349f, 0.67956346f, 0.054563493f, 0.55456346f, 0.21081349f, 0.71081346f, 0.08581349f, 0.58581346f,
@@ -270,6 +274,7 @@ public class ScreenMake{
 
     //Takes in a frame buffer, near-z, far-z, and camera and draws a 3D scene using that data plus the model and billboard lists
     public static void drawScene(int[] screen, Camera eye){
+      PInputHandler.setFrameRateNorm();
       MVP.setEyeAngles(eye.returnRotation());
       MVP.setEyePos(eye.returnPosition());
       MVP.setEyeScale(eye.returnScale());
@@ -338,6 +343,7 @@ public class ScreenMake{
     }
 
     public static void drawScene(int[] screen, Camera eye, int lightColour, float screenBrightness){
+      PInputHandler.setFrameRateNorm();
       MVP.setEyeAngles(eye.returnRotation());
       MVP.setEyePos(eye.returnPosition());
       MVP.setEyeScale(eye.returnScale());
@@ -388,6 +394,7 @@ public class ScreenMake{
     }
     //The version for Blinn-Phong reflection and flat shading (1 normal per polygon)
     public static void drawScene(int[] screen, Camera eye, LinkedList<Light> lights, float generalObjectBrightness){
+      PInputHandler.setFrameRateNorm();
       MVP.setEyeAngles(eye.returnRotation());
       MVP.setEyePos(eye.returnPosition());
       MVP.setEyeScale(eye.returnScale());
@@ -502,7 +509,7 @@ public class ScreenMake{
         mvpFull = MatrixOperations.matrixMultiply(proj, model); 
 
         //Checking if the model is in clipspace and adjusting the face direction to account for negative scales
-        isInClipSpace = ((flags & 64) == 64) || (((isInClipSpace(mvp, tempModel.returnPosition()) || isInClipSpace(mvpFull, tempModel.returnBoundingBox())) && distCamToModel <= eye.getDrawDistance()));
+        isInClipSpace = ((flags & 64) == 64) || (((isInClipSpaceTri(mvpFull, tempModel.returnBoundingBox())) && distCamToModel <= eye.getDrawDistance()));
         tempModel.setPosition(position[0], position[1], position[2]);
         //System.out.println(i+" "+tempModel.alwaysPerform());
         for(byte j = 0; j < 3; j++){
@@ -554,14 +561,7 @@ public class ScreenMake{
                 primativeVertices[vertexIndex][1] = points[s][1];
                 primativeVertices[vertexIndex][2] = points[s][2];
                 primativeVertices[vertexIndex][3] = points[s][3];
-                inFrustum = (points[s][2] >= -points[s][3] && points[s][2] <= points[s][3]);
-                //Tracks which points are in front of the near plane or behind the near plane
-                if(inFrustum || (flags & 64) == 64){
-                  insidePoints[numOfInside] = s;
-                  numOfInside++;
-                }
-                else
-                  insidePoints[2] = s;
+
                 
                 //inFrustum&=(points[s][0] >= -points[s][3] && points[s][0] <= points[s][3] && points[s][1] >= -points[s][3] && points[s][1] <= points[s][3]);
                 //Homogeneous division
@@ -570,10 +570,18 @@ public class ScreenMake{
                   points[s][1] = (points[s][1]/points[s][3]);
                   points[s][2] = (points[s][2]/points[s][3]);
                 }
+                inFrustum = (points[s][2] >= 0 && points[s][2] <= 1);
+                //Tracks which points are in front of the near plane or behind the near plane
+                if(inFrustum || (flags & 64) == 64){
+                  insidePoints[numOfInside] = s;
+                  numOfInside++;
+                }
+                else
+                  insidePoints[2] = s;
                 //System.out.println(i+" "+vertexIndex+" "+points[s][2]);
                 //Adjusts point positions to place the screen origin at the centre of the canvas, with scaling with respect to the screen dimensions
                 points[s][0] = Rasterizer.halfWidth()*(points[s][0]+1);
-                points[s][1] = Rasterizer.halfHeight()*(points[s][1]+1);
+                points[s][1] = Rasterizer.returnHeight()-Rasterizer.halfHeight()*(points[s][1]+1);
                   
 
                 isInside|=inFrustum;
@@ -611,8 +619,12 @@ public class ScreenMake{
             triCentre[1]*=0.33333333333333333333333333333333333333f;
             triCentre[2]*=0.33333333333333333333333333333333333333f;
             triCentre[3]*=0.33333333333333333333333333333333333333f;
-
-            isInside|=(triCentre[0] >= -triCentre[3] && triCentre[0] <= triCentre[3] && triCentre[1] >= -triCentre[3] && triCentre[1] <= triCentre[3] && triCentre[2] >= -triCentre[3] && triCentre[2] <= triCentre[3]);
+            float minX = Math.min(points[0][0], Math.min(points[1][0], points[2][0]));
+            float maxX = Math.max(points[0][0], Math.max(points[1][0], points[2][0]));
+            float minY = Math.min(points[0][1], Math.min(points[1][1], points[2][1]));
+            float maxY = Math.max(points[0][1], Math.max(points[1][1], points[2][1]));
+            isInside&=(minX < Rasterizer.returnWidth() && maxX >= 0 && minY < Rasterizer.returnHeight() && maxY >= 0);
+            //isInside|=(triCentre[0] >= -triCentre[3] && triCentre[0] <= triCentre[3] && triCentre[1] >= -triCentre[3] && triCentre[1] <= triCentre[3] && triCentre[2] >= -triCentre[3] && triCentre[2] <= triCentre[3]);
             //Copies the triangle from the model to the triangle array
             if(isInside){
               int backIndex = tempModel.returnPalletPtr().returnBackTri(j);
@@ -754,7 +766,7 @@ public class ScreenMake{
                         triListTranslucent.getLast().setAlphaFill(alpha[1]);
                         triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
                         triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
-                        translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().returnZ(), tempModel.returnDepthWrite(), translusentCount));
+                        translucentData.add(new TranslucentData(TRI_ID, triListTranslucent.getLast().returnZ(), tempModel.returnDepthWrite(), translusentCount));
                         translusentCount++;
                         translucentCounter++;
                       }
@@ -782,7 +794,7 @@ public class ScreenMake{
                     triListTranslucent.getLast().setAlphaFill(alpha[1]);
                     triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
                     triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
-                    translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().returnZ(), tempModel.returnDepthWrite(), translusentCount));
+                    translucentData.add(new TranslucentData(TRI_ID, triListTranslucent.getLast().returnZ(), tempModel.returnDepthWrite(), translusentCount));
                     translusentCount++;
                     translucentCounter++;
                   }
@@ -841,7 +853,7 @@ public class ScreenMake{
               points[j][2]/=points[j][3];
             }
             points[j][0] = Rasterizer.halfWidth()*(points[j][0]+1);
-            points[j][1] = Rasterizer.halfHeight()*(points[j][1]+1);
+            points[j][1] = Rasterizer.returnHeight()-Rasterizer.halfHeight()*(points[j][1]+1);
             isInside|=(points[j][3] > 0);
           }
     
@@ -885,7 +897,7 @@ public class ScreenMake{
                 billboardDisplayTranslucent.getLast().setHasFill(tempBillboard.hasImage() && (flags & 8) == 8);
                 billboardDisplayTranslucent.getLast().fill(fill, alpha[1]);
                 billboardDisplayTranslucent.getLast().stroke(tempBillboard.stroke(), alpha[0]);
-                translucentData.add(new TranslucentData((byte)2, points[0][2], tempBillboard.returnDepthWrite(), billBoardCountTranslucent));
+                translucentData.add(new TranslucentData(BILLBOARD_ID, points[0][2], tempBillboard.returnDepthWrite(), billBoardCountTranslucent));
                 translucentCounter++;
                 billBoardCountTranslucent++;
               }
@@ -1050,6 +1062,18 @@ public class ScreenMake{
       return (x2-x1)*(y1+y2);
     }
     //Checks if a model is in the frustum
+    private static boolean isInClipSpaceTri(Matrix4x4 mvp, float[][] boundingBox){
+      if(boundingBox[0].length < 3 || mvp.returnWidth() != 4 || mvp.returnHeight() != 4)
+        return false;
+      for(byte i = 0; i < boundingBox.length; i++){
+        float[] coords = MatrixOperations.matrixMultiply(mvp, from3DVecTo4DVec(boundingBox[i]));
+        // if(coords[0] >= -coords[3] && coords[0] <= coords[3] && coords[1] >= -coords[3] && coords[1] <= coords[3] && coords[2] >= -coords[3] && coords[2] <= coords[3])
+        //   return true;
+          if(coords[2] >= -coords[3])
+            return true;
+        }
+        return false;
+    }
     private static boolean isInClipSpace(Matrix4x4 mvp, float[][] boundingBox){
       if(boundingBox[0].length < 3 || mvp.returnWidth() != 4 || mvp.returnHeight() != 4)
         return false;
@@ -1078,7 +1102,7 @@ public class ScreenMake{
         //Taking the  vectors (points[(i+1)%3][0], points[(i+1)%3][1]) and (-points[i][0], points[i][1]) to compute the direction of that particular edge 
         //and add the result to the overall direction of the whole triangle
         for(byte i = 0; i < 3; i++)
-          edgeDir+=(points[(i+1)%3][0] - points[i][0])*(points[(i+1)%3][1] + points[i][1]);
+          edgeDir-=(points[(i+1)%3][0] - points[i][0])*(points[(i+1)%3][1] + points[i][1]);
 
         edgeDir*=faceDirection; //Hopefully will correct for when there is an odd number of negative scales
         //Determines if triangle is exempt from backface culling and if its back face should be set to a different colour than its front face
@@ -1232,7 +1256,7 @@ public class ScreenMake{
       }
 
       //Checking if the model is in clipspace and adjusting the face direction to account for negative scales
-      isInClipSpace = ((flags & 64) == 64) || (((isInClipSpace(mvp, tempModel.returnPosition()) || isInClipSpace(mvpFull, tempModel.returnBoundingBox())) && distCamToModel <= drawDist));
+      isInClipSpace = ((flags & 64) == 64) || ((isInClipSpace(mvpFull, tempModel.returnBoundingBox()) && distCamToModel <= drawDist));
       tempModel.setPosition(position[0], position[1], position[2]);
       for(byte j = 0; j < 3; j++){
         if(tempModel.returnScale()[j] < 0)
@@ -1249,7 +1273,7 @@ public class ScreenMake{
           boolean inFrustum = false; //If the triangle's point is in front of the near plane
           byte numOfInside = 0; //Number of points in the near plane
           byte[] insidePoints = {-1, -1, -1}; //Tracking the indices of the points in the near plane
-          float[] centre = {0, 0, 0, 0};
+          //float[] centre = {0, 0, 0, 0};
           float[][] vertexBrightness = {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}};
           for(byte s = 0; s < 3; s++){
             int vertexIndex = tempModel.returnPolygons()[j][s];
@@ -1267,34 +1291,29 @@ public class ScreenMake{
               //Projects the point from 3D to 2D
               points[s] = MatrixOperations.matrixMultiply(mvpFull, homogeneousPoint);
               
-              centre[0]+=points[s][0];
-              centre[1]+=points[s][1];
-              centre[2]+=points[s][2];
-              centre[3]+=points[s][3];
               primativeVertices[vertexIndex][0] = points[s][0];
               primativeVertices[vertexIndex][1] = points[s][1];
               primativeVertices[vertexIndex][2] = points[s][2];
               primativeVertices[vertexIndex][3] = points[s][3];
-              inFrustum = (points[s][2] >= -points[s][3] && points[s][2] <= points[s][3]);
               //Homogeneous division
               if(Math.abs(points[s][3]) > 0){
                 points[s][0] = (points[s][0]/points[s][3]);
                 points[s][1] = (points[s][1]/points[s][3]);
                 points[s][2] = (points[s][2]/points[s][3]);
               }
-              
-              //Adjusts point positions to place the screen origin at the centre of the canvas, with scaling with respect to the screen dimensions
-              points[s][0] = Rasterizer.halfWidth()*(points[s][0]+1);
-              points[s][1] = Rasterizer.halfHeight()*(points[s][1]+1);
-              
+
+              inFrustum = points[s][2] >= 0 && points[s][2] <= 1;
               //Tracks which points are in front of the near plane or behind the near plane
-              if(inFrustum){
+              if(inFrustum || ((flags & 64) == 64)){
                 insidePoints[numOfInside] = s;
                 numOfInside++;
               }
               else
                 insidePoints[2] = s;
-              isInside = isInside || ((inFrustum) || ((flags & 64) == 64));
+              //Adjusts point positions to place the screen origin at the centre of the canvas, with scaling with respect to the screen dimensions
+              points[s][0] = Rasterizer.halfWidth()*(points[s][0]+1);
+              points[s][1] = Rasterizer.returnHeight()-Rasterizer.halfHeight()*(points[s][1]+1);
+              isInside = isInside ||inFrustum;
               isInside|=inFrustum;
               vertices[vertexIndex] = new float[4];
               vertices[vertexIndex][0] = points[s][0];
@@ -1312,10 +1331,6 @@ public class ScreenMake{
               vertexBrightness[s][1] = brightnessValues[vertexIndex][1];
               vertexBrightness[s][2] = brightnessValues[vertexIndex][2];
               vertexBrightness[s][3] = brightnessValues[vertexIndex][3];
-              centre[0]+=primativeVertices[vertexIndex][0];
-              centre[1]+=primativeVertices[vertexIndex][1];
-              centre[2]+=primativeVertices[vertexIndex][2];
-              centre[3]+=primativeVertices[vertexIndex][3];
               if(frustumFlags[vertexIndex]){
                 insidePoints[numOfInside] = s;
                 numOfInside++;
@@ -1325,11 +1340,12 @@ public class ScreenMake{
               isInside|=(frustumFlags[vertexIndex] || ((flags & 64) == 64));
             }
           }
-          centre[0]*=0.333333333333333f;
-          centre[1]*=0.333333333333333f;
-          centre[2]*=0.333333333333333f;
-          centre[3]*=0.333333333333333f;
-          isInside|=(centre[0] >= -centre[3] && centre[0] <= centre[3] && centre[1] >= -centre[3] && centre[1] <= centre[3] && centre[2] >= -centre[3] && centre[2] <= centre[3]);
+          float minX = Math.min(points[0][0], Math.min(points[1][0], points[2][0]));
+          float maxX = Math.max(points[0][0], Math.max(points[1][0], points[2][0]));
+          float minY = Math.min(points[0][1], Math.min(points[1][1], points[2][1]));
+          float maxY = Math.max(points[0][1], Math.max(points[1][1], points[2][1]));
+          isInside&=(minX < Rasterizer.returnHeight() && maxX >= 0 && minY < Rasterizer.returnHeight() && maxY >= 0);
+          //isInside|=(centre[0] >= -centre[3] && centre[0] <= centre[3] && centre[1] >= -centre[3] && centre[1] <= centre[3] && centre[2] >= -centre[3] && centre[2] <= centre[3]);
           //Copies the triangle from the model to the triangle array
           if(isInside){
             //Returns if the current triangle is exempt from backface culling
@@ -1454,7 +1470,7 @@ public class ScreenMake{
                     triListTranslucent.getLast().setAlphaFill(alpha[1]);
                     triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
                     triListTranslucent.getLast().setFizzel(tempModel.returnMaxFizzel(), tempModel.returnFizzelThreshold());
-                    translucentData.add(new TranslucentData((byte)1, triListTranslucent.getLast().returnZ(), tempModel.returnDepthWrite(), translusentCount));
+                    translucentData.add(new TranslucentData(TRI_ID, triListTranslucent.getLast().returnZ(), tempModel.returnDepthWrite(), translusentCount));
                     translusentCount++;
                     translucentCounter++;
                   }
@@ -1482,7 +1498,7 @@ public class ScreenMake{
                   triListTranslucent.getLast().setAlphaStroke(alpha[0]);
                   triListTranslucent.getLast().setAlphaFill(alpha[1]);
                   triListTranslucent.getLast().setStencilAction(tempModel.returnStencilActionPtr());
-                  translucentData.add(new TranslucentData((byte)1, triListTranslucent.peekLast().returnZ(), tempModel.returnDepthWrite(), translusentCount));
+                  translucentData.add(new TranslucentData(TRI_ID, triListTranslucent.peekLast().returnZ(), tempModel.returnDepthWrite(), translusentCount));
                   translusentCount++;
                   translucentCounter++;
                 }
@@ -1538,7 +1554,7 @@ public class ScreenMake{
             points[j][2]/=points[j][3];
           }
           points[j][0] = Rasterizer.halfWidth()*(points[j][0]+1);
-          points[j][1] = Rasterizer.halfHeight()*(points[j][1]+1);
+          points[j][1] = Rasterizer.returnHeight()-Rasterizer.halfHeight()*(points[j][1]+1);
           isInside|=(points[j][3] > 0);
         }
   
@@ -1575,7 +1591,7 @@ public class ScreenMake{
               billboardDisplayTranslucent.getLast().setPosition(points[0][0], points[0][1], points[0][2]);
               billboardDisplayTranslucent.getLast().setHasStroke(tempBillboard.returnHasStroke() || (flags & 12) != 8);
               billboardDisplayTranslucent.getLast().setHasFill(tempBillboard.hasImage() && (flags & 8) == 8);
-              translucentData.add(new TranslucentData((byte)2, points[0][2], tempBillboard.returnDepthWrite(), billBoardCountTranslucent));
+              translucentData.add(new TranslucentData(BILLBOARD_ID, points[0][2], tempBillboard.returnDepthWrite(), billBoardCountTranslucent));
               translucentCounter++;
               billBoardCountTranslucent++;
             }
@@ -1635,7 +1651,7 @@ public class ScreenMake{
                 points[s][2]/=points[s][3];
               }
               points[s][0] = Rasterizer.halfWidth()*(points[s][0]+1);
-              points[s][1] = Rasterizer.halfHeight()*(points[s][1]+1);
+              points[s][1] = Rasterizer.returnHeight()-Rasterizer.halfHeight()*(points[s][1]+1);
               vertices[endPoints[s]] = new float[4];
               vertices[endPoints[s]][0] = points[s][0];
               vertices[endPoints[s]][1] = points[s][1];
@@ -1683,7 +1699,7 @@ public class ScreenMake{
                 lineDisplayTranslucent.add(new LineDisp(points, colour));
                 lineDisplayTranslucent.getLast().setAlphaStroke(alpha);
                 lineDisplayTranslucent.getLast().setDepthWrite(tempLineObj.returnDepthWrite());
-                translucentData.add(new TranslucentData((byte)3, (points[1][2]+points[0][2])*0.5f, tempLineObj.returnDepthWrite(), lineCountTranslucent));
+                translucentData.add(new TranslucentData(LINE_ID, (points[1][2]+points[0][2])*0.5f, tempLineObj.returnDepthWrite(), lineCountTranslucent));
                 translucentCounter++;
                 lineCountTranslucent++;
               }
@@ -1715,7 +1731,7 @@ public class ScreenMake{
         point[2]/=point[3];
       }
       point[0] = Rasterizer.halfWidth()*(point[0]+1);
-      point[1] = Rasterizer.halfHeight()*(point[1]+1);
+      point[1] = Rasterizer.returnHeight()-Rasterizer.halfHeight()*(point[1]+1);
       isInside = (isInside || (point[3] > 0 && clipCheck[2] >= -1 && clipCheck[2] <= drawDist)) && (point[0] >= 0 && point[0] <= Rasterizer.returnWidth() && point[1] >= 0 && point[1] <= Rasterizer.returnHeight());
       if(isInside && tempDot.returnModelTint() > Rasterizer.getMinTransparency()*Colour.INV_255){
         int colour = tempDot.returnStroke(); 
@@ -1730,7 +1746,7 @@ public class ScreenMake{
             dotDisplayTranslucent.add(new DotDraw(point, colour));
             dotDisplayTranslucent.getLast().setDepthWrite(tempDot.returnDepthWrite());
             dotDisplayTranslucent.getLast().setAlphaStroke(alpha);
-            translucentData.add(new TranslucentData((byte)4, point[2], tempDot.returnDepthWrite(), dotCountTranslucent));
+            translucentData.add(new TranslucentData(DOT_ID, point[2], tempDot.returnDepthWrite(), dotCountTranslucent));
             translucentCounter++;
             dotCountTranslucent++;
           }
@@ -1760,23 +1776,23 @@ public class ScreenMake{
     pushToRear(tempData);
     
     //Iterating over translucent objects
-    for(int i = 0; i < tempData.length && tempData[i].returnID() != 0; i++){
+    for(int i = 0; i < tempData.length; i++){
       int j = tempData[i].returnOriginalIndex();
       switch(tempData[i].returnID()){
-        case 1:
+        case TRI_ID:
           Rasterizer.setDepthWrite(tempTris[j].getHasDepthWrite());
           Rasterizer.setProbabilities(tempTris[j].returnMaxFizzel(), tempTris[j].returnFizzelThreshold());
           Rasterizer.triangleDraw3D(tempTris[j], stencilComp, testType);
           break;
-        case 2:
+        case BILLBOARD_ID:
           Rasterizer.setProbabilities(tempBillboards[j].returnMaxFizzel(), tempBillboards[j].returnFizzelThreshold());
           Rasterizer.billBoardDraw(tempBillboards[j], tempBillboards[j].returnPosition()[0], tempBillboards[j].returnPosition()[1], tempBillboards[j].returnPosition()[2], tempBillboards[j].returnScale()[0], tempBillboards[j].returnScale()[1], stencilComp, testType);
           break;
-        case 3:
+        case LINE_ID:
           float[][] endPoints = tempLines[j].returnEndPoints();
           Rasterizer.drawLine(new IntWrapper(Math.round(endPoints[0][0])), new IntWrapper(Math.round(endPoints[0][1])), endPoints[0][2], new IntWrapper(Math.round(endPoints[1][0])), new IntWrapper(Math.round(endPoints[1][1])), endPoints[1][2], tempLines[j].returnStroke(), tempLines[j].getHasDepthWrite());
           break;
-        case 4:
+        case DOT_ID:
           Rasterizer.setPixel(tempDots[j].returnStroke(), tempDots[j].returnPosition()[0], tempDots[j].returnPosition()[1], tempDots[j].returnPosition()[2], tempDots[j].getHasDepthWrite());
           break;
       }

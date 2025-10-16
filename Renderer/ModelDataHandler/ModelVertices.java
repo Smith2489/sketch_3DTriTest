@@ -12,8 +12,8 @@ public class ModelVertices {
             maxPoints[i] = 1;
             modelCentre[i] = 0;
         }
-        float[][] cubeVertices = {{-1, -1, -1}, {-1, 1, -1}, {1, 1, -1}, {1, -1, -1}, 
-                                  {-1, -1, 1}, {-1, 1, 1}, {1, 1, 1}, {1, -1, 1}};
+        float[][] cubeVertices = {{-1, 1, -1}, {-1, -1, -1}, {1, -1, -1}, {1, 1, -1}, 
+                                  {-1, 1, 1}, {-1, -1, 1}, {1, -1, 1}, {1, 1, 1}};
         for(byte i = 0; i < 8; i++){
             for(byte j = 0; j < 3; j++)
                 points[i][j] = cubeVertices[i][j];

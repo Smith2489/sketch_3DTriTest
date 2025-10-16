@@ -12,12 +12,12 @@ public class Geometry {
     m = new ModelVertices();
     vertexNormals = new float[m.returnVertices().length][3];
     int[] numContributedToNormal = new int[vertexNormals.length];
-    int[][] cubeTris = {{0, 1, 3}, {1, 2, 3},//Front side
-                        {5, 4, 7}, {7, 6, 5},//Back side
-                        {1, 0, 4}, {4, 5, 1},//Left side
-                        {7, 3, 2}, {2, 6, 7},//Right side
-                        {0, 7, 4}, {0, 3, 7},//Top side
-                        {1, 5, 6}, {1, 6, 2}};//Bottom side
+    int[][] cubeTris = {{3, 1, 1}, {3, 2, 1},//Front side
+                        {7, 4, 5}, {5, 6, 7},//Back side
+                        {1, 4, 0}, {4, 1, 5},//Left side
+                        {7, 2, 3}, {2, 7, 6},//Right side
+                        {7, 0, 4}, {3, 0, 7},//Top side
+                        {5, 1, 6}, {6, 1, 2}};//Bottom side
       float[][] points = m.returnVertices();
       for(byte i = 0; i < 12; i++){
         for(byte j = 0; j < 3; j++)

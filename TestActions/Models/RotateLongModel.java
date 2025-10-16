@@ -37,10 +37,10 @@ public class RotateLongModel extends ModelAction{
             addToRotation(-0.5f*frameRateNorm(), (byte)1);
             break;
           case 'g':
-            addToRotation(0.5f*frameRateNorm(), (byte)0);
+            addToRotation(-0.5f*frameRateNorm(), (byte)0);
             break;
           case 'h':
-            addToRotation(-0.5f*frameRateNorm(), (byte)0);
+            addToRotation(0.5f*frameRateNorm(), (byte)0);
             break;
           case '=':
             initPositionShake(0.6f, 50);

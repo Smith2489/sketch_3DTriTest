@@ -90,6 +90,16 @@ public class MathExtentions{
     return ((x & 1) == 0) ? (byte)1 : (byte)-1;
   }
   
+  //Returns the logorithm of any base for a number
+  public static double log(double n, double base){
+    return Math.log(n)/Math.log(base);
+  }
+
+  //Returns the logorithm of any base for a number
+  public static float log(float n, float base){
+    return (float)(Math.log(n)/Math.log(base));
+  }
+
   //Returns the conversion of an angle from degrees to radians
   public static double degToRad(double angleDegrees){
     return angleDegrees*DEGS_TO_RADS;

@@ -49,7 +49,7 @@ public class ManageSecondCamera extends CameraAction{
             addToRotation(-frameRateNorm(), (byte)1);
             break;
           case 8:
-            addToRotation(0.5f*frameRateNorm(), (byte)0);
+            addToRotation(-0.5f*frameRateNorm(), (byte)0);
             break;
           case 12:
             addToRotation(-0.5f*frameRateNorm(), (byte)2);

@@ -47,7 +47,7 @@ public class sketch_3DTriTest extends PApplet{
   private Light[] light = new Light[3];
   private Light secondLight;
 
-  private float[][] endPoints1 = {{0, 1.25f, -2.5f}, {0, -1.25f, 2.5f}, {2, -1.25f, 2.5f}};
+  private float[][] endPoints1 = {{0, -1.25f, -2.5f}, {0, 1.25f, 2.5f}, {2, 1.25f, 2.5f}};
   private float[][] endPoints2 = {{-5, 0, 2}, {5, 0, 2}};
   //Cameras
   private Camera eye = new Camera();
@@ -100,7 +100,7 @@ public class sketch_3DTriTest extends PApplet{
     eye2.setDrawDistance(1800);
     //eye2.addAction(new ManageSecondCamera(eye));
     eye2.alwaysPerform(true);
-    light[0] = new Light(0, -50, -25);
+    light[0] = new Light(0, 50, -25);
     light[0].setLightColour(0x55AAFF, (byte)0);
     light[0].setLightColour(0x55, (byte)1);
     light[0].setLightColour(0xFF00FF, (byte)2);
@@ -142,8 +142,8 @@ public class sketch_3DTriTest extends PApplet{
     testLines[0].setPosition(-15, 0, 7);
     testLines[0].addAction(new SetTransparency(eye));
     testLines[1] = new LineObj(endPoints2, endPoints, BLACK);
-    testLines[1].setPosition(-4, -5, 10);
-    testLines[1].setRotation(0, -25, 0);
+    testLines[1].setPosition(-4, 5, 10);
+    testLines[1].setRotation(0, 25, 0);
     testLines[1].addAction(new SetTransparency(eye));
     LineModel testModel = new LineModel(testVertices, endPointsSet3, OPAQUE_BLACK);
     testLines[2] = new LineObj(testModel);
@@ -170,13 +170,14 @@ public class sketch_3DTriTest extends PApplet{
     test[0].setShininess(1);
     test[0].addAction(new SetTransparency(eye));
     //test[0].setAttachedToCamera(true);
-    test[0].setPosition(-4, -6, 10);
-    test[0].setScale(0.04f);
+    test[0].setPosition(-4, 6, 10);
+    test[0].setScale(0.04f, -0.04f);
     test[1] = new Billboard(sprites[1]);
-    test[1].setPosition(-2, -5, 12);
+    test[1].setPosition(-2, 5, 12);
     test[1].fill(0x72);
-    test[1].setScale(-0.08f, 0.06f);
+    test[1].setScale(-0.08f, -0.06f);
     test[1].setShininess(1);
+    //test[1].setStencilAction(new ChangeStencil());
     test[1].addAction(new SetTransparency(eye));
     noCursor();
     frameRate(30);
@@ -222,12 +223,12 @@ public class sketch_3DTriTest extends PApplet{
     
     //Tris that are copied from Computer Graphics homework from Spring 2024 semester
     testModels[2] = new Model(testGeometry[4], testPallets[5]);
-    testModels[2].setPosition(-2, -4.5f, 10);
+    testModels[2].setPosition(-2, 4.5f, 10);
     testModels[2].addAction(new SpinTwoTriangles());
     
     //The long rectangular prism
     testModels[3] = new Model(testGeometry[0], testPallets[1]);
-    testModels[3].setPosition(0, 3, 9);
+    testModels[3].setPosition(0, -3, 9);
     testModels[3].setScale(1, 0.5f, 4);
     testModels[3].setShininess(100);
     testModels[3].addAction(new RotateLongModel());
@@ -238,8 +239,8 @@ public class sketch_3DTriTest extends PApplet{
     
     //Scale (1, 1, 1) cube
     testModels[4] = new Model(testGeometry[0], testPallets[1]);
-    testModels[4].setPosition(-0.35f, -5.5f, 8);
-    testModels[4].setRotation(65, -20, 180);
+    testModels[4].setPosition(-0.35f, 5.5f, 8);
+    testModels[4].setRotation(-65, 20, 180);
     testModels[4].setGauroud(false);
     testModels[4].setFizzelParameters(5, 3);
     
@@ -252,7 +253,7 @@ public class sketch_3DTriTest extends PApplet{
     
     //Bowser platform
     testModels[6] = new Model(testGeometry[0], testPallets[1]);
-    testModels[6].setPosition(0, 3, 12);
+    testModels[6].setPosition(0, -3, 12);
     testModels[6].setScale(2, 0.5f, 2);
     testModels[6].addAction(new RotateAtFiveDegrees(true));
     testModels[6].setGauroud(false);
@@ -263,13 +264,14 @@ public class sketch_3DTriTest extends PApplet{
     testModels[7].setScale(0.5f, 0.5f, 1);
     testModels[7].addAction(new RotateBillboard());
     testModels[7].setShininess(0.25f);
+    testModels[7].setParentTransform(testModels[5]);
 
     //testModels[7].setBrightness(0.25);
     
     //Pyramid
     testModels[8] = new Model(testGeometry[2], testPallets[3]);
-    testModels[8].setPosition(-4, 5, 25);
-    testModels[8].setRotation(0, 90, 0);
+    testModels[8].setPosition(-4, -1, 25);
+    testModels[8].setRotation(0, -90, 0);
     testModels[8].setScale(2.5f, 2.5f, 2.5f);
     testModels[8].addAction(new RotateAtFiveDegrees(true));
 
@@ -279,7 +281,6 @@ public class sketch_3DTriTest extends PApplet{
     testModels[9].setScale(1.5f, 1.5f, 1.5f);
     testModels[9].addAction(new RotateRhombohedron());
     testModels[9].setParentTransform(testModels[5]);
-    testModels[7].setParentTransform(testModels[5]);
     //Flag
     testModels[10] = new Model(testGeometry[7], testPallets[8]);
     testModels[10].setPosition(0, 0, -0.5f);
@@ -296,8 +297,8 @@ public class sketch_3DTriTest extends PApplet{
     
     //Scale (1,1,1) cube inverted hull
     testModels[12] = new Model(testGeometry[0], testPallets[9]);
-    testModels[12].setPosition(-0.35f, -5.5f, 8);
-    testModels[12].setRotation(65, -20, 180);
+    testModels[12].setPosition(-0.35f, 5.5f, 8);
+    testModels[12].setRotation(-65, 20, 180);
     testModels[12].setScale(1.1f, 1.1f, 1.1f);
     testModels[12].setInverted(true);
     
@@ -310,7 +311,7 @@ public class sketch_3DTriTest extends PApplet{
     
     //Mario 64 slab
     testModels[14] = new Model(testGeometry[8], testPallets[10]);
-    testModels[14].setPosition(7, -2, 10);
+    testModels[14].setPosition(7, 2, 10);
     testModels[14].setScale(2.5f, 2.5f, 2.5f);
     //testModels[14].setGauroud(false);
     testModels[14].setShininess(10);
@@ -510,7 +511,7 @@ public class sketch_3DTriTest extends PApplet{
     Light.setAmbientColour(0x55AAFF);
     ScreenMake.drawScene(output.pixels, eye, lightsPrimary, 1.5f);
     Light.setAmbientColour(0xFFFFFF);
-    ScreenMake.ditherOnlyObjects();
+    //ScreenMake.ditherOnlyObjects();
     // float[][] testColours = {{0, 0, 1}, {0, 1, 0}, {1, 0, 0}};
     // Rasterizer.fill(0xFF);
     // Rasterizer.setVertexBrightness(testColours);
@@ -556,7 +557,6 @@ public class sketch_3DTriTest extends PApplet{
     }
 
     output.updatePixels();
-    PInputHandler.setFrameRateNorm();
     output.endDraw();
     image(output, 0, 0, width, height);
     System.out.println(Math.round(frameRate));

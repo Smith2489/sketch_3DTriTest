@@ -12,8 +12,8 @@ public class SpinSlab extends ModelAction{
         startPosition[1] = getPos()[1];
         startPosition[2] = getPos()[2];
         Physics.fluidDensity = 0.25f;
-        Physics.gravityAcceleration = 0.005f;
-        physics.terminalVelocity = 0.5f;
+        Physics.gravityAcceleration = -0.005f;
+        physics.terminalVelocity = -0.5f;
         physics.setGravityVelocity();
         scale = getScale();
     }
